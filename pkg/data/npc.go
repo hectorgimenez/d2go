@@ -1,4 +1,4 @@
-package game
+package data
 
 import (
 	"github.com/hectorgimenez/d2go/pkg/data/npc"
