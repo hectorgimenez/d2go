@@ -25,7 +25,7 @@ func (gd *GameReader) GetData() data.Data {
 	}
 
 	roster := gd.getRoster()
-	playerUnitPtr, corpse := gd.getPlayerUnitPtr(roster)
+	playerUnitPtr, corpse := gd.GetPlayerUnitPtr(roster)
 
 	pu := gd.GetPlayerUnit(playerUnitPtr)
 
@@ -49,7 +49,7 @@ func (gd *GameReader) GetData() data.Data {
 }
 
 func (gd *GameReader) InGame() bool {
-	pu, _ := gd.getPlayerUnitPtr([]data.RosterMember{})
+	pu, _ := gd.GetPlayerUnitPtr([]data.RosterMember{})
 
 	return pu > 0
 }

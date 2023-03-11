@@ -8,7 +8,7 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/data/state"
 )
 
-func (gd *GameReader) getPlayerUnitPtr(roster data.Roster) (playerUnitPtr uintptr, corpse data.Corpse) {
+func (gd *GameReader) GetPlayerUnitPtr(roster data.Roster) (playerUnitPtr uintptr, corpse data.Corpse) {
 	for i := 0; i < 128; i++ {
 		unitOffset := gd.offset.UnitTable + uintptr(i*8)
 		playerUnitAddr := gd.Process.moduleBaseAddressPtr + unitOffset
