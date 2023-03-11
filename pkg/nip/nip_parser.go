@@ -9,9 +9,9 @@ import (
 
 var (
 	errEmptyLine      = errors.New("empty line")
-	operandRegex      = regexp.MustCompile("(\\|{2}|\\&{2})")
-	comparableRegex   = regexp.MustCompile("(\\={2}|\\<\\=|\\>\\=|\\>|\\<|\\!\\=)")
-	propertyNameRegex = regexp.MustCompile("\\[(.*)\\]")
+	operandRegex      = regexp.MustCompile(`(\|{2}|\&{2})`)
+	comparableRegex   = regexp.MustCompile(`(\={2}|\<\=|\>\=|\>|\<|\!\=)`)
+	propertyNameRegex = regexp.MustCompile(`\[(.*)\]`)
 )
 
 func parseLine(line string) (Rule, error) {
