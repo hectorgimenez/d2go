@@ -1,9 +1,10 @@
 package data
 
 import (
+	"strings"
+
 	"github.com/hectorgimenez/d2go/pkg/data/item"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
-	"strings"
 )
 
 type Items struct {
@@ -27,6 +28,12 @@ type Item struct {
 	Stats      map[stat.Stat]int
 	Identified bool
 	IsVendor   bool
+}
+
+func (i Item) Type() string {
+	t, _ := item.TypeForItemName(string(i.Name))
+
+	return t
 }
 
 func (i Item) IsPotion() bool {

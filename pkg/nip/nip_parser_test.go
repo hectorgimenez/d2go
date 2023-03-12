@@ -1,9 +1,10 @@
-package pickit
+package nip
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 const nipLine = "[type] == boots && [quality] == rare # [frw] >= 10 && [fireresist] >= 10 && ([lightresist]+[coldresist] >= 10 && [dexterity] >= 1 && [fireresist]+[poisonresist] >= 10) // this is a comment"

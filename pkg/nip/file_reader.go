@@ -1,4 +1,4 @@
-package pickit
+package nip
 
 import (
 	"bufio"

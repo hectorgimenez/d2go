@@ -2,7 +2,7 @@ package item
 
 import "strings"
 
-var classMapping = map[string][]string{
+var typeMapping = map[string][]string{
 	"Axes":               {"HandAxe", "Axe", "DoubleAxe", "MilitaryPick", "WarAxe", "LargeAxe", "BroadAxe", "BattleAxe", "GreatAxe", "GiantAxe", "Hatchet", "Cleaver", "TwinAxe", "Crowbill", "Naga", "MilitaryAxe", "BeardedAxe", "Tabar", "GothicAxe", "AncientAxe", "Tomahawk", "SmallCrescent", "EttinAxe", "WarSpike", "BerserkerAxe", "FeralAxe", "SilverEdgedAxe", "Decapitator", "ChampionAxe", "GloriousAxe"},
 	"Wands":              {"Wand", "YewWand", "BoneWand", "GrimWand", "BurntWand", "PetrifiedWand", "TombWand", "GraveWand", "PolishedWand", "GhostWand", "LichWand", "UnearthedWand"},
 	"Clubs":              {"Club", "SpikedClub", "Cudgel", "BarbedClub", "Truncheon", "TyrantClub"},
@@ -37,21 +37,11 @@ var classMapping = map[string][]string{
 	"NecromancerShields": {"PreservedHead", "ZombieHead", "UnravellerHead", "GargoyleHead", "DemonHeadShield", "MummifiedTrophy", "FetishTrophy", "SextonTrophy", "CantorTrophy", "HierophantTrophy", "MinionSkull", "HellspawnSkull", "OverseerSkull", "SuccubusSkull", "BloodlordSkull"},
 }
 
-func IsClass(itemClass string) bool {
-	for class := range classMapping {
-		if strings.EqualFold(itemClass, class) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func ClassForItemName(itemName string) (string, bool) {
-	for class, itemNames := range classMapping {
+func TypeForItemName(itemName string) (string, bool) {
+	for t, itemNames := range typeMapping {
 		for _, name := range itemNames {
 			if strings.EqualFold(itemName, name) {
-				return class, true
+				return t, true
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-package pickit
+package nip
 
 const (
 	OperandEqual             Operand = "=="
@@ -9,6 +9,7 @@ const (
 	OperandNotEqualTo        Operand = "!="
 	OperandAnd               Operand = "&&"
 	OperandOr                Operand = "||"
+	OperandNone              Operand = ""
 )
 
 type Rule struct {
