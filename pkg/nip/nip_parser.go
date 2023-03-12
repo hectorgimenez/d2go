@@ -14,7 +14,7 @@ var (
 	propertyNameRegex = regexp.MustCompile(`\[(.*)\]`)
 )
 
-func parseLine(line string) (Rule, error) {
+func ParseLine(line string) (Rule, error) {
 	line = lineCleanup(line)
 	if line == "" {
 		return Rule{}, errEmptyLine

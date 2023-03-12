@@ -43,7 +43,7 @@ func ParseNIPFile(filePath string) ([]Rule, error) {
 
 	rules := make([]Rule, 0)
 	for fileScanner.Scan() {
-		rule, err := parseLine(fileScanner.Text())
+		rule, err := ParseLine(fileScanner.Text())
 		if errors.Is(err, errEmptyLine) {
 			continue
 		}

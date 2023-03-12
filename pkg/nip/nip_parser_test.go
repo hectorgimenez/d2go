@@ -10,7 +10,7 @@ import (
 const nipLine = "[type] == boots && [quality] == rare # [frw] >= 10 && [fireresist] >= 10 && ([lightresist]+[coldresist] >= 10 && [dexterity] >= 1 && [fireresist]+[poisonresist] >= 10) // this is a comment"
 
 func Test_parseLine(t *testing.T) {
-	rules, err := parseLine(nipLine)
+	rules, err := ParseLine(nipLine)
 	require.NoError(t, err)
 
 	expected := Rule{
