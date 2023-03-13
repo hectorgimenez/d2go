@@ -1,6 +1,7 @@
 package itemfilter
 
 import (
+	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"strings"
 
 	"github.com/hectorgimenez/d2go/pkg/data"
@@ -9,7 +10,7 @@ import (
 
 func Evaluate(i data.Item, rules []nip.Rule) bool {
 	for _, r := range rules {
-		if !checkProperties(i, r.Properties) {
+		if !evaluateGroups(i, r.Properties, checkProperty) {
 			// Properties not matching, skipping
 			continue
 		}
@@ -19,22 +20,48 @@ func Evaluate(i data.Item, rules []nip.Rule) bool {
 			return true
 		}
 
+		if evaluateGroups(i, r.Stats, checkStat) {
+			return true
+		}
 	}
 
 	return false
 }
 
-func checkProperties(i data.Item, properties []nip.Group) bool {
+func evaluateGroups(i data.Item, groups []nip.Group, evalFunc func(i data.Item, prop nip.Comparable) bool) bool {
 	groupChain := evaluationChain{}
-	for _, propGroup := range properties {
+	for _, group := range groups {
 		propChain := evaluationChain{}
-		for _, prop := range propGroup.Comparable {
-			propChain.Add(checkProperty(i, prop), prop.Operand)
+		for _, st := range group.Comparable {
+			propChain.Add(evalFunc(i, st), st.Operand)
 		}
-		groupChain.Add(propChain.Evaluate(), propGroup.Operand)
+		groupChain.Add(propChain.Evaluate(), group.Operand)
 	}
 
 	return groupChain.Evaluate()
+}
+
+func checkStat(i data.Item, cmp nip.Comparable) bool {
+	st, found := stats[cmp.Keyword]
+	if !found {
+		// pass it, just in case...
+		return true
+	}
+
+	itemStat, found := i.Stats[stat.ID(st[0])]
+	if !found {
+		return false
+	}
+
+	if !compare(itemStat.Value, cmp.ValueInt, cmp.Comparison) {
+		return false
+	}
+
+	if len(st) == 1 {
+		return true
+	}
+
+	return st[2] == itemStat.Layer
 }
 
 func checkProperty(i data.Item, prop nip.Comparable) bool {

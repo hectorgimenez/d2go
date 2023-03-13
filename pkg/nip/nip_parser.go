@@ -92,6 +92,15 @@ func reGroupParentheses(operands, groups []string) ([]string, []string) {
 	currentGroupContent := ""
 	for i, group := range groups {
 		group = strings.TrimSpace(group)
+		if strings.Contains(group, "(") && strings.Contains(group, ")") {
+			group = strings.ReplaceAll(group, "(", "")
+			group = strings.ReplaceAll(group, ")", "")
+			cleanGroups = append(cleanGroups, group)
+			if i < len(operands) {
+				cleanOperands = append(cleanOperands, operands[i])
+			}
+			continue
+		}
 		if strings.Contains(group, "(") || (inGroup && !strings.Contains(group, ")")) {
 			inGroup = true
 			currentGroupContent += strings.ReplaceAll(group, "(", "") + operands[i]
