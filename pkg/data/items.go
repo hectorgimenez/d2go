@@ -25,7 +25,7 @@ type Item struct {
 	Position   Position
 	Ethereal   bool
 	IsHovered  bool
-	Stats      map[stat.Stat]int
+	Stats      map[stat.ID]stat.Data
 	Identified bool
 	IsVendor   bool
 }

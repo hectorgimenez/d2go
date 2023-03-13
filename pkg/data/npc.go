@@ -18,7 +18,7 @@ type Monster struct {
 	Name      npc.ID
 	IsHovered bool
 	Position  Position
-	Stats     map[stat.Stat]int
+	Stats     map[stat.ID]int
 	Type      MonsterType
 }
 

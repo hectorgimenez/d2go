@@ -102,28 +102,19 @@ func (gd *GameReader) Items(playerPosition data.Position) data.Items {
 	return items
 }
 
-func (gd *GameReader) getItemStats(statCount uint, statPtr uintptr, statExCount uint, statExPtr uintptr) map[stat.Stat]int {
-	stats := map[stat.Stat]int{}
-
+func (gd *GameReader) getItemStats(statCount uint, statPtr uintptr, statExCount uint, statExPtr uintptr) map[stat.ID]stat.Data {
+	stats := make(map[stat.ID]stat.Data, 0)
 	if statCount < 20 && statCount > 0 {
-		statBuffer := gd.Process.ReadBytesFromMemory(statPtr, statCount*10)
-		for i := 0; i < int(statCount); i++ {
-			offset := uint(i * 8)
-			statEnum := ReadUIntFromBuffer(statBuffer, offset+0x2, Uint16)
-			statValue := ReadUIntFromBuffer(statBuffer, offset+0x4, Uint32)
-			st, value := getStatData(statEnum, statValue)
-			stats[st] = value
+		stats1 := gd.getStatsData(statCount, statPtr)
+		for _, v := range stats1 {
+			stats[v.ID] = v
 		}
 	}
 
 	if statExCount < 20 && statExCount > 0 {
-		statBuffer := gd.Process.ReadBytesFromMemory(statExPtr, statExCount*10)
-		for i := 0; i < int(statExCount); i++ {
-			offset := uint(i * 8)
-			statEnum := ReadUIntFromBuffer(statBuffer, offset+0x2, Uint16)
-			statValue := ReadUIntFromBuffer(statBuffer, offset+0x4, Uint32)
-			st, value := getStatData(statEnum, statValue)
-			stats[st] = value
+		stats2 := gd.getStatsData(statExCount, statExPtr)
+		for _, v := range stats2 {
+			stats[v.ID] = v
 		}
 	}
 

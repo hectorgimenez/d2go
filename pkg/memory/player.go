@@ -93,20 +93,20 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 	statPtr := gd.Process.ReadUInt(statsListExPtr+0x30, Uint64)
 	statCount := gd.Process.ReadUInt(statsListExPtr+0x38, Uint64)
 
-	stats := map[stat.Stat]int{}
+	stats := map[stat.ID]int{}
 	for j := 0; j < int(statCount); j++ {
 		statOffset := uintptr(statPtr) + 0x2 + uintptr(j*8)
 		statNumber := gd.Process.ReadUInt(statOffset, Uint16)
 		statValue := gd.Process.ReadUInt(statOffset+0x02, Uint32)
 
-		switch stat.Stat(statNumber) {
+		switch stat.ID(statNumber) {
 		case stat.Life,
 			stat.MaxLife,
 			stat.Mana,
 			stat.MaxMana:
-			stats[stat.Stat(statNumber)] = int(uint32(statValue) >> 8)
+			stats[stat.ID(statNumber)] = int(uint32(statValue) >> 8)
 		default:
-			stats[stat.Stat(statNumber)] = int(statValue)
+			stats[stat.ID(statNumber)] = int(statValue)
 		}
 	}
 

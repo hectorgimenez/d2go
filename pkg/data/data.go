@@ -118,7 +118,7 @@ type PlayerUnit struct {
 	Name     string
 	Area     area.Area
 	Position Position
-	Stats    map[stat.Stat]int
+	Stats    map[stat.ID]int
 	Skills   map[skill.Skill]int
 	States   state.States
 }

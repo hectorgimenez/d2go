@@ -86,23 +86,38 @@ func (gd *GameReader) hoveredData() (hoveredUnitID uint, hoveredType uint, isHov
 	return 0, 0, false
 }
 
-func getStatData(statEnum, statValue uint) (stat.Stat, int) {
-	value := int(statValue)
-	switch stat.Stat(statEnum) {
-	case stat.Life,
-		stat.MaxLife,
-		stat.Mana,
-		stat.MaxMana,
-		stat.Stamina,
-		stat.LifePerLevel,
-		stat.ManaPerLevel:
-		value = int(statValue >> 8)
-	case stat.ColdLength,
-		stat.PoisonLength:
-		value = int(statValue / 25)
+func (gd *GameReader) getStatsData(statCount uint, statPtr uintptr) []stat.Data {
+	var stats = make([]stat.Data, 0)
+	statBuffer := gd.Process.ReadBytesFromMemory(statPtr, statCount*10)
+	for i := 0; i < int(statCount); i++ {
+		offset := uint(i * 8)
+		statLayer := ReadUIntFromBuffer(statBuffer, offset, Uint16)
+		statEnum := ReadUIntFromBuffer(statBuffer, offset+0x2, Uint16)
+		statValue := ReadUIntFromBuffer(statBuffer, offset+0x4, Uint32)
+
+		value := int(statValue)
+		switch stat.ID(statEnum) {
+		case stat.Life,
+			stat.MaxLife,
+			stat.Mana,
+			stat.MaxMana,
+			stat.Stamina,
+			stat.LifePerLevel,
+			stat.ManaPerLevel:
+			value = int(statValue >> 8)
+		case stat.ColdLength,
+			stat.PoisonLength:
+			value = int(statValue / 25)
+		}
+
+		stats = append(stats, stat.Data{
+			ID:    stat.ID(statEnum),
+			Value: value,
+			Layer: int(statLayer),
+		})
 	}
 
-	return stat.Stat(statEnum), value
+	return stats
 }
 
 func setProperties(item *data.Item, flags uint32) {

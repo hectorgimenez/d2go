@@ -97,8 +97,8 @@ func getMonsterType(typeFlag byte) data.MonsterType {
 	return data.MonsterTypeNone
 }
 
-func (gd *GameReader) getMonsterStats(statCount uint, statPtr uintptr) map[stat.Stat]int {
-	stats := map[stat.Stat]int{}
+func (gd *GameReader) getMonsterStats(statCount uint, statPtr uintptr) map[stat.ID]int {
+	stats := map[stat.ID]int{}
 
 	if statCount > 0 {
 		statBuffer := gd.Process.ReadBytesFromMemory(statPtr+0x2, statCount*8)
@@ -106,7 +106,7 @@ func (gd *GameReader) getMonsterStats(statCount uint, statPtr uintptr) map[stat.
 			offset := uint(i * 8)
 			statEnum := ReadUIntFromBuffer(statBuffer, offset, Uint16)
 			statValue := ReadUIntFromBuffer(statBuffer, offset+0x2, Uint32)
-			stats[stat.Stat(statEnum)] = int(statValue)
+			stats[stat.ID(statEnum)] = int(statValue)
 		}
 	}
 

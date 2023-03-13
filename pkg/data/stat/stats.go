@@ -1,9 +1,15 @@
 package stat
 
-type Stat int16
+type ID int16
+
+type Data struct {
+	ID    ID
+	Value int
+	Layer int
+}
 
 const (
-	Strength Stat = iota
+	Strength ID = iota
 	Energy
 	Dexterity
 	Vitality
@@ -364,7 +370,7 @@ const (
 	PassiveMagicPierce
 )
 
-func (s Stat) String() string {
+func (s ID) String() string {
 	switch s {
 	case Strength:
 		return "strength"
