@@ -116,7 +116,7 @@ func (gd *GameReader) getItemStats(statCount uint, statPtr uintptr, statExCount 
 		}
 	}
 
-	if statExCount < 20 && statCount > 0 {
+	if statExCount < 20 && statExCount > 0 {
 		statBuffer := gd.Process.ReadBytesFromMemory(statExPtr, statExCount*10)
 		for i := 0; i < int(statExCount); i++ {
 			offset := uint(i * 8)
