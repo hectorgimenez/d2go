@@ -27,7 +27,7 @@ func ParseLine(line string) (Rule, error) {
 	}
 
 	var stats []Group
-	if len(lineSplit) > 1 {
+	if len(lineSplit) > 1 && strings.TrimSpace(lineSplit[1]) != "" {
 		stats, err = buildGroups(lineSplit[1])
 		if err != nil {
 			return Rule{}, err
@@ -35,7 +35,7 @@ func ParseLine(line string) (Rule, error) {
 	}
 
 	var maxQuantity []Group
-	if len(lineSplit) > 2 {
+	if len(lineSplit) > 2 && strings.TrimSpace(lineSplit[2]) != "" {
 		maxQuantity, err = buildGroups(lineSplit[2])
 		if err != nil {
 			return Rule{}, err

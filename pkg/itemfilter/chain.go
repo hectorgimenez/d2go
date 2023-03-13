@@ -19,6 +19,10 @@ func (ch *evaluationChain) Add(result bool, operand nip.Operand) {
 }
 
 func (ch *evaluationChain) Evaluate() bool {
+	if len(ch.links) == 0 {
+		return true
+	}
+
 	if len(ch.links) == 1 {
 		return ch.links[0].Result
 	}

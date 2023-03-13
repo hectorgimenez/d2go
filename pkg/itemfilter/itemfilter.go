@@ -61,7 +61,7 @@ func checkStat(i data.Item, cmp nip.Comparable) bool {
 		return true
 	}
 
-	return st[2] == itemStat.Layer
+	return st[1] == itemStat.Layer
 }
 
 func checkProperty(i data.Item, prop nip.Comparable) bool {
