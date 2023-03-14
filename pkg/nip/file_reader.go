@@ -42,13 +42,15 @@ func ParseNIPFile(filePath string) ([]Rule, error) {
 	fileScanner.Split(bufio.ScanLines)
 
 	rules := make([]Rule, 0)
+	lineNumber := 0
 	for fileScanner.Scan() {
+		lineNumber++
 		rule, err := ParseLine(fileScanner.Text())
 		if errors.Is(err, errEmptyLine) {
 			continue
 		}
 		if err != nil {
-			return nil, fmt.Errorf("error reading file: %w", err)
+			return nil, fmt.Errorf("error reading %s file at line %d: %w", filePath, lineNumber, err)
 		}
 
 		rules = append(rules, rule)
