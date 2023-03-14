@@ -5,6 +5,9 @@ import (
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/beep/wav"
+	"github.com/hectorgimenez/d2go/pkg/data"
+	"github.com/hectorgimenez/d2go/pkg/data/area"
+	"github.com/hectorgimenez/d2go/pkg/data/item"
 	"github.com/hectorgimenez/d2go/pkg/itemfilter"
 	"github.com/hectorgimenez/d2go/pkg/memory"
 	"github.com/hectorgimenez/d2go/pkg/nip"
@@ -16,7 +19,19 @@ import (
 type Watcher struct {
 	gr                     *memory.GameReader
 	rules                  []nip.Rule
-	alreadyNotifiedItemIDs map[int]interface{}
+	alreadyNotifiedItemIDs []itemFootprint
+}
+
+type itemFootprint struct {
+	detectedAt time.Time
+	area       area.Area
+	position   data.Position
+	name       item.Name
+	quality    item.Quality
+}
+
+func (fp itemFootprint) Match(area area.Area, i data.Item) bool {
+	return fp.area == area && fp.position == i.Position && fp.name == i.Name && fp.quality == i.Quality
 }
 
 func NewWatcher(gr *memory.GameReader, rules []nip.Rule) *Watcher {
@@ -24,7 +39,7 @@ func NewWatcher(gr *memory.GameReader, rules []nip.Rule) *Watcher {
 }
 
 func (w *Watcher) Start(ctx context.Context) error {
-	w.alreadyNotifiedItemIDs = make(map[int]interface{}, 0)
+	w.alreadyNotifiedItemIDs = make([]itemFootprint, 0)
 	audioBuffer, err := initAudio()
 	if err != nil {
 		return err
@@ -43,28 +58,43 @@ func (w *Watcher) Start(ctx context.Context) error {
 					continue
 				}
 
-				if _, found := w.alreadyNotifiedItemIDs[int(i.UnitID)]; found {
+				found := false
+				for _, fp := range w.alreadyNotifiedItemIDs {
+					if fp.Match(d.PlayerUnit.Area, i) {
+						found = true
+						break
+					}
+				}
+				if found {
 					continue
 				}
 
 				log.Printf("%s: Item detected: %s. Quality: %s", time.Now().Format(time.RFC3339), i.Name, i.Quality.ToString())
 
-				w.alreadyNotifiedItemIDs[int(i.UnitID)] = nil
+				w.alreadyNotifiedItemIDs = append(w.alreadyNotifiedItemIDs, itemFootprint{
+					detectedAt: time.Now(),
+					area:       d.PlayerUnit.Area,
+					position:   i.Position,
+					name:       i.Name,
+					quality:    i.Quality,
+				})
 				speaker.Play(audioBuffer.Streamer(0, audioBuffer.Len()))
 			}
 
-			// Cleanup the already notified list when item is out of range
-			for k := range w.alreadyNotifiedItemIDs {
+			// Cleanup after 10 minute AND out of range
+			purgedNotifiedItems := make([]itemFootprint, 0)
+			for _, t := range w.alreadyNotifiedItemIDs {
 				found := false
-				for _, i := range d.Items.Ground {
-					if int(i.UnitID) == k {
+				for _, it := range d.Items.Ground {
+					if t.Match(d.PlayerUnit.Area, it) {
 						found = true
 					}
 				}
-				if !found {
-					delete(w.alreadyNotifiedItemIDs, k)
+				if found || time.Since(t.detectedAt) < time.Minute*10 {
+					purgedNotifiedItems = append(purgedNotifiedItems, t)
 				}
 			}
+			w.alreadyNotifiedItemIDs = purgedNotifiedItems
 		}
 	}
 }
