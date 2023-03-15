@@ -415,6 +415,8 @@ const (
 	SiegeMachineControl
 	PotOTorch
 	PyoxFirePit
+	dummy411
+	dummy412
 	ExpansionChestRight
 	ExpansionWildernessShrine1
 	ExpansionWildernessShrine2
