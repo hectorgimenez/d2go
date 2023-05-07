@@ -1,11 +1,12 @@
 package data
 
 import (
+	"strings"
+
 	"github.com/hectorgimenez/d2go/pkg/data/area"
 	"github.com/hectorgimenez/d2go/pkg/data/skill"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"github.com/hectorgimenez/d2go/pkg/data/state"
-	"strings"
 )
 
 // since stat.MaxLife is returning max life without stats, we are setting the max life value that we read from the
@@ -97,8 +98,10 @@ func (r Roster) FindByName(name string) (RosterMember, bool) {
 }
 
 type Level struct {
-	Area     area.Area
-	Position Position
+	Area        area.Area
+	Position    Position
+	IsGoodExit  bool
+	CanInteract bool
 }
 
 type Class string
