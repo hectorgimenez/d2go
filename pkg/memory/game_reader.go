@@ -69,6 +69,8 @@ func (gd *GameReader) openMenus() data.OpenMenus {
 		Stash:         buffer[0x18] != 0,
 		Waypoint:      buffer[0x13] != 0,
 		MapShown:      isMapShown != 0,
+		SkillTree:     buffer[0x04] != 0,
+		Character:     buffer[0x02] != 0,
 	}
 }
 

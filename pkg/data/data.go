@@ -104,7 +104,17 @@ type Level struct {
 	CanInteract bool
 }
 
-type Class string
+type Class uint
+
+const (
+	Amazon Class = iota
+	Sorceress
+	Necromancer
+	Paladin
+	Barbarian
+	Druid
+	Assassin
+)
 
 type Corpse struct {
 	Found     bool
@@ -124,6 +134,7 @@ type PlayerUnit struct {
 	Stats    map[stat.ID]int
 	Skills   map[skill.Skill]int
 	States   state.States
+	Class    Class
 }
 
 func (pu PlayerUnit) MaxGold() int {
@@ -205,4 +216,6 @@ type OpenMenus struct {
 	Stash         bool
 	Waypoint      bool
 	MapShown      bool
+	SkillTree     bool
+	Character     bool
 }

@@ -116,6 +116,9 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 	// Skills
 	skills := gd.getSkills(playerUnit + 0x100)
 
+	// Class
+	class := data.Class(gd.Process.ReadUInt(playerUnit+0x174, Uint32))
+
 	// Level number
 	pathPtr := uintptr(gd.Process.ReadUInt(playerUnit+0x38, Uint64))
 	room1Ptr := uintptr(gd.Process.ReadUInt(pathPtr+0x20, Uint64))
@@ -133,6 +136,7 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 		Stats:  stats,
 		Skills: skills,
 		States: states,
+		Class:  class,
 	}
 }
 
