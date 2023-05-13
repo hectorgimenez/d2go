@@ -123,3 +123,17 @@ func (m Monster) IsGoodNPC() bool {
 
 	return false
 }
+
+// IsMonsterRaiser returns true if the monster is able to spawn new monsters.
+func (m Monster) IsMonsterRaiser() bool {
+	switch m.Name {
+	case npc.FallenShaman,
+		npc.CarverShaman,
+		npc.DevilkinShaman,
+		npc.DarkShaman,
+		npc.WarpedShaman:
+		return true
+	}
+
+	return false
+}
