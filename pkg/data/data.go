@@ -141,6 +141,11 @@ func (pu PlayerUnit) MaxGold() int {
 	return goldPerLevel * pu.Stats[stat.Level]
 }
 
+// TotalGold returns the amount of gold, including inventory and stash
+func (pu PlayerUnit) TotalGold() int {
+	return pu.Stats[stat.Gold] + pu.Stats[stat.StashGold]
+}
+
 func (pu PlayerUnit) HPPercent() int {
 	_, found := pu.Stats[stat.MaxLife]
 	if !found {
