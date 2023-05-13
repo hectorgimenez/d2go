@@ -1,11 +1,12 @@
 package memory
 
 import (
+	"sort"
+
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/item"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"github.com/hectorgimenez/d2go/pkg/utils"
-	"sort"
 )
 
 func (gd *GameReader) Items(playerPosition data.Position) data.Items {
@@ -15,6 +16,7 @@ func (gd *GameReader) Items(playerPosition data.Position) data.Items {
 	unitTableBuffer := gd.Process.ReadBytesFromMemory(baseAddr, 128*8)
 
 	items := data.Items{}
+	belt := data.Belt{}
 	for i := 0; i < 128; i++ {
 		itemOffset := 8 * i
 		itemUnitPtr := uintptr(ReadUIntFromBuffer(unitTableBuffer, uint(itemOffset), Uint64))
@@ -82,8 +84,11 @@ func (gd *GameReader) Items(playerPosition data.Position) data.Items {
 				}
 			case 1:
 				items.Equipped = append(items.Equipped, itm)
+				if itm.Type() == "belt" {
+					belt.Name = itm.Name
+				}
 			case 2:
-				items.Belt = append(items.Belt, itm)
+				belt.Items = append(belt.Items, itm)
 			case 3, 5:
 				items.Ground = append(items.Ground, itm)
 			}
@@ -91,6 +96,8 @@ func (gd *GameReader) Items(playerPosition data.Position) data.Items {
 			itemUnitPtr = uintptr(gd.Process.ReadUInt(itemUnitPtr+0x150, Uint64))
 		}
 	}
+
+	items.Belt = belt
 
 	sort.SliceStable(items.Ground, func(i, j int) bool {
 		distanceI := utils.DistanceFromPoint(playerPosition, items.Ground[i].Position)
