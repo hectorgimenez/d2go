@@ -50,7 +50,7 @@ func (m Monsters) FindOne(id npc.ID, t MonsterType) (Monster, bool) {
 func (m Monsters) Enemies(filters ...MonsterFilter) []Monster {
 	monsters := make([]Monster, 0)
 	for _, mo := range m {
-		if !mo.IsMerc() {
+		if !mo.IsMerc() && !mo.IsGoodNPC() {
 			monsters = append(monsters, mo)
 		}
 	}
@@ -108,6 +108,16 @@ func (m Monster) IsImmune(resist stat.Resist) bool {
 
 func (m Monster) IsMerc() bool {
 	if m.Name == npc.Guard {
+		return true
+	}
+
+	return false
+}
+
+func (m Monster) IsGoodNPC() bool {
+	switch m.Name {
+	case 146, 154, 147, 150, 155, 148, 244, 210, 175, 199, 198, 177, 178, 201, 202, 200, 331, 245, 264, 255, 176,
+		252, 254, 253, 297, 246, 251, 367, 521, 257, 405, 265, 520, 512, 527, 515, 513, 511, 514, 266, 408, 406:
 		return true
 	}
 
