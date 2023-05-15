@@ -149,7 +149,7 @@ func (gd *GameReader) getSkills(skillsPtr uintptr) map[skill.Skill]int {
 	for skillPtr != 0 {
 		skillTxtPtr := uintptr(gd.Process.ReadUInt(skillPtr, Uint64))
 		skillTxt := uintptr(gd.Process.ReadUInt(skillTxtPtr, Uint16))
-		skillLvl := gd.Process.ReadUInt(skillTxtPtr+0x34, Uint16)
+		skillLvl := gd.Process.ReadUInt(skillPtr+0x38, Uint16)
 
 		skills[skill.Skill(skillTxt)] = int(skillLvl)
 
