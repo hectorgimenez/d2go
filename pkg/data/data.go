@@ -223,4 +223,5 @@ type OpenMenus struct {
 	MapShown      bool
 	SkillTree     bool
 	Character     bool
+	QuitMenu      bool
 }

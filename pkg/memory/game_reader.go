@@ -71,6 +71,7 @@ func (gd *GameReader) openMenus() data.OpenMenus {
 		MapShown:      isMapShown != 0,
 		SkillTree:     buffer[0x04] != 0,
 		Character:     buffer[0x02] != 0,
+		QuitMenu:      buffer[0x09] != 0,
 	}
 }
 
