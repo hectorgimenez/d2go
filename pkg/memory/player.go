@@ -31,39 +31,38 @@ func (gd *GameReader) GetPlayerUnitPtr(roster data.Roster) (playerUnitPtr uintpt
 					baseCheck = gd.Process.ReadUInt(inventoryAddr+0x70, Uint16)
 				}
 
-				if baseCheck > 0 {
-					isCorpse := gd.Process.ReadUInt(playerUnit+0x1A6, Uint8)
-
-					if isCorpse == 1 {
-						unitID := gd.Process.ReadUInt(playerUnit+0x08, Uint32)
-						hoveredUnitID, hoveredType, isHovered := gd.hoveredData()
-						corpse = data.Corpse{
-							Found:     true,
-							IsHovered: isHovered && hoveredUnitID == unitID && hoveredType == 0,
-							Position: data.Position{
-								X: int(xPos),
-								Y: int(yPos),
-							},
-						}
-					} else {
-						playerUnitPtr = playerUnit
+				isCorpse := gd.Process.ReadUInt(playerUnit+0x1A6, Uint8)
+				if isCorpse == 1 {
+					unitID := gd.Process.ReadUInt(playerUnit+0x08, Uint32)
+					hoveredUnitID, hoveredType, isHovered := gd.hoveredData()
+					corpse = data.Corpse{
+						Found:     true,
+						IsHovered: isHovered && hoveredUnitID == unitID && hoveredType == 0,
+						Position: data.Position{
+							X: int(xPos),
+							Y: int(yPos),
+						},
 					}
 				} else {
-					pUnitData := playerUnit + 0x10
-					playerNameAddr := uintptr(gd.Process.ReadUInt(pUnitData, Uint64))
-					name := gd.Process.ReadStringFromMemory(playerNameAddr, 0)
-					for k, rm := range roster {
-						if name != rm.Name {
-							continue
-						}
+					if baseCheck > 0 {
+						playerUnitPtr = playerUnit
+					} else {
+						pUnitData := playerUnit + 0x10
+						playerNameAddr := uintptr(gd.Process.ReadUInt(pUnitData, Uint64))
+						name := gd.Process.ReadStringFromMemory(playerNameAddr, 0)
+						for k, rm := range roster {
+							if name != rm.Name {
+								continue
+							}
 
-						roster[k] = data.RosterMember{
-							Name: name,
-							Area: rm.Area,
-							Position: data.Position{
-								X: int(xPos),
-								Y: int(yPos),
-							},
+							roster[k] = data.RosterMember{
+								Name: name,
+								Area: rm.Area,
+								Position: data.Position{
+									X: int(xPos),
+									Y: int(yPos),
+								},
+							}
 						}
 					}
 				}
