@@ -47,6 +47,38 @@ func (o Object) IsChest() bool {
 
 	return false
 }
+func (o Object) IsDoor() bool {
+	switch o.Name {
+	case object.DoorCathedralLeft,
+		object.DoorCathedralRight,
+		object.DoorCourtyardLeft,
+		object.DoorCourtyardRight,
+		object.DoorGateLeft,
+		object.DoorGateRight,
+		object.DoorMonasteryDoubleRight,
+		object.DoorWoodenLeft,
+		object.DoorWoodenLeft2,
+		object.DoorWoodenRight,
+		object.IronGrateDoorLeft,
+		object.IronGrateDoorRight,
+		object.SlimeDoor1,
+		object.SlimeDoor2,
+		object.TombDoorLeft,
+		object.TombDoorLeft2,
+		object.TombDoorRight,
+		object.TombDoorRight2,
+		object.WoodenDoorLeft,
+		object.WoodenDoorRight,
+		object.WoodenGrateDoorLeft,
+		object.WoodenGrateDoorRight,
+		object.AndarielDoor,
+		object.PenBreakableDoor,
+		object.SecretDoor1:
+		return true
+	}
+
+	return false
+}
 
 func (o Object) IsSuperChest() bool {
 	switch o.Name {
