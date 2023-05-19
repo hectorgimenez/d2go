@@ -23,7 +23,17 @@ func (o Objects) FindOne(name object.Name) (Object, bool) {
 }
 
 func (o Object) IsWaypoint() bool {
-	return o.Name == object.WaypointPortal || o.Name == object.Act2Waypoint || o.Name == object.Act3TownWaypoint || o.Name == object.PandamoniumFortressWaypoint || o.Name == object.ExpansionWaypoint
+	switch o.Name {
+	case object.WaypointPortal,
+		object.Act1WildernessWaypoint,
+		object.Act2Waypoint,
+		object.Act3TownWaypoint,
+		object.PandamoniumFortressWaypoint,
+		object.ExpansionWaypoint:
+		return true
+	}
+
+	return false
 }
 
 func (o Object) IsPortal() bool {
