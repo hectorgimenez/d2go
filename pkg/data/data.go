@@ -224,4 +224,6 @@ type OpenMenus struct {
 	SkillTree     bool
 	Character     bool
 	QuitMenu      bool
+	Cube          bool
+	SkillSelect   bool
 }

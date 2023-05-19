@@ -72,6 +72,8 @@ func (gd *GameReader) openMenus() data.OpenMenus {
 		SkillTree:     buffer[0x04] != 0,
 		Character:     buffer[0x02] != 0,
 		QuitMenu:      buffer[0x09] != 0,
+		Cube:          buffer[0x19] != 0,
+		SkillSelect:   buffer[0x03] != 0,
 	}
 }
 
