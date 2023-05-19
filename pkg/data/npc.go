@@ -68,7 +68,7 @@ func MonsterEliteFilter() MonsterFilter {
 	return func(m Monsters) []Monster {
 		var filteredMonsters []Monster
 		for _, mo := range m {
-			if mo.Type == MonsterTypeMinion || mo.Type == MonsterTypeUnique || mo.Type == MonsterTypeChampion || mo.Type == MonsterTypeSuperUnique {
+			if mo.IsElite() {
 				filteredMonsters = append(filteredMonsters, mo)
 			}
 		}
@@ -122,6 +122,10 @@ func (m Monster) IsGoodNPC() bool {
 	}
 
 	return false
+}
+
+func (m Monster) IsElite() bool {
+	return m.Type == MonsterTypeMinion || m.Type == MonsterTypeUnique || m.Type == MonsterTypeChampion || m.Type == MonsterTypeSuperUnique
 }
 
 // IsMonsterRaiser returns true if the monster is able to spawn new monsters.
