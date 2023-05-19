@@ -51,6 +51,7 @@ func (o Object) IsDoor() bool {
 	switch o.Name {
 	case object.DoorCathedralLeft,
 		object.DoorCathedralRight,
+		object.DoorCathedralDouble,
 		object.DoorCourtyardLeft,
 		object.DoorCourtyardRight,
 		object.DoorGateLeft,
@@ -73,6 +74,7 @@ func (o Object) IsDoor() bool {
 		object.WoodenGrateDoorRight,
 		object.AndarielDoor,
 		object.PenBreakableDoor,
+		object.ArreatSummitDoorToWorldstone,
 		object.SecretDoor1:
 		return true
 	}
