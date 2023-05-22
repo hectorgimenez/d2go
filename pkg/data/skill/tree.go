@@ -30,7 +30,7 @@ var SorceressTree = Tree{
 	Warmth:      Position{Tab: 2, Row: 0, Column: 2},
 	Inferno:     Position{Tab: 2, Row: 1, Column: 0},
 	Blaze:       Position{Tab: 2, Row: 2, Column: 1},
-	FireBall:    Position{Tab: 2, Row: 2, Column: 2},
+	FireBall:    Position{Tab: 2, Row: 2, Column: 1},
 	FireWall:    Position{Tab: 2, Row: 3, Column: 0},
 	Enchant:     Position{Tab: 2, Row: 3, Column: 2},
 	Meteor:      Position{Tab: 2, Row: 4, Column: 1},
