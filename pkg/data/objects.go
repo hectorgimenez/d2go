@@ -29,6 +29,16 @@ func (o Object) IsWaypoint() bool {
 		object.Act2Waypoint,
 		object.Act3TownWaypoint,
 		object.PandamoniumFortressWaypoint,
+		object.Act2CellerWaypoint,
+		object.Act2SewerWaypoint,
+		object.Act3TravincalWaypoint,
+		object.ValleyWaypoint,
+		object.WorldstoneWaypoint,
+		object.ExpansionWildernessWaypoint,
+		object.IceCaveWaypoint,
+		object.TempleWaypoint,
+		object.InnerHellWaypoint,
+		object.WaypointH,
 		object.ExpansionWaypoint:
 		return true
 	}
