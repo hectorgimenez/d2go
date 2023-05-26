@@ -129,6 +129,7 @@ type Position struct {
 
 type PlayerUnit struct {
 	Name     string
+	ID       UnitID
 	Area     area.Area
 	Position Position
 	Stats    map[stat.ID]int

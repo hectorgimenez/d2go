@@ -33,7 +33,7 @@ func (gd *GameReader) GetData() data.Data {
 		Corpse:     corpse,
 		Monsters:   gd.Monsters(pu.Position),
 		PlayerUnit: pu,
-		Items:      gd.Items(pu.Position),
+		Items:      gd.Items(pu),
 		Objects:    gd.Objects(pu.Position),
 		OpenMenus:  gd.openMenus(),
 		Roster:     roster,
@@ -123,16 +123,4 @@ func (gd *GameReader) getStatsData(statCount uint, statPtr uintptr) []stat.Data 
 	}
 
 	return stats
-}
-
-func setProperties(item *data.Item, flags uint32) {
-	if 0x00400000&flags != 0 {
-		item.Ethereal = true
-	}
-	if 0x00000010&flags != 0 {
-		item.Identified = true
-	}
-	if 0x00002000&flags != 0 {
-		item.IsVendor = true
-	}
 }

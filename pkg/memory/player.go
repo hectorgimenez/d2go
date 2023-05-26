@@ -76,6 +76,8 @@ func (gd *GameReader) GetPlayerUnitPtr(roster data.Roster) (playerUnitPtr uintpt
 }
 
 func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
+	unitID := gd.Process.ReadUInt(playerUnit+0x08, Uint32)
+
 	// Read X and Y Positions
 	pPath := playerUnit + 0x38
 	pathAddress := uintptr(gd.Process.ReadUInt(pPath, Uint64))
@@ -127,6 +129,7 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 
 	return data.PlayerUnit{
 		Name: name,
+		ID:   data.UnitID(unitID),
 		Area: area.Area(levelNo),
 		Position: data.Position{
 			X: int(xPos),

@@ -8,14 +8,43 @@ import (
 )
 
 type Items struct {
-	Belt      Belt
-	Inventory Inventory
-	Shop      []Item
-	Ground    []Item
-	Equipped  []Item
+	Belt     Belt
+	AllItems []Item
 }
 
-type Inventory []Item
+func (i Items) Find(name item.Name, locations ...item.Location) (Item, bool) {
+	for _, it := range i.AllItems {
+		if strings.EqualFold(string(it.Name), string(name)) {
+			// If no locations are specified, return the first item found
+			if len(locations) == 0 {
+				return it, true
+			}
+
+			for _, l := range locations {
+				if it.Location == l {
+					return it, true
+				}
+			}
+		}
+	}
+
+	return Item{}, false
+}
+
+func (i Items) ByLocation(locations ...item.Location) []Item {
+	var items []Item
+
+	for _, it := range i.AllItems {
+		for _, l := range locations {
+			if it.Location == l {
+				items = append(items, it)
+			}
+		}
+	}
+
+	return items
+}
+
 type UnitID int
 
 type Item struct {
@@ -23,11 +52,11 @@ type Item struct {
 	Name       item.Name
 	Quality    item.Quality
 	Position   Position
+	Location   item.Location
 	Ethereal   bool
 	IsHovered  bool
 	Stats      map[stat.ID]stat.Data
 	Identified bool
-	IsVendor   bool
 }
 
 func (i Item) Type() string {
