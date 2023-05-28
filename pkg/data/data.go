@@ -227,4 +227,5 @@ type OpenMenus struct {
 	QuitMenu      bool
 	Cube          bool
 	SkillSelect   bool
+	Anvil         bool
 }
