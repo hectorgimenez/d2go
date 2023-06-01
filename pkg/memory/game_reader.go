@@ -28,15 +28,17 @@ func (gd *GameReader) GetData() data.Data {
 	playerUnitPtr, corpse := gd.GetPlayerUnitPtr(roster)
 
 	pu := gd.GetPlayerUnit(playerUnitPtr)
+	hover := gd.hoveredData()
 
 	d := data.Data{
 		Corpse:     corpse,
-		Monsters:   gd.Monsters(pu.Position),
+		Monsters:   gd.Monsters(pu.Position, hover),
 		PlayerUnit: pu,
-		Items:      gd.Items(pu),
-		Objects:    gd.Objects(pu.Position),
+		Items:      gd.Items(pu, hover),
+		Objects:    gd.Objects(pu.Position, hover),
 		OpenMenus:  gd.openMenus(),
 		Roster:     roster,
+		HoverData:  hover,
 	}
 
 	if playerUnitPtr == 0 {
@@ -78,18 +80,22 @@ func (gd *GameReader) openMenus() data.OpenMenus {
 	}
 }
 
-func (gd *GameReader) hoveredData() (hoveredUnitID uint, hoveredType uint, isHovered bool) {
+func (gd *GameReader) hoveredData() data.HoverData {
 	hoverAddressPtr := gd.Process.moduleBaseAddressPtr + gd.offset.Hover
 	hoverBuffer := gd.Process.ReadBytesFromMemory(hoverAddressPtr, 12)
 	isUnitHovered := ReadUIntFromBuffer(hoverBuffer, 0, Uint16)
 	if isUnitHovered > 0 {
-		hoveredType = ReadUIntFromBuffer(hoverBuffer, 0x04, Uint32)
-		hoveredUnitID = ReadUIntFromBuffer(hoverBuffer, 0x08, Uint32)
+		hoveredType := ReadUIntFromBuffer(hoverBuffer, 0x04, Uint32)
+		hoveredUnitID := ReadUIntFromBuffer(hoverBuffer, 0x08, Uint32)
 
-		return hoveredUnitID, hoveredType, true
+		return data.HoverData{
+			IsHovered: true,
+			UnitID:    data.UnitID(hoveredUnitID),
+			UnitType:  int(hoveredType),
+		}
 	}
 
-	return 0, 0, false
+	return data.HoverData{}
 }
 
 func (gd *GameReader) getStatsData(statCount uint, statPtr uintptr) []stat.Data {

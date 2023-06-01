@@ -40,12 +40,19 @@ type Data struct {
 	Rooms          []Room
 	OpenMenus      OpenMenus
 	Roster         Roster
+	HoverData      HoverData
 }
 
 type Room struct {
 	Position
 	Width  int
 	Height int
+}
+
+type HoverData struct {
+	IsHovered bool
+	UnitID
+	UnitType int
 }
 
 func (r Room) GetCenter() Position {

@@ -9,9 +9,7 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/utils"
 )
 
-func (gd *GameReader) Items(pu data.PlayerUnit) data.Items {
-	hoveredUnitID, hoveredType, isHovered := gd.hoveredData()
-
+func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items {
 	baseAddr := gd.Process.moduleBaseAddressPtr + gd.offset.UnitTable + (4 * 1024)
 	unitTableBuffer := gd.Process.ReadBytesFromMemory(baseAddr, 128*8)
 
@@ -58,7 +56,7 @@ func (gd *GameReader) Items(pu data.PlayerUnit) data.Items {
 
 			name := item.GetNameByEnum(txtFileNo)
 			itemHovered := false
-			if isHovered && hoveredType == 4 && hoveredUnitID == unitID {
+			if hover.IsHovered && hover.UnitType == 4 && hover.UnitID == data.UnitID(unitID) {
 				itemHovered = true
 			}
 

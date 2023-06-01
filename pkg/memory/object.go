@@ -1,15 +1,14 @@
 package memory
 
 import (
+	"sort"
+
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/object"
 	"github.com/hectorgimenez/d2go/pkg/utils"
-	"sort"
 )
 
-func (gd *GameReader) Objects(playerPosition data.Position) []data.Object {
-	hoveredUnitID, hoveredType, isHovered := gd.hoveredData()
-
+func (gd *GameReader) Objects(playerPosition data.Position, hover data.HoverData) []data.Object {
 	baseAddr := gd.Process.moduleBaseAddressPtr + gd.offset.UnitTable + (2 * 1024)
 	unitTableBuffer := gd.Process.ReadBytesFromMemory(baseAddr, 128*8)
 
@@ -34,7 +33,7 @@ func (gd *GameReader) Objects(playerPosition data.Position) []data.Object {
 
 				obj := data.Object{
 					Name:         object.Name(int(txtFileNo)),
-					IsHovered:    unitID == hoveredUnitID && hoveredType == 2 && isHovered,
+					IsHovered:    data.UnitID(unitID) == hover.UnitID && hover.UnitType == 2 && hover.IsHovered,
 					InteractType: object.InteractType(interactType),
 					Selectable:   mode == 0,
 					Position: data.Position{
