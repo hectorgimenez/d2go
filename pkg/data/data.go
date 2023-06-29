@@ -105,10 +105,9 @@ func (r Roster) FindByName(name string) (RosterMember, bool) {
 }
 
 type Level struct {
-	Area        area.Area
-	Position    Position
-	IsGoodExit  bool
-	CanInteract bool
+	Area       area.Area
+	Position   Position
+	IsEntrance bool // This means the area can not be accessed just walking through it, needs to be clicked
 }
 
 type Class uint
