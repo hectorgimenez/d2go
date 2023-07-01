@@ -76,6 +76,17 @@ func (i Item) IsHealingPotion() bool {
 func (i Item) IsManaPotion() bool {
 	return strings.Contains(string(i.Name), string(ManaPotion))
 }
+
 func (i Item) IsRejuvPotion() bool {
 	return strings.Contains(string(i.Name), string(RejuvenationPotion))
+}
+
+func (i Item) IsFromQuest() bool {
+	for _, q := range item.QuestItems {
+		if strings.EqualFold(string(i.Name), q) {
+			return true
+		}
+	}
+
+	return false
 }
