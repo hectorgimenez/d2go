@@ -95,7 +95,8 @@ func (o Object) IsDoor() bool {
 		object.AndarielDoor,
 		object.PenBreakableDoor,
 		object.ArreatSummitDoorToWorldstone,
-		object.SecretDoor1:
+		object.SecretDoor1,
+		object.ExpansionTownGate:
 		return true
 	}
 
