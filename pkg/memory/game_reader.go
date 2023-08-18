@@ -28,15 +28,17 @@ func (gd *GameReader) GetData() data.Data {
 	playerUnitPtr, corpse := gd.GetPlayerUnitPtr(roster)
 
 	pu := gd.GetPlayerUnit(playerUnitPtr)
+	hover := gd.hoveredData()
 
 	d := data.Data{
 		Corpse:     corpse,
-		Monsters:   gd.Monsters(pu.Position),
+		Monsters:   gd.Monsters(pu.Position, hover),
 		PlayerUnit: pu,
-		Items:      gd.Items(pu.Position),
-		Objects:    gd.Objects(pu.Position),
+		Items:      gd.Items(pu, hover),
+		Objects:    gd.Objects(pu.Position, hover),
 		OpenMenus:  gd.openMenus(),
 		Roster:     roster,
+		HoverData:  hover,
 	}
 
 	if playerUnitPtr == 0 {
@@ -74,21 +76,26 @@ func (gd *GameReader) openMenus() data.OpenMenus {
 		QuitMenu:      buffer[0x09] != 0,
 		Cube:          buffer[0x19] != 0,
 		SkillSelect:   buffer[0x03] != 0,
+		Anvil:         buffer[0x0D] != 0,
 	}
 }
 
-func (gd *GameReader) hoveredData() (hoveredUnitID uint, hoveredType uint, isHovered bool) {
+func (gd *GameReader) hoveredData() data.HoverData {
 	hoverAddressPtr := gd.Process.moduleBaseAddressPtr + gd.offset.Hover
 	hoverBuffer := gd.Process.ReadBytesFromMemory(hoverAddressPtr, 12)
 	isUnitHovered := ReadUIntFromBuffer(hoverBuffer, 0, Uint16)
 	if isUnitHovered > 0 {
-		hoveredType = ReadUIntFromBuffer(hoverBuffer, 0x04, Uint32)
-		hoveredUnitID = ReadUIntFromBuffer(hoverBuffer, 0x08, Uint32)
+		hoveredType := ReadUIntFromBuffer(hoverBuffer, 0x04, Uint32)
+		hoveredUnitID := ReadUIntFromBuffer(hoverBuffer, 0x08, Uint32)
 
-		return hoveredUnitID, hoveredType, true
+		return data.HoverData{
+			IsHovered: true,
+			UnitID:    data.UnitID(hoveredUnitID),
+			UnitType:  int(hoveredType),
+		}
 	}
 
-	return 0, 0, false
+	return data.HoverData{}
 }
 
 func (gd *GameReader) getStatsData(statCount uint, statPtr uintptr) []stat.Data {
@@ -123,16 +130,4 @@ func (gd *GameReader) getStatsData(statCount uint, statPtr uintptr) []stat.Data 
 	}
 
 	return stats
-}
-
-func setProperties(item *data.Item, flags uint32) {
-	if 0x00400000&flags != 0 {
-		item.Ethereal = true
-	}
-	if 0x00000010&flags != 0 {
-		item.Identified = true
-	}
-	if 0x00002000&flags != 0 {
-		item.IsVendor = true
-	}
 }

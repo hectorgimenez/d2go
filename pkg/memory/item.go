@@ -9,9 +9,7 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/utils"
 )
 
-func (gd *GameReader) Items(playerPosition data.Position) data.Items {
-	hoveredUnitID, hoveredType, isHovered := gd.hoveredData()
-
+func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items {
 	baseAddr := gd.Process.moduleBaseAddressPtr + gd.offset.UnitTable + (4 * 1024)
 	unitTableBuffer := gd.Process.ReadBytesFromMemory(baseAddr, 128*8)
 
@@ -38,7 +36,7 @@ func (gd *GameReader) Items(playerPosition data.Position) data.Items {
 			flags := ReadUIntFromBuffer(unitDataBuffer, 0x18, Uint32)
 			invPage := ReadUIntFromBuffer(unitDataBuffer, 0x55, Uint8)
 			itemQuality := ReadUIntFromBuffer(unitDataBuffer, 0x00, Uint32)
-			//itemOwnerNPC := ReadUIntFromBuffer(unitDataBuffer, 0x0C, Uint32)
+			itemOwnerNPC := ReadUIntFromBuffer(unitDataBuffer, 0x0C, Uint32)
 
 			// Item coordinates (X, Y)
 			pathPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x38, Uint64))
@@ -58,7 +56,7 @@ func (gd *GameReader) Items(playerPosition data.Position) data.Items {
 
 			name := item.GetNameByEnum(txtFileNo)
 			itemHovered := false
-			if isHovered && hoveredType == 4 && hoveredUnitID == unitID {
+			if hover.IsHovered && hover.UnitType == 4 && hover.UnitID == data.UnitID(unitID) {
 				itemHovered = true
 			}
 
@@ -75,22 +73,53 @@ func (gd *GameReader) Items(playerPosition data.Position) data.Items {
 			}
 			setProperties(&itm, uint32(flags))
 
+			location := item.LocationUnknown
 			switch itemLoc {
 			case 0:
-				if itm.IsVendor {
-					items.Shop = append(items.Shop, itm)
+				if 0x00002000&flags != 0 {
+					location = item.LocationVendor
+					break
 				} else if invPage == 0 {
-					items.Inventory = append(items.Inventory, itm)
+					location = item.LocationInventory
+					break
+				}
+				if data.UnitID(itemOwnerNPC) == pu.ID || itemOwnerNPC == 1 {
+					location = item.LocationStash
+					break
+				}
+
+				// Offline only
+				if itemOwnerNPC == 2 {
+					location = item.LocationSharedStash1
+					break
+				}
+				if itemOwnerNPC == 3 {
+					location = item.LocationSharedStash2
+					break
+				}
+				if itemOwnerNPC == 4 {
+					location = item.LocationSharedStash3
+					break
 				}
 			case 1:
-				items.Equipped = append(items.Equipped, itm)
+				location = item.LocationEquipped
 				if itm.Type() == "belt" {
 					belt.Name = itm.Name
 				}
 			case 2:
-				belt.Items = append(belt.Items, itm)
+				location = item.LocationBelt
 			case 3, 5:
-				items.Ground = append(items.Ground, itm)
+				location = item.LocationGround
+			case 6:
+				location = item.LocationSocket
+			}
+
+			itm.Location = location
+
+			if location == item.LocationBelt {
+				belt.Items = append(belt.Items, itm)
+			} else {
+				items.AllItems = append(items.AllItems, itm)
 			}
 
 			itemUnitPtr = uintptr(gd.Process.ReadUInt(itemUnitPtr+0x150, Uint64))
@@ -99,9 +128,9 @@ func (gd *GameReader) Items(playerPosition data.Position) data.Items {
 
 	items.Belt = belt
 
-	sort.SliceStable(items.Ground, func(i, j int) bool {
-		distanceI := utils.DistanceFromPoint(playerPosition, items.Ground[i].Position)
-		distanceJ := utils.DistanceFromPoint(playerPosition, items.Ground[j].Position)
+	sort.SliceStable(items.AllItems, func(i, j int) bool {
+		distanceI := utils.DistanceFromPoint(pu.Position, items.AllItems[i].Position)
+		distanceJ := utils.DistanceFromPoint(pu.Position, items.AllItems[j].Position)
 
 		return distanceI < distanceJ
 	})
@@ -126,4 +155,13 @@ func (gd *GameReader) getItemStats(statCount uint, statPtr uintptr, statExCount 
 	}
 
 	return stats
+}
+
+func setProperties(item *data.Item, flags uint32) {
+	if 0x00400000&flags != 0 {
+		item.Ethereal = true
+	}
+	if 0x00000010&flags != 0 {
+		item.Identified = true
+	}
 }

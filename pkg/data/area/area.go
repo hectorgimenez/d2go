@@ -11,6 +11,23 @@ func (a Area) IsTown() bool {
 	return false
 }
 
+func (a Area) Act() int {
+	if a < 40 {
+		return 1
+	}
+	if a >= 40 && a < 75 {
+		return 2
+	}
+	if a >= 75 && a < 103 {
+		return 3
+	}
+	if a >= 103 && a < 109 {
+		return 4
+	}
+
+	return 5
+}
+
 const (
 	Abaddon                  Area = 125
 	AncientTunnels           Area = 65

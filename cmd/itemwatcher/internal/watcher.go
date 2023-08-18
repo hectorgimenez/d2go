@@ -2,6 +2,10 @@ package itemwatcher
 
 import (
 	"context"
+	"log"
+	"os"
+	"time"
+
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/beep/wav"
@@ -11,9 +15,6 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/itemfilter"
 	"github.com/hectorgimenez/d2go/pkg/memory"
 	"github.com/hectorgimenez/d2go/pkg/nip"
-	"log"
-	"os"
-	"time"
 )
 
 type Watcher struct {
@@ -53,7 +54,7 @@ func (w *Watcher) Start(ctx context.Context) error {
 			time.Sleep(100 * time.Millisecond)
 
 			d := w.gr.GetData()
-			for _, i := range d.Items.Ground {
+			for _, i := range d.Items.ByLocation(item.LocationGround) {
 				if !itemfilter.Evaluate(i, w.rules) {
 					continue
 				}
@@ -85,7 +86,7 @@ func (w *Watcher) Start(ctx context.Context) error {
 			purgedNotifiedItems := make([]itemFootprint, 0)
 			for _, t := range w.alreadyNotifiedItemIDs {
 				found := false
-				for _, it := range d.Items.Ground {
+				for _, it := range d.Items.ByLocation(item.LocationGround) {
 					if t.Match(d.PlayerUnit.Area, it) {
 						found = true
 					}

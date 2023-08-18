@@ -34,10 +34,10 @@ func (gd *GameReader) GetPlayerUnitPtr(roster data.Roster) (playerUnitPtr uintpt
 				isCorpse := gd.Process.ReadUInt(playerUnit+0x1A6, Uint8)
 				if isCorpse == 1 {
 					unitID := gd.Process.ReadUInt(playerUnit+0x08, Uint32)
-					hoveredUnitID, hoveredType, isHovered := gd.hoveredData()
+					hover := gd.hoveredData()
 					corpse = data.Corpse{
 						Found:     true,
-						IsHovered: isHovered && hoveredUnitID == unitID && hoveredType == 0,
+						IsHovered: hover.IsHovered && hover.UnitID == data.UnitID(unitID) && hover.UnitType == 0,
 						Position: data.Position{
 							X: int(xPos),
 							Y: int(yPos),
@@ -76,6 +76,8 @@ func (gd *GameReader) GetPlayerUnitPtr(roster data.Roster) (playerUnitPtr uintpt
 }
 
 func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
+	unitID := gd.Process.ReadUInt(playerUnit+0x08, Uint32)
+
 	// Read X and Y Positions
 	pPath := playerUnit + 0x38
 	pathAddress := uintptr(gd.Process.ReadUInt(pPath, Uint64))
@@ -127,6 +129,7 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 
 	return data.PlayerUnit{
 		Name: name,
+		ID:   data.UnitID(unitID),
 		Area: area.Area(levelNo),
 		Position: data.Position{
 			X: int(xPos),

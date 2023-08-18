@@ -1,16 +1,15 @@
 package memory
 
 import (
+	"sort"
+
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/npc"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"github.com/hectorgimenez/d2go/pkg/utils"
-	"sort"
 )
 
-func (gd *GameReader) Monsters(playerPosition data.Position) data.Monsters {
-	hoveredUnitID, hoveredType, isHovered := gd.hoveredData()
-
+func (gd *GameReader) Monsters(playerPosition data.Position, hover data.HoverData) data.Monsters {
 	baseAddr := gd.Process.moduleBaseAddressPtr + gd.offset.UnitTable + 1024
 	unitTableBuffer := gd.Process.ReadBytesFromMemory(baseAddr, 128*8)
 
@@ -41,7 +40,7 @@ func (gd *GameReader) Monsters(playerPosition data.Position) data.Monsters {
 				posY := gd.Process.ReadUInt(pathPtr+0x06, Uint16)
 
 				hovered := false
-				if isHovered && hoveredType == 1 && hoveredUnitID == unitID {
+				if hover.IsHovered && hover.UnitType == 1 && hover.UnitID == data.UnitID(unitID) {
 					hovered = true
 				}
 

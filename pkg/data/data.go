@@ -40,12 +40,19 @@ type Data struct {
 	Rooms          []Room
 	OpenMenus      OpenMenus
 	Roster         Roster
+	HoverData      HoverData
 }
 
 type Room struct {
 	Position
 	Width  int
 	Height int
+}
+
+type HoverData struct {
+	IsHovered bool
+	UnitID
+	UnitType int
 }
 
 func (r Room) GetCenter() Position {
@@ -98,10 +105,9 @@ func (r Roster) FindByName(name string) (RosterMember, bool) {
 }
 
 type Level struct {
-	Area        area.Area
-	Position    Position
-	IsGoodExit  bool
-	CanInteract bool
+	Area       area.Area
+	Position   Position
+	IsEntrance bool // This means the area can not be accessed just walking through it, needs to be clicked
 }
 
 type Class uint
@@ -129,6 +135,7 @@ type Position struct {
 
 type PlayerUnit struct {
 	Name     string
+	ID       UnitID
 	Area     area.Area
 	Position Position
 	Stats    map[stat.ID]int
@@ -226,4 +233,5 @@ type OpenMenus struct {
 	QuitMenu      bool
 	Cube          bool
 	SkillSelect   bool
+	Anvil         bool
 }

@@ -41,6 +41,26 @@ var typeMapping = map[string][]string{
 	"voodooheads":   {"PreservedHead", "ZombieHead", "UnravellerHead", "GargoyleHead", "DemonHeadShield", "MummifiedTrophy", "FetishTrophy", "SextonTrophy", "CantorTrophy", "HierophantTrophy", "MinionSkull", "HellspawnSkull", "OverseerSkull", "SuccubusSkull", "BloodlordSkull"},
 }
 
+var QuestItems = []string{
+	"TheGidbinn",
+	"WirtsLeg",
+	"HoradricMalus",
+	"HellforgeHammer",
+	"HoradricStaff",
+	"StaffOfKings",
+	"KhalimsFlail",
+	"AmuletOfTheViper",
+	"KhalimsEye",
+	"KhalimsHeart",
+	"KhalimsBrain",
+	"KhalimsWill",
+	"ScrollOfInifuss",
+	"HoradricCube",
+	"HoradricScroll",
+	"MephistosSoulstone",
+	"BookOfSkill",
+}
+
 func TypeForItemName(itemName string) (string, bool) {
 	for t, itemNames := range typeMapping {
 		for _, name := range itemNames {
