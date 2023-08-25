@@ -38,6 +38,44 @@ var SorceressTree = Tree{
 	Hydra:       Position{Tab: 2, Row: 5, Column: 2},
 }
 
+var PaladinTree = Tree{
+	// Defensive Auras
+	Prayer:          Position{Tab: 0, Row: 0, Column: 0},
+	ResistFire:      Position{Tab: 0, Row: 0, Column: 2},
+	Defiance:        Position{Tab: 0, Row: 1, Column: 1},
+	ResistCold:      Position{Tab: 0, Row: 1, Column: 2},
+	Cleansing:       Position{Tab: 0, Row: 2, Column: 0},
+	ResistLightning: Position{Tab: 0, Row: 2, Column: 2},
+	Vigor:           Position{Tab: 0, Row: 3, Column: 1},
+	Meditation:      Position{Tab: 0, Row: 4, Column: 0},
+	Redemption:      Position{Tab: 0, Row: 5, Column: 1},
+	Salvation:       Position{Tab: 0, Row: 5, Column: 2},
+
+	// Offensive Auras
+	Might:         Position{Tab: 1, Row: 0, Column: 0},
+	HolyFire:      Position{Tab: 1, Row: 1, Column: 1},
+	Thorns:        Position{Tab: 1, Row: 1, Column: 2},
+	BlessedAim:    Position{Tab: 1, Row: 2, Column: 0},
+	Concentration: Position{Tab: 1, Row: 3, Column: 0},
+	HolyFreeze:    Position{Tab: 1, Row: 3, Column: 1},
+	HolyShock:     Position{Tab: 1, Row: 4, Column: 1},
+	Sanctuary:     Position{Tab: 1, Row: 4, Column: 2},
+	Fanaticism:    Position{Tab: 1, Row: 5, Column: 0},
+	Conviction:    Position{Tab: 1, Row: 5, Column: 2},
+
+	// Combat Skills
+	Sacrifice:        Position{Tab: 2, Row: 0, Column: 0},
+	Smite:            Position{Tab: 2, Row: 0, Column: 2},
+	HolyBolt:         Position{Tab: 2, Row: 1, Column: 1},
+	Zeal:             Position{Tab: 2, Row: 2, Column: 0},
+	Charge:           Position{Tab: 2, Row: 2, Column: 2},
+	Vengeance:        Position{Tab: 2, Row: 3, Column: 0},
+	BlessedHammer:    Position{Tab: 2, Row: 3, Column: 1},
+	Conversion:       Position{Tab: 2, Row: 4, Column: 0},
+	HolyShield:       Position{Tab: 2, Row: 4, Column: 2},
+	FistOfTheHeavens: Position{Tab: 2, Row: 5, Column: 1},
+}
+
 type Tree map[Skill]Position
 type Position struct {
 	Tab    int
