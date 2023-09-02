@@ -55,6 +55,7 @@ var QuestItems = []string{
 	"KhalimsBrain",
 	"KhalimsWill",
 	"ScrollOfInifuss",
+	"KeyToTheCairnStones",
 	"HoradricCube",
 	"HoradricScroll",
 	"MephistosSoulstone",
