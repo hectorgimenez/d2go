@@ -76,7 +76,7 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 			location := item.LocationUnknown
 			switch itemLoc {
 			case 0:
-				if 0x00002000&flags != 0 {
+				if 0x00002000&flags != 0 || (data.UnitID(itemOwnerNPC) != pu.ID) {
 					location = item.LocationVendor
 					break
 				} else if invPage == 0 {
