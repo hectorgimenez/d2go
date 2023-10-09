@@ -31,14 +31,15 @@ func (gd *GameReader) GetData() data.Data {
 	hover := gd.hoveredData()
 
 	d := data.Data{
-		Corpse:     corpse,
-		Monsters:   gd.Monsters(pu.Position, hover),
-		PlayerUnit: pu,
-		Items:      gd.Items(pu, hover),
-		Objects:    gd.Objects(pu.Position, hover),
-		OpenMenus:  gd.openMenus(),
-		Roster:     roster,
-		HoverData:  hover,
+		Corpse:      corpse,
+		Monsters:    gd.Monsters(pu.Position, hover),
+		PlayerUnit:  pu,
+		Items:       gd.Items(pu, hover),
+		Objects:     gd.Objects(pu.Position, hover),
+		OpenMenus:   gd.openMenus(),
+		Roster:      roster,
+		HoverData:   hover,
+		TerrorZones: gd.TerrorZones(),
 	}
 
 	if playerUnitPtr == 0 {

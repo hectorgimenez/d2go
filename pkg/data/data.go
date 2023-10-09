@@ -41,6 +41,7 @@ type Data struct {
 	OpenMenus      OpenMenus
 	Roster         Roster
 	HoverData      HoverData
+	TerrorZones    []area.Area
 }
 
 type Room struct {
