@@ -135,14 +135,16 @@ type Position struct {
 }
 
 type PlayerUnit struct {
-	Name     string
-	ID       UnitID
-	Area     area.Area
-	Position Position
-	Stats    map[stat.ID]int
-	Skills   map[skill.Skill]int
-	States   state.States
-	Class    Class
+	Name       string
+	ID         UnitID
+	Area       area.Area
+	Position   Position
+	Stats      map[stat.ID]int
+	Skills     map[skill.Skill]int
+	States     state.States
+	Class      Class
+	LeftSkill  skill.Skill
+	RightSkill skill.Skill
 }
 
 func (pu PlayerUnit) MaxGold() int {

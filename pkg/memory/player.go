@@ -115,7 +115,16 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 	states := gd.getStates(statsListExPtr)
 
 	// Skills
-	skills := gd.getSkills(playerUnit + 0x100)
+	skillListPtr := uintptr(gd.Process.ReadUInt(playerUnit+0x100, Uint64))
+	skills := gd.getSkills(skillListPtr)
+
+	leftSkillPtr := gd.Process.ReadUInt(skillListPtr+0x08, Uint64)
+	leftSkillTxtPtr := uintptr(gd.Process.ReadUInt(uintptr(leftSkillPtr), Uint64))
+	leftSkillId := uintptr(gd.Process.ReadUInt(leftSkillTxtPtr, Uint16))
+
+	rightSkillPtr := gd.Process.ReadUInt(skillListPtr+0x10, Uint64)
+	rightSkillTxtPtr := uintptr(gd.Process.ReadUInt(uintptr(rightSkillPtr), Uint64))
+	rightSkillId := uintptr(gd.Process.ReadUInt(rightSkillTxtPtr, Uint16))
 
 	// Class
 	class := data.Class(gd.Process.ReadUInt(playerUnit+0x174, Uint32))
@@ -135,16 +144,17 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 			X: int(xPos),
 			Y: int(yPos),
 		},
-		Stats:  stats,
-		Skills: skills,
-		States: states,
-		Class:  class,
+		Stats:      stats,
+		Skills:     skills,
+		States:     states,
+		Class:      class,
+		LeftSkill:  skill.Skill(leftSkillId),
+		RightSkill: skill.Skill(rightSkillId),
 	}
 }
 
-func (gd *GameReader) getSkills(skillsPtr uintptr) map[skill.Skill]int {
+func (gd *GameReader) getSkills(skillListPtr uintptr) map[skill.Skill]int {
 	skills := make(map[skill.Skill]int)
-	skillListPtr := uintptr(gd.Process.ReadUInt(skillsPtr, Uint64))
 
 	skillPtr := uintptr(gd.Process.ReadUInt(skillListPtr, Uint64))
 
