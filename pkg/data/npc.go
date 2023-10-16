@@ -102,6 +102,18 @@ func (m Monster) IsImmune(resist stat.Resist) bool {
 		if resist == stat.ColdImmune && st == stat.ColdResist {
 			return true
 		}
+		if resist == stat.FireImmune && st == stat.FireResist {
+			return true
+		}
+		if resist == stat.LightImmune && st == stat.LightningResist {
+			return true
+		}
+		if resist == stat.PoisonImmune && st == stat.PoisonResist {
+			return true
+		}
+		if resist == stat.MagicImmune && st == stat.MagicResist {
+			return true
+		}
 	}
 	return false
 }

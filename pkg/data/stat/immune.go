@@ -7,4 +7,5 @@ const (
 	FireImmune   Resist = "fire"
 	LightImmune  Resist = "light"
 	PoisonImmune Resist = "poison"
+	MagicImmune  Resist = "magic"
 )
