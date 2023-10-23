@@ -199,7 +199,6 @@ func (pu PlayerUnit) HasDebuff() bool {
 		state.Terror,
 		state.Weaken,
 		state.Convicted,
-		state.Conviction,
 		state.Poison,
 		state.Cold,
 		state.Slowed,
