@@ -4,6 +4,8 @@ import "math"
 
 const mapHashDivisor = 1 << 16
 
+// Logic stolen from MapAssist, credits to them
+
 func GetMapSeed(initHashSeed, endHashSeed uint) (uint, bool) {
 	var gameSeedXor uint = 0
 	seed, found := reverseMapSeedHash(endHashSeed)

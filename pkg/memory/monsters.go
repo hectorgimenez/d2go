@@ -22,34 +22,35 @@ func (gd *GameReader) Monsters(playerPosition data.Position, hover data.HoverDat
 
 			//monsterType := ReadUIntFromBuffer(monsterDataBuffer, 0x00, Uint32)
 			txtFileNo := ReadUIntFromBuffer(monsterDataBuffer, 0x04, Uint32)
-			if !gd.shouldBeIgnored(txtFileNo) {
-				unitID := ReadUIntFromBuffer(monsterDataBuffer, 0x08, Uint32)
+			unitID := ReadUIntFromBuffer(monsterDataBuffer, 0x08, Uint32)
 
-				//mode := ReadUIntFromBuffer(monsterDataBuffer, 0x0C, Uint32)
+			//mode := ReadUIntFromBuffer(monsterDataBuffer, 0x0C, Uint32)
 
-				unitDataPtr := uintptr(ReadUIntFromBuffer(monsterDataBuffer, 0x10, Uint64))
-				//isUnique := gd.Process.ReadUInt(unitDataPtr+0x18, Uint16)
-				flag := gd.Process.ReadBytesFromMemory(unitDataPtr+0x1A, Uint8)[0]
-				isCorpse := gd.Process.ReadUInt(monsterUnitPtr+0x1A6, Uint8)
+			unitDataPtr := uintptr(ReadUIntFromBuffer(monsterDataBuffer, 0x10, Uint64))
+			//isUnique := gd.Process.ReadUInt(unitDataPtr+0x18, Uint16)
+			flag := gd.Process.ReadBytesFromMemory(unitDataPtr+0x1A, Uint8)[0]
+			isCorpse := gd.Process.ReadUInt(monsterUnitPtr+0x1A6, Uint8)
 
-				//unitDataBuffer := gd.Process.ReadBytesFromMemory(unitDataPtr, 144)
+			//unitDataBuffer := gd.Process.ReadBytesFromMemory(unitDataPtr, 144)
 
-				// Coordinates (X, Y)
-				pathPtr := uintptr(gd.Process.ReadUInt(monsterUnitPtr+0x38, Uint64))
-				posX := gd.Process.ReadUInt(pathPtr+0x02, Uint16)
-				posY := gd.Process.ReadUInt(pathPtr+0x06, Uint16)
+			// Coordinates (X, Y)
+			pathPtr := uintptr(gd.Process.ReadUInt(monsterUnitPtr+0x38, Uint64))
+			posX := gd.Process.ReadUInt(pathPtr+0x02, Uint16)
+			posY := gd.Process.ReadUInt(pathPtr+0x06, Uint16)
 
-				hovered := false
-				if hover.IsHovered && hover.UnitType == 1 && hover.UnitID == data.UnitID(unitID) {
-					hovered = true
-				}
+			hovered := false
+			if hover.IsHovered && hover.UnitType == 1 && hover.UnitID == data.UnitID(unitID) {
+				hovered = true
+			}
 
-				statsListExPtr := uintptr(ReadUIntFromBuffer(monsterDataBuffer, 0x88, Uint64))
-				statPtr := uintptr(gd.Process.ReadUInt(statsListExPtr+0x30, Uint64))
-				statCount := gd.Process.ReadUInt(statsListExPtr+0x38, Uint64)
+			statsListExPtr := uintptr(ReadUIntFromBuffer(monsterDataBuffer, 0x88, Uint64))
+			statPtr := uintptr(gd.Process.ReadUInt(statsListExPtr+0x30, Uint64))
+			statCount := gd.Process.ReadUInt(statsListExPtr+0x38, Uint64)
 
-				stats := gd.getMonsterStats(statCount, statPtr)
+			stats := gd.getMonsterStats(statCount, statPtr)
 
+			// This excludes good NPCs but includes Mercs
+			if !gd.shouldBeIgnored(txtFileNo) || stats[stat.Experience] > 0 {
 				m := data.Monster{
 					UnitID:    data.UnitID(unitID),
 					Name:      npc.ID(int(txtFileNo)),
@@ -156,7 +157,7 @@ func (gd *GameReader) shouldBeIgnored(txtNo uint) bool {
 		npc.PoisonCloudTrap,
 		npc.LightningTrap,
 		npc.InvisoSpawner,
-		//338, //Guard
+		npc.Guard,
 		npc.MiniSper,
 		npc.BoneWall,
 		npc.Hydra,

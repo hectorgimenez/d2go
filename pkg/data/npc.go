@@ -119,7 +119,7 @@ func (m Monster) IsImmune(resist stat.Resist) bool {
 }
 
 func (m Monster) IsMerc() bool {
-	if m.Name == npc.Guard {
+	if m.Name == npc.Guard || m.Name == npc.Act5Hireling1Hand || m.Name == npc.Act5Hireling2Hand || m.Name == npc.IronWolf || m.Name == npc.Rogue2 {
 		return true
 	}
 
