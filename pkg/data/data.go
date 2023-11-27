@@ -12,8 +12,30 @@ import (
 // since stat.MaxLife is returning max life without stats, we are setting the max life value that we read from the
 // game memory, overwriting this value each time it increases. It's not a good solution but it will provide
 // more accurate values for the life %. This value is checked for each memory iteration.
-var maxLife = 0
-var maxLifeBO = 0
+type PointCounter struct {
+	MaxPoint   int
+	MaxPointBo int
+}
+
+func (pc PointCounter) Percent(point int, maxPoint int, hasBo bool) int {
+	if pc.MaxPoint == 0 && pc.MaxPointBo == 0 {
+		pc.MaxPoint = maxPoint
+		pc.MaxPointBo = maxPoint
+	}
+	if hasBo {
+		if pc.MaxPointBo < point {
+			pc.MaxPointBo = point
+		}
+		return int((float64(point) / float64(pc.MaxPointBo)) * 100)
+	}
+	if pc.MaxPoint < point {
+		pc.MaxPoint = point
+	}
+	return int((float64(point) / float64(pc.MaxPoint)) * 100)
+}
+
+var maxHp PointCounter
+var maxMp PointCounter
 
 const (
 	goldPerLevel = 10000
@@ -161,28 +183,15 @@ func (pu PlayerUnit) HPPercent() int {
 	if !found {
 		return 100
 	}
-
-	if maxLifeBO == 0 && maxLife == 0 {
-		maxLife = pu.Stats[stat.MaxLife]
-		maxLifeBO = pu.Stats[stat.MaxLife]
-	}
-
-	if pu.States.HasState(state.Battleorders) {
-		if maxLifeBO < pu.Stats[stat.Life] {
-			maxLifeBO = pu.Stats[stat.Life]
-		}
-		return int((float64(pu.Stats[stat.Life]) / float64(maxLifeBO)) * 100)
-	}
-
-	if maxLife < pu.Stats[stat.Life] {
-		maxLife = pu.Stats[stat.Life]
-	}
-
-	return int((float64(pu.Stats[stat.Life]) / float64(maxLife)) * 100)
+	return maxHp.Percent(pu.Stats[stat.Life], pu.Stats[stat.MaxLife], pu.States.HasState(state.Battleorders))
 }
 
 func (pu PlayerUnit) MPPercent() int {
-	return int((float64(pu.Stats[stat.Mana]) / float64(pu.Stats[stat.MaxMana])) * 100)
+	_, found := pu.Stats[stat.MaxMana]
+	if !found {
+		return 100
+	}
+	return maxMp.Percent(pu.Stats[stat.Mana], pu.Stats[stat.MaxMana], pu.States.HasState(state.Battleorders))
 }
 
 func (pu PlayerUnit) HasDebuff() bool {
