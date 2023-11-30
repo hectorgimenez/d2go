@@ -17,7 +17,7 @@ type PointCounter struct {
 	MaxPointBo int
 }
 
-func (pc PointCounter) Percent(point int, maxPoint int, hasBo bool) int {
+func (pc *PointCounter) Percent(point int, maxPoint int, hasBo bool) int {
 	if pc.MaxPoint == 0 && pc.MaxPointBo == 0 {
 		pc.MaxPoint = maxPoint
 		pc.MaxPointBo = maxPoint
