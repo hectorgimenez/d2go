@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"encoding/binary"
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/area"
 	"github.com/hectorgimenez/d2go/pkg/data/skill"
@@ -136,6 +137,17 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 	levelPtr := uintptr(gd.Process.ReadUInt(room2Ptr+0x90, Uint64))
 	levelNo := gd.Process.ReadUInt(levelPtr+0x1F8, Uint32)
 
+	availableWPs := make([]area.Area, 0)
+	// Probably there is a better place to pick up those values, since this seems to be very tied to the UI
+	wpList := gd.Process.ReadBytesFromMemory(gd.moduleBaseAddressPtr+0x21AD220, 0x48)
+	for i := 0; i < 0x48; i = i + 8 {
+		a := binary.LittleEndian.Uint32(wpList[i : i+4])
+		available := binary.LittleEndian.Uint32(wpList[i+4 : i+8])
+		if available == 1 || area.Area(levelNo) == area.Area(a) {
+			availableWPs = append(availableWPs, area.Area(a))
+		}
+	}
+
 	return data.PlayerUnit{
 		Name: name,
 		ID:   data.UnitID(unitID),
@@ -144,12 +156,13 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 			X: int(xPos),
 			Y: int(yPos),
 		},
-		Stats:      stats,
-		Skills:     skills,
-		States:     states,
-		Class:      class,
-		LeftSkill:  skill.Skill(leftSkillId),
-		RightSkill: skill.Skill(rightSkillId),
+		Stats:              stats,
+		Skills:             skills,
+		States:             states,
+		Class:              class,
+		LeftSkill:          skill.Skill(leftSkillId),
+		RightSkill:         skill.Skill(rightSkillId),
+		AvailableWaypoints: availableWPs,
 	}
 }
 
