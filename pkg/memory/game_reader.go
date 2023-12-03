@@ -132,3 +132,10 @@ func (gd *GameReader) getStatsData(statCount uint, statPtr uintptr) []stat.Data 
 
 	return stats
 }
+
+// TODO: Take a look to better ways to get this data, now it's very flakky, is just a random memory position + not in game
+func (gd *GameReader) InCharacterSelectionScreen() bool {
+	uiBase := gd.Process.moduleBaseAddressPtr + gd.offset.UI - 0xA
+
+	return gd.Process.ReadUInt(uiBase, Uint8) != 1 && gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x1EC5AA8, Uint64) == 0
+}
