@@ -157,16 +157,17 @@ type Position struct {
 }
 
 type PlayerUnit struct {
-	Name       string
-	ID         UnitID
-	Area       area.Area
-	Position   Position
-	Stats      map[stat.ID]int
-	Skills     map[skill.Skill]int
-	States     state.States
-	Class      Class
-	LeftSkill  skill.Skill
-	RightSkill skill.Skill
+	Name               string
+	ID                 UnitID
+	Area               area.Area
+	Position           Position
+	Stats              map[stat.ID]int
+	Skills             map[skill.Skill]int
+	States             state.States
+	Class              Class
+	LeftSkill          skill.Skill
+	RightSkill         skill.Skill
+	AvailableWaypoints []area.Area // Is only filled when WP menu is open and only for the specific selected tab
 }
 
 func (pu PlayerUnit) MaxGold() int {
