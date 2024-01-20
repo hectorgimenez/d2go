@@ -18,6 +18,12 @@ type Skill struct {
 	RightSkill bool
 }
 
+type Points struct {
+	Level    uint
+	Quantity uint
+	Charges  uint
+}
+
 func (sk Skill) Desc() Description {
 	return Desc[sk.ID]
 }

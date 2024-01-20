@@ -166,17 +166,23 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 	}
 }
 
-func (gd *GameReader) getSkills(skillListPtr uintptr) map[skill.ID]int {
-	skills := make(map[skill.ID]int)
+func (gd *GameReader) getSkills(skillListPtr uintptr) map[skill.ID]skill.Points {
+	skills := make(map[skill.ID]skill.Points)
 
 	skillPtr := uintptr(gd.Process.ReadUInt(skillListPtr, Uint64))
 
 	for skillPtr != 0 {
 		skillTxtPtr := uintptr(gd.Process.ReadUInt(skillPtr, Uint64))
 		skillTxt := uintptr(gd.Process.ReadUInt(skillTxtPtr, Uint16))
-		skillLvl := gd.Process.ReadUInt(skillPtr+0x38, Uint16)
+		lvl := gd.Process.ReadUInt(skillPtr+0x38, Uint16)
+		quantity := gd.Process.ReadUInt(skillPtr+0x40, Uint16)
+		charges := gd.Process.ReadUInt(skillPtr+0x48, Uint16)
 
-		skills[skill.ID(skillTxt)] = int(skillLvl)
+		skills[skill.ID(skillTxt)] = skill.Points{
+			Level:    lvl,
+			Quantity: quantity,
+			Charges:  charges,
+		}
 
 		skillPtr = uintptr(gd.Process.ReadUInt(skillPtr+0x08, Uint64))
 	}

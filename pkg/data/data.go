@@ -162,7 +162,7 @@ type PlayerUnit struct {
 	Area               area.Area
 	Position           Position
 	Stats              map[stat.ID]int
-	Skills             map[skill.ID]int
+	Skills             map[skill.ID]skill.Points
 	States             state.States
 	Class              Class
 	LeftSkill          skill.ID
