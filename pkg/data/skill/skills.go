@@ -2,6 +2,15 @@ package skill
 
 type Skill int16
 
+type Description struct {
+	Name    string
+	Page    int
+	Row     int
+	Column  int
+	ListRow int
+	IconCel int
+}
+
 const (
 	AttackSkill Skill = iota
 	Kick
