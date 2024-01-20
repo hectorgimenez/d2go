@@ -160,14 +160,14 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 		Skills:             skills,
 		States:             states,
 		Class:              class,
-		LeftSkill:          skill.Skill(leftSkillId),
-		RightSkill:         skill.Skill(rightSkillId),
+		LeftSkill:          skill.ID(leftSkillId),
+		RightSkill:         skill.ID(rightSkillId),
 		AvailableWaypoints: availableWPs,
 	}
 }
 
-func (gd *GameReader) getSkills(skillListPtr uintptr) map[skill.Skill]int {
-	skills := make(map[skill.Skill]int)
+func (gd *GameReader) getSkills(skillListPtr uintptr) map[skill.ID]int {
+	skills := make(map[skill.ID]int)
 
 	skillPtr := uintptr(gd.Process.ReadUInt(skillListPtr, Uint64))
 
@@ -176,7 +176,7 @@ func (gd *GameReader) getSkills(skillListPtr uintptr) map[skill.Skill]int {
 		skillTxt := uintptr(gd.Process.ReadUInt(skillTxtPtr, Uint16))
 		skillLvl := gd.Process.ReadUInt(skillPtr+0x38, Uint16)
 
-		skills[skill.Skill(skillTxt)] = int(skillLvl)
+		skills[skill.ID(skillTxt)] = int(skillLvl)
 
 		skillPtr = uintptr(gd.Process.ReadUInt(skillPtr+0x08, Uint64))
 	}
