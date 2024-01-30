@@ -1,6 +1,7 @@
 package data
 
 import (
+	"github.com/hectorgimenez/d2go/pkg/data/quest"
 	"strings"
 
 	"github.com/hectorgimenez/d2go/pkg/data/area"
@@ -168,6 +169,7 @@ type PlayerUnit struct {
 	LeftSkill          skill.ID
 	RightSkill         skill.ID
 	AvailableWaypoints []area.Area // Is only filled when WP menu is open and only for the specific selected tab
+	Quests             quest.Quests
 }
 
 func (pu PlayerUnit) MaxGold() int {

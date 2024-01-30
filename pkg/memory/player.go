@@ -90,6 +90,11 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 	playerNameAddr := uintptr(gd.Process.ReadUInt(pUnitData, Uint64))
 	name := gd.Process.ReadStringFromMemory(playerNameAddr, 0)
 
+	// Quests
+	// TODO: This hardcoded position is wrong, just for testing
+	questBytes := gd.Process.ReadBytesFromMemory(playerNameAddr-0x290, 75)
+	quests := gd.getQuests(questBytes)
+
 	// Get Stats
 	statsListExPtr := uintptr(gd.Process.ReadUInt(playerUnit+0x88, Uint64))
 	statPtr := gd.Process.ReadUInt(statsListExPtr+0x30, Uint64)
@@ -163,6 +168,7 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 		LeftSkill:          skill.ID(leftSkillId),
 		RightSkill:         skill.ID(rightSkillId),
 		AvailableWaypoints: availableWPs,
+		Quests:             quests,
 	}
 }
 
