@@ -2,6 +2,21 @@ package quest
 
 type Quest int16
 type Status int16
+type States []Status
+
+func (s States) Completed() bool {
+	return s.HasStatus(StatusUpdateQuestLogCompleted)
+}
+
+func (s States) HasStatus(st Status) bool {
+	for _, state := range s {
+		if state == st {
+			return true
+		}
+	}
+
+	return false
+}
 
 const (
 	Act1DenOfEvil Quest = iota
@@ -33,4 +48,4 @@ const (
 	Act5EveOfDestruction
 )
 
-type Quests map[Quest][]Status
+type Quests map[Quest]States
