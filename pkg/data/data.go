@@ -1,7 +1,6 @@
 package data
 
 import (
-	"github.com/hectorgimenez/d2go/pkg/data/difficulty"
 	"github.com/hectorgimenez/d2go/pkg/data/quest"
 	"strings"
 
@@ -66,6 +65,7 @@ type Data struct {
 	Roster         Roster
 	HoverData      HoverData
 	TerrorZones    []area.Area
+	Quests         quest.Quests
 }
 
 type Room struct {
@@ -170,7 +170,6 @@ type PlayerUnit struct {
 	LeftSkill          skill.ID
 	RightSkill         skill.ID
 	AvailableWaypoints []area.Area // Is only filled when WP menu is open and only for the specific selected tab
-	Quests             map[difficulty.Difficulty]quest.Quests
 }
 
 func (pu PlayerUnit) MaxGold() int {

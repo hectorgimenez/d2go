@@ -30,6 +30,11 @@ func (gd *GameReader) GetData() data.Data {
 	pu := gd.GetPlayerUnit(playerUnitPtr)
 	hover := gd.hoveredData()
 
+	// Quests
+	pUnitData := playerUnitPtr + 0x10
+	playerNameAddr := uintptr(gd.Process.ReadUInt(pUnitData, Uint64))
+	gameQuestsBytes := gd.Process.ReadBytesFromMemory(playerNameAddr-0x28D, 82)
+
 	d := data.Data{
 		Corpse:      corpse,
 		Monsters:    gd.Monsters(pu.Position, hover),
@@ -40,6 +45,7 @@ func (gd *GameReader) GetData() data.Data {
 		Roster:      roster,
 		HoverData:   hover,
 		TerrorZones: gd.TerrorZones(),
+		Quests:      gd.getQuests(gameQuestsBytes),
 	}
 
 	if playerUnitPtr == 0 {
