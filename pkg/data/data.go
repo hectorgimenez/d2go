@@ -1,6 +1,7 @@
 package data
 
 import (
+	"github.com/hectorgimenez/d2go/pkg/data/quest"
 	"strings"
 
 	"github.com/hectorgimenez/d2go/pkg/data/area"
@@ -64,6 +65,7 @@ type Data struct {
 	Roster         Roster
 	HoverData      HoverData
 	TerrorZones    []area.Area
+	Quests         quest.Quests
 }
 
 type Room struct {
@@ -162,11 +164,11 @@ type PlayerUnit struct {
 	Area               area.Area
 	Position           Position
 	Stats              map[stat.ID]int
-	Skills             map[skill.Skill]int
+	Skills             map[skill.ID]skill.Points
 	States             state.States
 	Class              Class
-	LeftSkill          skill.Skill
-	RightSkill         skill.Skill
+	LeftSkill          skill.ID
+	RightSkill         skill.ID
 	AvailableWaypoints []area.Area // Is only filled when WP menu is open and only for the specific selected tab
 }
 

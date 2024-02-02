@@ -50,7 +50,7 @@ func (m Monsters) FindOne(id npc.ID, t MonsterType) (Monster, bool) {
 func (m Monsters) Enemies(filters ...MonsterFilter) []Monster {
 	monsters := make([]Monster, 0)
 	for _, mo := range m {
-		if !mo.IsMerc() && mo.Name != npc.BaalTaunt && mo.Name != npc.Act5Combatant && mo.Name != npc.Act5Combatant2 && !mo.IsSkip() && !mo.IsGoodNPC() && mo.Stats[stat.Life] > 0 {
+		if !mo.IsMerc() && !mo.IsSkip() && !mo.IsGoodNPC() && mo.Stats[stat.Life] > 0 {
 			monsters = append(monsters, mo)
 		}
 	}
@@ -154,10 +154,10 @@ func (m Monster) IsMonsterRaiser() bool {
 	return false
 }
 
-// Monster can`t be targeted normally
+// IsSkip monster can not be killed as a normal enemy, for example can not be targeted
 func (m Monster) IsSkip() bool {
 	switch m.Name {
-	case npc.WaterWatcherLimb, npc.WaterWatcherHead:
+	case npc.WaterWatcherLimb, npc.WaterWatcherHead, npc.BaalTaunt, npc.Act5Combatant, npc.Act5Combatant2, npc.BarricadeTower:
 		return true
 	}
 
