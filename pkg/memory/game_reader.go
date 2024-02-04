@@ -31,9 +31,11 @@ func (gd *GameReader) GetData() data.Data {
 	hover := gd.hoveredData()
 
 	// Quests
-	pUnitData := playerUnitPtr + 0x10
-	playerNameAddr := uintptr(gd.Process.ReadUInt(pUnitData, Uint64))
-	gameQuestsBytes := gd.Process.ReadBytesFromMemory(playerNameAddr-0x28D, 82)
+	q1 := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x230E9A8, Uint64))
+	q2 := uintptr(gd.Process.ReadUInt(q1, Uint64))
+	gameQuestsBytes := gd.Process.ReadBytesFromMemory(q2, 85)
+
+	gameQuestsBytes = gameQuestsBytes[3:]
 
 	d := data.Data{
 		Corpse:      corpse,
