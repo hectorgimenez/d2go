@@ -1,12 +1,11 @@
 module github.com/hectorgimenez/d2go
 
-go 1.21
+go 1.22
 
 require (
 	github.com/faiface/beep v1.1.0
 	github.com/stretchr/testify v1.8.4
-	github.com/winlabs/gowin32 v0.0.0-20221003142512-0d265587d3c9
-	golang.org/x/sys v0.16.0
+	golang.org/x/sys v0.17.0
 )
 
 require (

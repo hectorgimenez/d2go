@@ -3,19 +3,19 @@ package memory
 import (
 	"bytes"
 	"encoding/binary"
-	"github.com/winlabs/gowin32"
 	"golang.org/x/sys/windows"
 	"strings"
+	"syscall"
 	"unsafe"
 )
 
-const moduleName = "D2R.exe"
+const moduleName = "d2r.exe"
 
 type Process struct {
 	handler              windows.Handle
-	pid                  uint
+	pid                  uint32
 	moduleBaseAddressPtr uintptr
-	moduleBaseSize       uint
+	moduleBaseSize       uint32
 }
 
 func NewProcess() (Process, error) {
@@ -24,7 +24,7 @@ func NewProcess() (Process, error) {
 		return Process{}, err
 	}
 
-	h, err := windows.OpenProcess(0x0010, false, uint32(module.ProcessID))
+	h, err := windows.OpenProcess(0x0010, false, module.ProcessID)
 	if err != nil {
 		return Process{}, err
 	}
@@ -32,42 +32,41 @@ func NewProcess() (Process, error) {
 	return Process{
 		handler:              h,
 		pid:                  module.ProcessID,
-		moduleBaseAddressPtr: uintptr(unsafe.Pointer(module.ModuleBaseAddress)),
+		moduleBaseAddressPtr: module.ModuleBaseAddress,
 		moduleBaseSize:       module.ModuleBaseSize,
 	}, nil
 }
 
-func getGameModule() (gowin32.ModuleInfo, error) {
+func getGameModule() (ModuleInfo, error) {
 	processes := make([]uint32, 2048)
 	length := uint32(0)
 	err := windows.EnumProcesses(processes, &length)
 	if err != nil {
-		return gowin32.ModuleInfo{}, err
+		return ModuleInfo{}, err
 	}
 
 	for _, process := range processes {
-		module, _ := getMainModule(process)
-
-		if strings.Contains(module.ExePath, moduleName) {
+		module, found := getMainModule(process)
+		if found {
 			return module, nil
 		}
 	}
 
-	return gowin32.ModuleInfo{}, err
+	return ModuleInfo{}, err
 }
 
-func getMainModule(pid uint32) (gowin32.ModuleInfo, error) {
-	mi, err := gowin32.GetProcessModules(pid)
+func getMainModule(pid uint32) (ModuleInfo, bool) {
+	mi, err := GetProcessModules(pid)
 	if err != nil {
-		return gowin32.ModuleInfo{}, err
+		return ModuleInfo{}, false
 	}
 	for _, m := range mi {
-		if m.ModuleName == moduleName {
-			return m, nil
+		if strings.Contains(strings.ToLower(m.ModuleName), moduleName) {
+			return m, true
 		}
 	}
 
-	return gowin32.ModuleInfo{}, err
+	return ModuleInfo{}, false
 }
 
 func (p Process) getProcessMemory() ([]byte, error) {
@@ -161,6 +160,52 @@ func (p Process) FindPattern(memory []byte, pattern, mask string) uintptr {
 	return 0
 }
 
-func (p Process) GetPID() uint {
+func (p Process) GetPID() uint32 {
 	return p.pid
+}
+
+type ModuleInfo struct {
+	ProcessID         uint32
+	ModuleBaseAddress uintptr
+	ModuleBaseSize    uint32
+	ModuleHandle      syscall.Handle
+	ModuleName        string
+}
+
+func GetProcessModules(processID uint32) ([]ModuleInfo, error) {
+	hProcess, err := windows.OpenProcess(windows.PROCESS_QUERY_INFORMATION|windows.PROCESS_VM_READ, false, processID)
+	if err != nil {
+		return nil, err
+	}
+	defer windows.CloseHandle(hProcess)
+
+	var modules [1024]windows.Handle
+	var needed uint32
+	if err := windows.EnumProcessModules(hProcess, &modules[0], uint32(unsafe.Sizeof(modules[0]))*1024, &needed); err != nil {
+		return nil, err
+	}
+	count := needed / uint32(unsafe.Sizeof(modules[0]))
+
+	var moduleInfos []ModuleInfo
+	for i := uint32(0); i < count; i++ {
+		var mi windows.ModuleInfo
+		if err := windows.GetModuleInformation(hProcess, modules[i], &mi, uint32(unsafe.Sizeof(mi))); err != nil {
+			return nil, err
+		}
+
+		var moduleName [windows.MAX_PATH]uint16
+		if err := windows.GetModuleFileNameEx(hProcess, modules[i], &moduleName[0], windows.MAX_PATH); err != nil {
+			return nil, err
+		}
+
+		moduleInfos = append(moduleInfos, ModuleInfo{
+			ProcessID:         processID,
+			ModuleBaseAddress: mi.BaseOfDll,
+			ModuleBaseSize:    mi.SizeOfImage,
+			ModuleHandle:      syscall.Handle(modules[i]),
+			ModuleName:        syscall.UTF16ToString(moduleName[:]),
+		})
+	}
+
+	return moduleInfos, nil
 }
