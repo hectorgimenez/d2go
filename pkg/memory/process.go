@@ -3,6 +3,7 @@ package memory
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"golang.org/x/sys/windows"
 	"strings"
 	"syscall"
@@ -22,6 +23,25 @@ func NewProcess() (Process, error) {
 	module, err := getGameModule()
 	if err != nil {
 		return Process{}, err
+	}
+
+	h, err := windows.OpenProcess(0x0010, false, module.ProcessID)
+	if err != nil {
+		return Process{}, err
+	}
+
+	return Process{
+		handler:              h,
+		pid:                  module.ProcessID,
+		moduleBaseAddressPtr: module.ModuleBaseAddress,
+		moduleBaseSize:       module.ModuleBaseSize,
+	}, nil
+}
+
+func NewProcessForPID(pid uint32) (Process, error) {
+	module, found := getMainModule(pid)
+	if found {
+		return Process{}, errors.New("no module found for the specified PID")
 	}
 
 	h, err := windows.OpenProcess(0x0010, false, module.ProcessID)
