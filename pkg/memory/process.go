@@ -40,7 +40,7 @@ func NewProcess() (Process, error) {
 
 func NewProcessForPID(pid uint32) (Process, error) {
 	module, found := getMainModule(pid)
-	if found {
+	if !found {
 		return Process{}, errors.New("no module found for the specified PID")
 	}
 
