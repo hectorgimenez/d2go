@@ -76,7 +76,14 @@ func (gd *GameReader) GetPlayerUnitPtr(roster data.Roster) (playerUnitPtr uintpt
 	return
 }
 
-func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
+func (gd *GameReader) GetPlayerUnit(playerUnit uintptr, previousHP, previousMP *data.PointCounter) data.PlayerUnit {
+	if previousHP == nil {
+		previousHP = &data.PointCounter{}
+	}
+	if previousMP == nil {
+		previousMP = &data.PointCounter{}
+	}
+
 	unitID := gd.Process.ReadUInt(playerUnit+0x08, Uint32)
 
 	// Read X and Y Positions
@@ -148,7 +155,7 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 		}
 	}
 
-	return data.PlayerUnit{
+	d := data.PlayerUnit{
 		Name: name,
 		ID:   data.UnitID(unitID),
 		Area: area.Area(levelNo),
@@ -163,7 +170,15 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 		LeftSkill:          skill.ID(leftSkillId),
 		RightSkill:         skill.ID(rightSkillId),
 		AvailableWaypoints: availableWPs,
+		MaxHPValue:         previousHP,
+		MaxMPValue:         previousMP,
 	}
+
+	// Recalculate max HP and MP
+	d.HPPercent()
+	d.MPPercent()
+
+	return d
 }
 
 func (gd *GameReader) getSkills(skillListPtr uintptr) map[skill.ID]skill.Points {

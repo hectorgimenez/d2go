@@ -6,7 +6,8 @@ import (
 )
 
 type GameReader struct {
-	offset Offset
+	offset       Offset
+	previousRead data.Data
 	Process
 }
 
@@ -17,8 +18,6 @@ func NewGameReader(process Process) *GameReader {
 	}
 }
 
-var previousData *data.Data
-
 func (gd *GameReader) GetData() data.Data {
 	if gd.offset.UnitTable == 0 {
 		gd.offset = calculateOffsets(gd.Process)
@@ -27,7 +26,7 @@ func (gd *GameReader) GetData() data.Data {
 	roster := gd.getRoster()
 	playerUnitPtr, corpse := gd.GetPlayerUnitPtr(roster)
 
-	pu := gd.GetPlayerUnit(playerUnitPtr)
+	pu := gd.GetPlayerUnit(playerUnitPtr, gd.previousRead.PlayerUnit.MaxHPValue, gd.previousRead.PlayerUnit.MaxMPValue)
 	hover := gd.hoveredData()
 
 	// Quests
@@ -51,10 +50,10 @@ func (gd *GameReader) GetData() data.Data {
 	}
 
 	if playerUnitPtr == 0 {
-		return *previousData
+		return gd.previousRead
 	}
 
-	previousData = &d
+	gd.previousRead = d
 
 	return d
 }

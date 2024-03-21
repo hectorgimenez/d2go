@@ -35,9 +35,6 @@ func (pc *PointCounter) Percent(point int, maxPoint int, hasBo bool) int {
 	return int((float64(point) / float64(pc.MaxPoint)) * 100)
 }
 
-var maxHp PointCounter
-var maxMp PointCounter
-
 const (
 	goldPerLevel = 10000
 
@@ -170,6 +167,8 @@ type PlayerUnit struct {
 	LeftSkill          skill.ID
 	RightSkill         skill.ID
 	AvailableWaypoints []area.Area // Is only filled when WP menu is open and only for the specific selected tab
+	MaxHPValue         *PointCounter
+	MaxMPValue         *PointCounter
 }
 
 func (pu PlayerUnit) MaxGold() int {
@@ -186,7 +185,7 @@ func (pu PlayerUnit) HPPercent() int {
 	if !found {
 		return 100
 	}
-	return maxHp.Percent(pu.Stats[stat.Life], pu.Stats[stat.MaxLife], pu.States.HasState(state.Battleorders))
+	return pu.MaxHPValue.Percent(pu.Stats[stat.Life], pu.Stats[stat.MaxLife], pu.States.HasState(state.Battleorders))
 }
 
 func (pu PlayerUnit) MPPercent() int {
@@ -194,7 +193,7 @@ func (pu PlayerUnit) MPPercent() int {
 	if !found {
 		return 100
 	}
-	return maxMp.Percent(pu.Stats[stat.Mana], pu.Stats[stat.MaxMana], pu.States.HasState(state.Battleorders))
+	return pu.MaxMPValue.Percent(pu.Stats[stat.Mana], pu.Stats[stat.MaxMana], pu.States.HasState(state.Battleorders))
 }
 
 func (pu PlayerUnit) HasDebuff() bool {
