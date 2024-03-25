@@ -39,6 +39,14 @@ var typeMapping = map[string][]string{
 	"primalhelm":    {"JawboneCap", "FangedHelm", "HornedHelm", "AssaultHelmet", "AvengerGuard", "JawboneVisor", "LionHelm", "RageMask", "SavageHelmet", "SlayerGuard", "CarnageHelm", "FuryVisor", "DestroyerHelm", "ConquerorCrown", "GuardianCrown"},
 	"auricshields":  {"Targe", "Rondache", "HeraldicShield", "AerinShield", "CrownShield", "AkaranTarge", "AkaranRondache", "ProtectorShield", "GildedShield", "RoyalShield", "SacredTarge", "SacredRondache", "KurastShield", "ZakarumShield", "VortexShield"},
 	"voodooheads":   {"PreservedHead", "ZombieHead", "UnravellerHead", "GargoyleHead", "DemonHeadShield", "MummifiedTrophy", "FetishTrophy", "SextonTrophy", "CantorTrophy", "HierophantTrophy", "MinionSkull", "HellspawnSkull", "OverseerSkull", "SuccubusSkull", "BloodlordSkull"},
+	"runes":         {"ElRune", "EldRune", "TirRune", "NefRune", "EthRune", "IthRune", "TalRune", "RalRune", "OrtRune", "ThulRune", "AmnRune", "SolRune", "ShaelRune", "DolRune", "HelRune", "IoRune", "LumRune", "KoRune", "FalRune", "LemRune", "PulRune", "UmRune", "MalRune", "IstRune", "GulRune", "VexRune", "OhmRune", "LoRune", "SurRune", "BerRune", "JahRune", "ChamRune", "ZodRune"},
+	"ubers":         {"KeyOfTerror", "KeyOfHate", "KeyOfDestruction", "DiablosHorn", "BaalsEye", "MephistosBrain"},
+	"tokens":        {"TokenofAbsolution", "TwistedEssenceOfSuffering", "ChargedEssenceOfHatred", "BurningEssenceOfTerror", "FesteringEssenceOfDestruction"},
+	"chippedgems":   {"ChippedAmethyst", "ChippedDiamond", "ChippedEmerald", "ChippedRuby", "ChippedSapphire", "ChippedSkull", "ChippedTopaz"},
+	"flawedgems":    {"FlawedAmethyst", "FlawedDiamond", "FlawedEmerald", "FlawedRuby", "FlawedSapphire", "FlawedSkull", "FlawedTopaz"},
+	"gems":          {"Amethyst", "Diamond", "Emerald", "Ruby", "Skull", "Sapphire", "Topaz"},
+	"flawlessgems":  {"FlawlessAmethyst", "FlawlessDiamond", "FlawlessEmerald", "FlawlessRuby", "FlawlessSapphire", "FlawlessSkull", "FlawlessTopaz"},
+	"perfectgems":   {"PerfectAmethyst", "PerfectDiamond", "PerfectEmerald", "PerfectRuby", "PerfectSapphire", "PerfectSkull", "PerfectTopaz"},
 }
 
 var QuestItems = []string{
