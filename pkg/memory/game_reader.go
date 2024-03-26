@@ -146,3 +146,7 @@ func (gd *GameReader) InCharacterSelectionScreen() bool {
 
 	return gd.Process.ReadUInt(uiBase, Uint8) != 1 && gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x1EC5AA8, Uint64) == 0
 }
+
+func (gd *GameReader) GetSelectedCharacterName() string {
+	return gd.Process.ReadStringFromMemory(gd.Process.moduleBaseAddressPtr+0x21A2374, 0)
+}
