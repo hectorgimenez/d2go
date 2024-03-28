@@ -55,7 +55,8 @@ func (w *Watcher) Start(ctx context.Context) error {
 
 			d := w.gr.GetData()
 			for _, i := range d.Items.ByLocation(item.LocationGround) {
-				if !itemfilter.Evaluate(i, w.rules) {
+				match, _ := itemfilter.Evaluate(i, w.rules)
+				if !match {
 					continue
 				}
 
