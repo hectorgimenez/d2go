@@ -37,7 +37,7 @@ func TestEvaluate(t *testing.T) {
 			rule, err := nip.ParseLine(tt.args.nipRule)
 			require.NoError(t, err)
 
-			if got, _ := Evaluate(tt.args.i, []nip.Rule{rule}); got != tt.want {
+			if _, got := Evaluate(tt.args.i, []nip.Rule{rule}); got != tt.want {
 				t.Errorf("Evaluate() = %v, want %v", got, tt.want)
 			}
 		})
