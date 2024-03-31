@@ -8,7 +8,7 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/nip"
 )
 
-func Evaluate(i data.Item, rules []nip.Rule) bool {
+func Evaluate(i data.Item, rules []nip.Rule) (nip.Rule, bool) {
 	for _, r := range rules {
 		if !evaluateGroups(i, r.Properties, checkProperty) {
 			// Properties not matching, skipping
@@ -17,15 +17,15 @@ func Evaluate(i data.Item, rules []nip.Rule) bool {
 
 		// We can not check stats, item is not identified, but properties matching
 		if !i.Identified {
-			return true
+			return nip.Rule{}, true
 		}
 
 		if evaluateGroups(i, r.Stats, checkStat) {
-			return true
+			return r, true
 		}
 	}
 
-	return false
+	return nip.Rule{}, false
 }
 
 func evaluateGroups(i data.Item, groups []nip.Group, evalFunc func(i data.Item, prop nip.Comparable) bool) bool {
