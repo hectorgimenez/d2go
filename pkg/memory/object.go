@@ -30,8 +30,10 @@ func (gd *GameReader) Objects(playerPosition data.Position, hover data.HoverData
 
 				unitDataPtr := uintptr(gd.Process.ReadUInt(objectUnitPtr+0x10, Uint64))
 				interactType := gd.Process.ReadUInt(unitDataPtr+0x08, Uint8)
+				owner := gd.Process.ReadStringFromMemory(unitDataPtr+0x34, 32)
 
 				obj := data.Object{
+					ID:           data.UnitID(unitID),
 					Name:         object.Name(int(txtFileNo)),
 					IsHovered:    data.UnitID(unitID) == hover.UnitID && hover.UnitType == 2 && hover.IsHovered,
 					InteractType: object.InteractType(interactType),
@@ -40,6 +42,7 @@ func (gd *GameReader) Objects(playerPosition data.Position, hover data.HoverData
 						X: int(posX),
 						Y: int(posY),
 					},
+					Owner: owner,
 				}
 				objects = append(objects, obj)
 			}
