@@ -51,6 +51,6 @@ type KeyBindings struct {
 }
 
 type KeyBinding struct {
-	Key1 [2]uint8
-	Key2 [2]uint8
+	Key1 [2]byte
+	Key2 [2]byte
 }
