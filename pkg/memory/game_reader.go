@@ -47,6 +47,7 @@ func (gd *GameReader) GetData() data.Data {
 		HoverData:   hover,
 		TerrorZones: gd.TerrorZones(),
 		Quests:      gd.getQuests(gameQuestsBytes),
+		KeyBindings: gd.GetKeyBindings(),
 	}
 
 	if playerUnitPtr == 0 {

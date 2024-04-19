@@ -57,6 +57,10 @@ func NewProcessForPID(pid uint32) (Process, error) {
 	}, nil
 }
 
+func (p Process) Close() error {
+	return windows.CloseHandle(p.handler)
+}
+
 func getGameModule() (ModuleInfo, error) {
 	processes := make([]uint32, 2048)
 	length := uint32(0)

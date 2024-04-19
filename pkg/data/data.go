@@ -63,6 +63,7 @@ type Data struct {
 	HoverData      HoverData
 	TerrorZones    []area.Area
 	Quests         quest.Quests
+	KeyBindings    KeyBindings
 }
 
 type Room struct {
