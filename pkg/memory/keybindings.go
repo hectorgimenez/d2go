@@ -1,23 +1,33 @@
 package memory
 
 import (
+	"encoding/binary"
 	"github.com/hectorgimenez/d2go/pkg/data"
+	"github.com/hectorgimenez/d2go/pkg/data/skill"
 )
 
 func (gd *GameReader) GetKeyBindings() data.KeyBindings {
 	blob := gd.ReadBytesFromMemory(gd.moduleBaseAddressPtr+0x1e26934, 0x500)
+	blobSkills := gd.ReadBytesFromMemory(gd.moduleBaseAddressPtr+0x224edc0, 0x500)
 
-	skills := [16]data.KeyBinding{}
+	skillsKB := [16]data.SkillBinding{}
 	for i := 0; i < 7; i++ {
-		skills[i] = data.KeyBinding{
-			Key1: [2]byte{blob[0x118+(i*0x14)], blob[0x119+(i*0x14)]},
-			Key2: [2]byte{blob[0x122+(i*0x14)], blob[0x123+(i*0x14)]},
+		skillsKB[i] = data.SkillBinding{
+			SkillID: skill.ID(binary.LittleEndian.Uint32(blobSkills[i*0x1c : i*0x1c+4])),
+			KeyBinding: data.KeyBinding{
+				Key1: [2]byte{blob[0x118+(i*0x14)], blob[0x119+(i*0x14)]},
+				Key2: [2]byte{blob[0x122+(i*0x14)], blob[0x123+(i*0x14)]},
+			},
 		}
 	}
 	for i := 0; i < 9; i++ {
-		skills[i+7] = data.KeyBinding{
-			Key1: [2]byte{blob[0x384+(i*0x14)], blob[0x385+(i*0x14)]},
-			Key2: [2]byte{blob[0x38e+(i*0x14)], blob[0x38f+(i*0x14)]},
+		skillIdx := i + 7
+		skillsKB[skillIdx] = data.SkillBinding{
+			SkillID: skill.ID(binary.LittleEndian.Uint32(blobSkills[skillIdx*0x1c : skillIdx*0x1c+4])),
+			KeyBinding: data.KeyBinding{
+				Key1: [2]byte{blob[0x384+(i*0x14)], blob[0x385+(i*0x14)]},
+				Key2: [2]byte{blob[0x38e+(i*0x14)], blob[0x38f+(i*0x14)]},
+			},
 		}
 	}
 
@@ -70,7 +80,7 @@ func (gd *GameReader) GetKeyBindings() data.KeyBindings {
 			Key1: [2]byte{blob[0x104], blob[0x105]},
 			Key2: [2]byte{blob[0x10e], blob[0x10f]},
 		},
-		Skills: skills,
+		Skills: skillsKB,
 		SelectPreviousSkill: data.KeyBinding{
 			Key1: [2]byte{blob[0x2f8], blob[0x2f9]},
 			Key2: [2]byte{blob[0x302], blob[0x303]},

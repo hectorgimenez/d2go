@@ -1,5 +1,7 @@
 package data
 
+import "github.com/hectorgimenez/d2go/pkg/data/skill"
+
 type KeyBindings struct {
 	CharacterScreen KeyBinding
 	Inventory       KeyBinding
@@ -12,7 +14,7 @@ type KeyBindings struct {
 
 	SkillTree           KeyBinding
 	SkillSpeedBar       KeyBinding
-	Skills              [16]KeyBinding
+	Skills              [16]SkillBinding
 	SelectPreviousSkill KeyBinding
 	SelectNextSkill     KeyBinding
 
@@ -53,4 +55,19 @@ type KeyBindings struct {
 type KeyBinding struct {
 	Key1 [2]byte
 	Key2 [2]byte
+}
+
+type SkillBinding struct {
+	SkillID skill.ID
+	KeyBinding
+}
+
+func (kb KeyBindings) KeyBindingForSkill(skillID skill.ID) (KeyBinding, bool) {
+	for _, sk := range kb.Skills {
+		if sk.SkillID == skillID {
+			return sk.KeyBinding, true
+		}
+	}
+
+	return KeyBinding{}, false
 }
