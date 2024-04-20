@@ -71,3 +71,9 @@ func (kb KeyBindings) KeyBindingForSkill(skillID skill.ID) (KeyBinding, bool) {
 
 	return KeyBinding{}, false
 }
+
+func (kb KeyBindings) MustKBForSkill(skillID skill.ID) KeyBinding {
+	k, _ := kb.KeyBindingForSkill(skillID)
+
+	return k
+}
