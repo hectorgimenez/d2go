@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"slices"
 	"text/template"
 )
 
@@ -34,7 +35,7 @@ package area
 
 var Areas = map[ID]Area{
 {{- range $key, $value := . }}
-    {{ $key }}: {Name: "{{ $value.LevelName }}", ID: {{ $key }}},
+    {{ $key }}: {Name: "{{ $value.LevelName }}", ID: {{ $key }}, CanBeTerrorized: {{ $value.CanBeTerrorized }}},
 {{- end }}
 }`
 
@@ -58,8 +59,9 @@ type Skill struct {
 }
 
 type Level struct {
-	ID        int    `json:"Id"`
-	LevelName string `json:"LevelName"`
+	ID              int    `json:"Id"`
+	LevelName       string `json:"LevelName"`
+	CanBeTerrorized bool
 }
 
 // Generate static code from https://github.com/blizzhackers/d2data data files.
@@ -74,22 +76,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = generateFromFile(templateLevels, "cmd/d2data/d2data/levels.json", "pkg/data/area/areas.go", &map[string]Level{})
+	err = generateAreas()
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func generateFromFile(templateName, filePath, outPath string, unmarshallStruct interface{}) error {
-	jsonFile, err := os.Open(filePath)
-	if err != nil {
-		return err
-	}
-	defer jsonFile.Close()
-
-	byteValue, _ := io.ReadAll(jsonFile)
-
-	err = json.Unmarshal(byteValue, &unmarshallStruct)
+	err := unmarshalFile(filePath, &unmarshallStruct)
 	if err != nil {
 		return err
 	}
@@ -103,4 +97,50 @@ func generateFromFile(templateName, filePath, outPath string, unmarshallStruct i
 	defer file.Close()
 
 	return t.Execute(file, unmarshallStruct)
+}
+
+func generateAreas() error {
+	levels := make(map[string]Level)
+	err := unmarshalFile("cmd/d2data/d2data/levels.json", &levels)
+	if err != nil {
+		return err
+	}
+
+	terrorizedLevels := make([]int, 0)
+	err = unmarshalFile("cmd/d2data/d2data/terrorized_levels.json", &terrorizedLevels)
+	if err != nil {
+		return err
+	}
+
+	for k, lvl := range levels {
+		if slices.Contains(terrorizedLevels, lvl.ID) {
+			lvl.CanBeTerrorized = true
+			levels[k] = lvl
+		}
+	}
+
+	t := template.Must(template.New("tpl").Parse(templateLevels))
+
+	file, err := os.Create("pkg/data/area/areas.go")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	return t.Execute(file, levels)
+}
+
+func unmarshalFile(filePath string, unmarshallTo interface{}) error {
+	jsonFile, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer jsonFile.Close()
+
+	byteValue, err := io.ReadAll(jsonFile)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(byteValue, &unmarshallTo)
 }

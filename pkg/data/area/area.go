@@ -4,7 +4,8 @@ type ID int
 
 type Area struct {
 	ID
-	Name string
+	Name            string
+	CanBeTerrorized bool
 }
 
 func (a ID) IsTown() bool {
