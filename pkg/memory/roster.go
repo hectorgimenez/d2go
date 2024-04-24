@@ -17,7 +17,7 @@ func (gd *GameReader) getRoster() (roster []data.RosterMember) {
 
 		roster = append(roster, data.RosterMember{
 			Name:     name,
-			Area:     area.Area(a),
+			Area:     area.ID(a),
 			Position: data.Position{X: int(xPos), Y: int(yPos)},
 		})
 		partyStruct = uintptr(gd.Process.ReadUInt(partyStruct+0x148, Uint64))

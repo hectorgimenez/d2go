@@ -144,21 +144,21 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr, previousHP, previousMP *
 	levelPtr := uintptr(gd.Process.ReadUInt(room2Ptr+0x90, Uint64))
 	levelNo := gd.Process.ReadUInt(levelPtr+0x1F8, Uint32)
 
-	availableWPs := make([]area.Area, 0)
+	availableWPs := make([]area.ID, 0)
 	// Probably there is a better place to pick up those values, since this seems to be very tied to the UI
 	wpList := gd.Process.ReadBytesFromMemory(gd.moduleBaseAddressPtr+0x21AD220, 0x48)
 	for i := 0; i < 0x48; i = i + 8 {
 		a := binary.LittleEndian.Uint32(wpList[i : i+4])
 		available := binary.LittleEndian.Uint32(wpList[i+4 : i+8])
-		if available == 1 || area.Area(levelNo) == area.Area(a) {
-			availableWPs = append(availableWPs, area.Area(a))
+		if available == 1 || area.ID(levelNo) == area.ID(a) {
+			availableWPs = append(availableWPs, area.ID(a))
 		}
 	}
 
 	d := data.PlayerUnit{
 		Name: name,
 		ID:   data.UnitID(unitID),
-		Area: area.Area(levelNo),
+		Area: area.ID(levelNo),
 		Position: data.Position{
 			X: int(xPos),
 			Y: int(yPos),

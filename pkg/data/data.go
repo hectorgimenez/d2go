@@ -61,7 +61,7 @@ type Data struct {
 	OpenMenus      OpenMenus
 	Roster         Roster
 	HoverData      HoverData
-	TerrorZones    []area.Area
+	TerrorZones    []area.ID
 	Quests         quest.Quests
 	KeyBindings    KeyBindings
 }
@@ -112,7 +112,7 @@ func (d Data) MercHPPercent() int {
 
 type RosterMember struct {
 	Name     string
-	Area     area.Area
+	Area     area.ID
 	Position Position
 }
 type Roster []RosterMember
@@ -128,7 +128,7 @@ func (r Roster) FindByName(name string) (RosterMember, bool) {
 }
 
 type Level struct {
-	Area       area.Area
+	Area       area.ID
 	Position   Position
 	IsEntrance bool // This means the area can not be accessed just walking through it, needs to be clicked
 }
@@ -159,7 +159,7 @@ type Position struct {
 type PlayerUnit struct {
 	Name               string
 	ID                 UnitID
-	Area               area.Area
+	Area               area.ID
 	Position           Position
 	Stats              map[stat.ID]int
 	Skills             map[skill.ID]skill.Points
@@ -167,7 +167,7 @@ type PlayerUnit struct {
 	Class              Class
 	LeftSkill          skill.ID
 	RightSkill         skill.ID
-	AvailableWaypoints []area.Area // Is only filled when WP menu is open and only for the specific selected tab
+	AvailableWaypoints []area.ID // Is only filled when WP menu is open and only for the specific selected tab
 	MaxHPValue         *PointCounter
 	MaxMPValue         *PointCounter
 }

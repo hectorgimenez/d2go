@@ -25,13 +25,13 @@ type Watcher struct {
 
 type itemFootprint struct {
 	detectedAt time.Time
-	area       area.Area
+	area       area.ID
 	position   data.Position
 	name       item.Name
 	quality    item.Quality
 }
 
-func (fp itemFootprint) Match(area area.Area, i data.Item) bool {
+func (fp itemFootprint) Match(area area.ID, i data.Item) bool {
 	return fp.area == area && fp.position == i.Position && fp.name == i.Name && fp.quality == i.Quality
 }
 
