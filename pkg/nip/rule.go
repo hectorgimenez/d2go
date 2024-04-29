@@ -16,6 +16,9 @@ type Rule struct {
 	Properties  []Group
 	Stats       []Group
 	MaxQuantity []Group
+	Filename    string
+	LineNumber  int
+	Enabled     bool
 }
 
 type Keyword string
