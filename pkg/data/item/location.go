@@ -15,4 +15,5 @@ const (
 	LocationGround       Location = "ground"
 	LocationSocket       Location = "socket"
 	LocationUnknown      Location = "unknown"
+	LocationCursor       Location = "cursor"
 )

@@ -112,6 +112,8 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 				location = item.LocationGround
 			case 6:
 				location = item.LocationSocket
+			case 4:
+				location = item.LocationCursor
 			}
 
 			itm.Location = location
