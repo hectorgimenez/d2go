@@ -14,7 +14,7 @@ var (
 	propertyNameRegex = regexp.MustCompile(`\[(.*)\]`)
 )
 
-func ParseLine(line string) (Rule, error) {
+func ParseLine(line string, filename string, linenum int) (Rule, error) {
 	line = lineCleanup(line)
 	if line == "" {
 		return Rule{}, errEmptyLine
@@ -46,6 +46,9 @@ func ParseLine(line string) (Rule, error) {
 		Properties:  properties,
 		Stats:       stats,
 		MaxQuantity: maxQuantity,
+		Filename:    filename,
+		LineNumber:  linenum,
+		Enabled:     true,
 	}, nil
 }
 

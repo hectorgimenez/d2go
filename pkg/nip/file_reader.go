@@ -45,7 +45,7 @@ func ParseNIPFile(filePath string) ([]Rule, error) {
 	lineNumber := 0
 	for fileScanner.Scan() {
 		lineNumber++
-		rule, err := ParseLine(fileScanner.Text())
+		rule, err := ParseLine(fileScanner.Text(), filePath, lineNumber)
 		if errors.Is(err, errEmptyLine) {
 			continue
 		}
