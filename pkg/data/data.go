@@ -1,39 +1,15 @@
 package data
 
 import (
-	"github.com/hectorgimenez/d2go/pkg/data/quest"
 	"strings"
+
+	"github.com/hectorgimenez/d2go/pkg/data/quest"
 
 	"github.com/hectorgimenez/d2go/pkg/data/area"
 	"github.com/hectorgimenez/d2go/pkg/data/skill"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"github.com/hectorgimenez/d2go/pkg/data/state"
 )
-
-// since stat.MaxLife is returning max life without stats, we are setting the max life value that we read from the
-// game memory, overwriting this value each time it increases. It's not a good solution but it will provide
-// more accurate values for the life %. This value is checked for each memory iteration.
-type PointCounter struct {
-	MaxPoint   int
-	MaxPointBo int
-}
-
-func (pc *PointCounter) Percent(point int, maxPoint int, hasBo bool) int {
-	if pc.MaxPoint == 0 && pc.MaxPointBo == 0 {
-		pc.MaxPoint = maxPoint
-		pc.MaxPointBo = maxPoint
-	}
-	if hasBo {
-		if pc.MaxPointBo < point {
-			pc.MaxPointBo = point
-		}
-		return int((float64(point) / float64(pc.MaxPointBo)) * 100)
-	}
-	if pc.MaxPoint < point {
-		pc.MaxPoint = point
-	}
-	return int((float64(point) / float64(pc.MaxPoint)) * 100)
-}
 
 const (
 	goldPerLevel = 10000
@@ -162,14 +138,13 @@ type PlayerUnit struct {
 	Area               area.ID
 	Position           Position
 	Stats              map[stat.ID]int
+	BaseStats          map[stat.ID]int
 	Skills             map[skill.ID]skill.Points
 	States             state.States
 	Class              Class
 	LeftSkill          skill.ID
 	RightSkill         skill.ID
 	AvailableWaypoints []area.ID // Is only filled when WP menu is open and only for the specific selected tab
-	MaxHPValue         *PointCounter
-	MaxMPValue         *PointCounter
 }
 
 func (pu PlayerUnit) MaxGold() int {
@@ -182,19 +157,11 @@ func (pu PlayerUnit) TotalGold() int {
 }
 
 func (pu PlayerUnit) HPPercent() int {
-	_, found := pu.Stats[stat.MaxLife]
-	if !found {
-		return 100
-	}
-	return pu.MaxHPValue.Percent(pu.Stats[stat.Life], pu.Stats[stat.MaxLife], pu.States.HasState(state.Battleorders))
+	return int((float64(pu.Stats[stat.Life]) / float64(pu.Stats[stat.MaxLife])) * 100)
 }
 
 func (pu PlayerUnit) MPPercent() int {
-	_, found := pu.Stats[stat.MaxMana]
-	if !found {
-		return 100
-	}
-	return pu.MaxMPValue.Percent(pu.Stats[stat.Mana], pu.Stats[stat.MaxMana], pu.States.HasState(state.Battleorders))
+	return int((float64(pu.Stats[stat.Mana]) / float64(pu.Stats[stat.MaxMana])) * 100)
 }
 
 func (pu PlayerUnit) HasDebuff() bool {

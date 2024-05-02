@@ -2,6 +2,7 @@ package memory
 
 import (
 	"encoding/binary"
+
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/area"
 	"github.com/hectorgimenez/d2go/pkg/data/skill"
@@ -76,14 +77,7 @@ func (gd *GameReader) GetPlayerUnitPtr(roster data.Roster) (playerUnitPtr uintpt
 	return
 }
 
-func (gd *GameReader) GetPlayerUnit(playerUnit uintptr, previousHP, previousMP *data.PointCounter) data.PlayerUnit {
-	if previousHP == nil {
-		previousHP = &data.PointCounter{}
-	}
-	if previousMP == nil {
-		previousMP = &data.PointCounter{}
-	}
-
+func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 	unitID := gd.Process.ReadUInt(playerUnit+0x08, Uint32)
 
 	// Read X and Y Positions
@@ -99,8 +93,10 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr, previousHP, previousMP *
 
 	// Get Stats
 	statsListExPtr := uintptr(gd.Process.ReadUInt(playerUnit+0x88, Uint64))
-	statPtr := gd.Process.ReadUInt(statsListExPtr+0x30, Uint64)
-	statCount := gd.Process.ReadUInt(statsListExPtr+0x38, Uint64)
+	baseStatPtr := gd.Process.ReadUInt(statsListExPtr+0x30, Uint64)
+	baseStatsCount := gd.Process.ReadUInt(statsListExPtr+0x38, Uint64)
+	statPtr := gd.Process.ReadUInt(statsListExPtr+0x88, Uint64)
+	statCount := gd.Process.ReadUInt(statsListExPtr+0x90, Uint64)
 
 	stats := map[stat.ID]int{}
 	for j := 0; j < int(statCount); j++ {
@@ -116,6 +112,23 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr, previousHP, previousMP *
 			stats[stat.ID(statNumber)] = int(uint32(statValue) >> 8)
 		default:
 			stats[stat.ID(statNumber)] = int(statValue)
+		}
+	}
+
+	baseStats := map[stat.ID]int{}
+	for j := 0; j < int(baseStatsCount); j++ {
+		statOffset := uintptr(baseStatPtr) + 0x2 + uintptr(j*8)
+		statNumber := gd.Process.ReadUInt(statOffset, Uint16)
+		statValue := gd.Process.ReadUInt(statOffset+0x02, Uint32)
+
+		switch stat.ID(statNumber) {
+		case stat.Life,
+			stat.MaxLife,
+			stat.Mana,
+			stat.MaxMana:
+			baseStats[stat.ID(statNumber)] = int(uint32(statValue) >> 8)
+		default:
+			baseStats[stat.ID(statNumber)] = int(statValue)
 		}
 	}
 
@@ -170,13 +183,7 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr, previousHP, previousMP *
 		LeftSkill:          skill.ID(leftSkillId),
 		RightSkill:         skill.ID(rightSkillId),
 		AvailableWaypoints: availableWPs,
-		MaxHPValue:         previousHP,
-		MaxMPValue:         previousMP,
 	}
-
-	// Recalculate max HP and MP
-	d.HPPercent()
-	d.MPPercent()
 
 	return d
 }

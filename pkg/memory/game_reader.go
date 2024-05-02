@@ -26,7 +26,7 @@ func (gd *GameReader) GetData() data.Data {
 	roster := gd.getRoster()
 	playerUnitPtr, corpse := gd.GetPlayerUnitPtr(roster)
 
-	pu := gd.GetPlayerUnit(playerUnitPtr, gd.previousRead.PlayerUnit.MaxHPValue, gd.previousRead.PlayerUnit.MaxMPValue)
+	pu := gd.GetPlayerUnit(playerUnitPtr)
 	hover := gd.hoveredData()
 
 	// Quests
