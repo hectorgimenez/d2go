@@ -1,8 +1,9 @@
 package itemfilter
 
 import (
-	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"strings"
+
+	"github.com/hectorgimenez/d2go/pkg/data/stat"
 
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/nip"
@@ -67,7 +68,7 @@ func checkStat(i data.Item, cmp nip.Comparable) bool {
 func checkProperty(i data.Item, prop nip.Comparable) bool {
 	switch prop.Keyword {
 	case nip.PropertyType:
-		return strings.EqualFold(i.Type(), prop.ValueString)
+		return strings.EqualFold(i.TypeAsString(), prop.ValueString)
 	case nip.PropertyName:
 		return strings.EqualFold(string(i.Name), prop.ValueString)
 	case nip.PropertyClass:

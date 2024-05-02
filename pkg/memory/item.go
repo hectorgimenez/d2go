@@ -61,6 +61,7 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 			}
 
 			itm := data.Item{
+				ID:      int(txtFileNo),
 				UnitID:  data.UnitID(unitID),
 				Name:    name,
 				Quality: item.Quality(itemQuality),
@@ -70,6 +71,7 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 				},
 				IsHovered: itemHovered,
 				Stats:     stats,
+				Type:      int(itemType),
 			}
 			setProperties(&itm, uint32(flags))
 
@@ -103,7 +105,7 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 				}
 			case 1:
 				location = item.LocationEquipped
-				if itm.Type() == "belt" {
+				if itm.TypeAsString() == "belt" {
 					belt.Name = itm.Name
 				}
 			case 2:

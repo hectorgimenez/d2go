@@ -48,6 +48,7 @@ func (i Items) ByLocation(locations ...item.Location) []Item {
 type UnitID int
 
 type Item struct {
+	ID int
 	UnitID
 	Name       item.Name
 	Quality    item.Quality
@@ -57,9 +58,10 @@ type Item struct {
 	IsHovered  bool
 	Stats      map[stat.ID]stat.Data
 	Identified bool
+	Type       int
 }
 
-func (i Item) Type() string {
+func (i Item) TypeAsString() string {
 	t, _ := item.TypeForItemName(string(i.Name))
 
 	return t
