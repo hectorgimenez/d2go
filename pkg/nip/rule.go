@@ -19,30 +19,44 @@ var (
 )
 
 type Rule struct {
-	RawLine       string // Original line, don't use it for evaluation
-	SanitizedLine string
-	Filename      string
-	LineNumber    int
-	Enabled       bool
-	maxQuantity   int
+	RawLine     string // Original line, don't use it for evaluation
+	Stages      [3]string
+	Filename    string
+	LineNumber  int
+	Enabled     bool
+	maxQuantity int
 }
 
 type Rules []Rule
 
-func (r Rules) EvaluateAll(it data.Item) (Rule, bool) {
+type RuleResult int
+
+var (
+	RuleResultFullMatch RuleResult = 1
+	RuleResultPartial   RuleResult = 2
+	RuleResultNoMatch   RuleResult = 3
+)
+
+func (r Rules) EvaluateAll(it data.Item) (Rule, RuleResult) {
+	bestMatch := RuleResultNoMatch
+	bestMatchingRule := Rule{}
 	for _, rule := range r {
 		if rule.Enabled {
 			result, err := rule.Evaluate(it)
 			if err != nil {
 				continue
 			}
-			if result {
-				return rule, true
+			if result == RuleResultFullMatch {
+				return rule, result
+			}
+			if result == RuleResultPartial {
+				bestMatch = result
+				bestMatchingRule = rule
 			}
 		}
 	}
 
-	return Rule{}, false
+	return bestMatchingRule, bestMatch
 }
 
 func New(rawRule string, filename string, lineNumber int) (Rule, error) {
@@ -65,68 +79,95 @@ func New(rawRule string, filename string, lineNumber int) (Rule, error) {
 		return Rule{}, ErrEmptyRule
 	}
 
+	stages := [3]string{}
+	for i, stg := range strings.Split(rule, "#") {
+		stages[i] = strings.TrimSpace(stg)
+	}
+
 	return Rule{
-		RawLine:       rawRule,
-		SanitizedLine: rule,
-		Filename:      filename,
-		LineNumber:    lineNumber,
-		Enabled:       true,
-		maxQuantity:   maxQuantity,
+		RawLine:     rawRule,
+		Stages:      stages,
+		Filename:    filename,
+		LineNumber:  lineNumber,
+		Enabled:     true,
+		maxQuantity: maxQuantity,
 	}, nil
 }
 
-func (r Rule) Evaluate(it data.Item) (bool, error) {
-	line := r.SanitizedLine
-	for _, prop := range fixedPropsRegexp.FindAllStringSubmatch(line, -1) {
+func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
+	stage1 := r.Stages[0]
+	baseProperties := fixedPropsRegexp.FindAllStringSubmatch(stage1, -1)
+	for _, prop := range baseProperties {
 		switch prop[2] {
 		case "type":
 			partialReplace := strings.ReplaceAll(prop[0], fmt.Sprintf("[%s]", prop[2]), fmt.Sprintf("%d", typeAliases[it.TypeAsString()]))
 			partialReplace = strings.ReplaceAll(partialReplace, prop[4], fmt.Sprintf("%d", typeAliases[prop[4]]))
-			line = strings.ReplaceAll(line, prop[0], partialReplace)
+			stage1 = strings.ReplaceAll(stage1, prop[0], partialReplace)
 		case "quality":
 			partialReplace := strings.ReplaceAll(prop[0], fmt.Sprintf("[%s]", prop[2]), fmt.Sprintf("%d", it.Quality))
 			partialReplace = strings.ReplaceAll(partialReplace, prop[4], fmt.Sprintf("%d", qualityAliases[prop[4]]))
-			line = strings.ReplaceAll(line, prop[0], partialReplace)
+			stage1 = strings.ReplaceAll(stage1, prop[0], partialReplace)
 		case "class":
 			partialReplace := strings.ReplaceAll(prop[0], fmt.Sprintf("[%s]", prop[2]), fmt.Sprintf("%d", it.Desc().Tier()))
 			partialReplace = strings.ReplaceAll(partialReplace, prop[4], fmt.Sprintf("%d", classAliases[prop[4]]))
-			line = strings.ReplaceAll(line, prop[0], partialReplace)
+			stage1 = strings.ReplaceAll(stage1, prop[0], partialReplace)
 		case "name":
 			partialReplace := strings.ReplaceAll(prop[0], fmt.Sprintf("[%s]", prop[2]), fmt.Sprintf("%d", item.GetIDByName(string(it.Name))))
 			partialReplace = strings.ReplaceAll(partialReplace, prop[4], fmt.Sprintf("%d", item.GetIDByName(prop[4])))
-			line = strings.ReplaceAll(line, prop[0], partialReplace)
+			stage1 = strings.ReplaceAll(stage1, prop[0], partialReplace)
 		case "flag":
 			partialReplace := strings.ReplaceAll(prop[0], fmt.Sprintf("[%s]", prop[2]), fmt.Sprintf("%d", map[bool]int{true: 1, false: 0}[it.Ethereal]))
 			partialReplace = strings.ReplaceAll(partialReplace, prop[4], fmt.Sprintf("%d", 1))
-			line = strings.ReplaceAll(line, prop[0], partialReplace)
+			stage1 = strings.ReplaceAll(stage1, prop[0], partialReplace)
 		case "color":
 			// TODO: Not supported yet
 		}
 	}
 
+	// Let's evaluate first stage
+	stage1Result, err := expr.Eval(stage1, nil)
+	if err != nil {
+		return RuleResultNoMatch, fmt.Errorf("error evaluating rule: %w", err)
+	}
+
 	// Let's go with other stats now
 	// TODO: properties are missing (enhanceddefense, enhanceddamage, etc)
-	for _, statName := range statsRegexp.FindAllStringSubmatch(line, -1) {
-		statData, found := statAliases[statName[1]]
-		if !found {
-			return false, fmt.Errorf("property %s is not valid or not supported", statName[1])
+	stage2 := r.Stages[1]
+	stage2Result := true
+	if stage2 != "" {
+		for _, statName := range statsRegexp.FindAllStringSubmatch(stage2, -1) {
+			statData, found := statAliases[statName[1]]
+			if !found {
+				return RuleResultNoMatch, fmt.Errorf("property %s is not valid or not supported", statName[1])
+			}
+
+			layer := 0
+			if len(statData) > 1 {
+				layer = statData[1]
+			}
+			itemStat, _ := it.FindStat(stat.ID(statData[0]), layer)
+			// By default, value will be 0 is stat is not found, it's okay for evaluation purposes.
+			stage2 = strings.ReplaceAll(stage2, statName[0], fmt.Sprintf("%d", itemStat.Value))
 		}
 
-		layer := 0
-		if len(statData) > 1 {
-			layer = statData[1]
+		res, err := expr.Eval(stage2, nil)
+		if err != nil {
+			return RuleResultNoMatch, fmt.Errorf("error evaluating rule: %w", err)
 		}
-		itemStat, _ := it.FindStat(stat.ID(statData[0]), layer)
-		// By default, value will be 0 is stat is not found, it's okay for evaluation purposes.
-		line = strings.ReplaceAll(line, statName[0], fmt.Sprintf("%d", itemStat.Value))
+		stage2Result = res.(bool)
 	}
 
-	output, err := expr.Eval(line, nil)
-	if err != nil {
-		return false, fmt.Errorf("error evaluating rule: %w", err)
+	// 100% rule match, we can return here
+	if stage1Result.(bool) && stage2Result {
+		return RuleResultFullMatch, nil
 	}
 
-	return output.(bool), nil
+	// If Stage 1 matches and the item is NOT identified, let's return a partial match, we can not be 100% sure if all the stats are matching
+	if stage1Result.(bool) && !it.Identified {
+		return RuleResultPartial, nil
+	}
+
+	return RuleResultNoMatch, nil
 }
 
 // MaxQuantity returns the maximum quantity of items that character can have, 0 means no limit

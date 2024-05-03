@@ -23,13 +23,13 @@ func TestRule_Evaluate(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    bool
+		want    RuleResult
 		wantErr bool
 	}{
 		{
 			name: "Basic rule with posion dmg, ethereal is not specified as a condition so it should be ignored",
 			fields: fields{
-				RawLine:    "[name] == smallcharm && [quality] == magic # (([poisonlength]*25)*[poisonmaxdam])/256 >= 123",
+				RawLine:    "[name] == smallcharm && [quality] == magic  # (([poisonlength]*25)*[poisonmaxdam])/256 >= 123",
 				Filename:   "test.nip",
 				LineNumber: 1,
 				Enabled:    true,
@@ -45,7 +45,7 @@ func TestRule_Evaluate(t *testing.T) {
 					},
 				},
 			},
-			want: true,
+			want: RuleResultFullMatch,
 		},
 		{
 			name: "Complex rule with flags and enhanced defense",
@@ -67,12 +67,12 @@ func TestRule_Evaluate(t *testing.T) {
 					},
 				},
 			},
-			want: true,
+			want: RuleResultFullMatch,
 		},
 		{
 			name: "Armor with +3 Sorc skills",
 			fields: fields{
-				RawLine: "[type] == armor && [sorceressskills] >= 3",
+				RawLine: "[type] == armor # [sorceressskills] >= 3",
 				Enabled: true,
 			},
 			args: args{
@@ -83,12 +83,12 @@ func TestRule_Evaluate(t *testing.T) {
 					},
 				},
 			},
-			want: true,
+			want: RuleResultFullMatch,
 		},
 		{
 			name: "Armor with +3 Glacial Spike",
 			fields: fields{
-				RawLine: "[type] == armor && [skillglacialspike] >= 3",
+				RawLine: "[type] == armor  # [skillglacialspike] >= 3",
 				Enabled: true,
 			},
 			args: args{
@@ -99,7 +99,7 @@ func TestRule_Evaluate(t *testing.T) {
 					},
 				},
 			},
-			want: true,
+			want: RuleResultFullMatch,
 		},
 		{
 			name: "Ensure [color] returns error, not supported yet",
@@ -115,6 +115,36 @@ func TestRule_Evaluate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "Unid item matching base stats should return partial match",
+			fields: fields{
+				RawLine: "[type] == armor && [quality] == magic # [defense] == 200",
+				Enabled: true,
+			},
+			args: args{
+				item: data.Item{
+					Identified: false,
+					Name:       "mageplate",
+					Quality:    item.QualityMagic,
+				},
+			},
+			want: RuleResultPartial,
+		},
+		{
+			name: "Basic rule without stats or maxquantity",
+			fields: fields{
+				RawLine: "[type] == armor && [quality] == magic # #",
+				Enabled: true,
+			},
+			args: args{
+				item: data.Item{
+					Identified: false,
+					Name:       "mageplate",
+					Quality:    item.QualityMagic,
+				},
+			},
+			want: RuleResultFullMatch,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -123,8 +153,10 @@ func TestRule_Evaluate(t *testing.T) {
 			got, err := r.Evaluate(tt.args.item)
 			if !tt.wantErr {
 				require.NoError(t, err)
+				require.Equal(t, tt.want, got)
+			} else {
+				require.Error(t, err)
 			}
-			require.Equal(t, tt.want, got)
 		})
 	}
 }

@@ -77,16 +77,13 @@ func ParseNIPFile(filePath string) (Rules, error) {
 func sanitizeLine(rawLine string) string {
 	l := strings.Split(rawLine, "//")
 	line := strings.TrimSpace(l[0])
+	line = strings.Join(strings.Fields(line), " ")
 	line = strings.ReplaceAll(line, "'", "")
 
 	// Fix possible wrong formatted lines
-	line = strings.ReplaceAll(line, "#", "&&")
-	line = strings.ReplaceAll(line, "&& &&", "&&")
 	line = strings.ReplaceAll(line, "=>", ">=")
 	line = strings.ReplaceAll(line, "=<", "<=")
 	line = strings.TrimSpace(strings.Trim(line, "&&"))
-
-	line = strings.Join(strings.Fields(line), " ")
 
 	return strings.ToLower(line)
 }
