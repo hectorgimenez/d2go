@@ -3,6 +3,7 @@ package nip
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/expr-lang/expr"
@@ -14,13 +15,16 @@ import (
 var (
 	fixedPropsRegexp = regexp.MustCompile(`(\[(type|quality|class|name|flag|color)]\s*(<=|<|>|>=|!=|==)\s*([a-zA-Z]+))`)
 	statsRegexp      = regexp.MustCompile(`\[(.*?)]`)
+	maxQtyRegexp     = regexp.MustCompile(`(\[maxquantity]\s*(<=|<|>|>=|!=|==)\s*([0-9]+))`)
 )
 
 type Rule struct {
-	RawLine    string
-	Filename   string
-	LineNumber int
-	Enabled    bool
+	RawLine       string // Original line, don't use it for evaluation
+	SanitizedLine string
+	Filename      string
+	LineNumber    int
+	Enabled       bool
+	maxQuantity   int
 }
 
 type Rules []Rule
@@ -42,22 +46,37 @@ func (r Rules) EvaluateAll(it data.Item) (Rule, bool) {
 }
 
 func New(rawRule string, filename string, lineNumber int) (Rule, error) {
-	rawRule = sanitizeLine(rawRule)
-	if rawRule == "" {
+	rule := sanitizeLine(rawRule)
+
+	maxQuantity := 0
+	for _, prop := range maxQtyRegexp.FindAllStringSubmatch(rule, -1) {
+		mxQty, err := strconv.Atoi(prop[3])
+		if err != nil {
+			return Rule{}, fmt.Errorf("error parsing maxquantity value %s: %w", prop[3], err)
+		}
+		maxQuantity = mxQty
+		rule = strings.ReplaceAll(rule, prop[0], "")
+	}
+
+	// Sanitize again, just in case we messed up the rule while parsing maxquantity
+	rule = sanitizeLine(rule)
+	if rule == "" {
 		return Rule{}, ErrEmptyRule
 	}
 
 	return Rule{
-		RawLine:    rawRule,
-		Filename:   filename,
-		LineNumber: lineNumber,
-		Enabled:    true,
+		RawLine:       rawRule,
+		SanitizedLine: rule,
+		Filename:      filename,
+		LineNumber:    lineNumber,
+		Enabled:       true,
+		maxQuantity:   maxQuantity,
 	}, nil
 }
 
 func (r Rule) Evaluate(it data.Item) (bool, error) {
-	line := r.RawLine
-	for _, prop := range fixedPropsRegexp.FindAllStringSubmatch(r.RawLine, -1) {
+	line := r.SanitizedLine
+	for _, prop := range fixedPropsRegexp.FindAllStringSubmatch(line, -1) {
 		switch prop[2] {
 		case "type":
 			partialReplace := strings.ReplaceAll(prop[0], fmt.Sprintf("[%s]", prop[2]), fmt.Sprintf("%d", typeAliases[it.TypeAsString()]))
@@ -68,9 +87,9 @@ func (r Rule) Evaluate(it data.Item) (bool, error) {
 			partialReplace = strings.ReplaceAll(partialReplace, prop[4], fmt.Sprintf("%d", qualityAliases[prop[4]]))
 			line = strings.ReplaceAll(line, prop[0], partialReplace)
 		case "class":
-			// TODO: ???
-			//line = strings.ReplaceAll(line, fmt.Sprintf("[%s]", prop[2]), fmt.Sprintf("%d", it.Class))
-			line = strings.ReplaceAll(line, prop[4], fmt.Sprintf("%d", classAliases[prop[4]]))
+			partialReplace := strings.ReplaceAll(prop[0], fmt.Sprintf("[%s]", prop[2]), fmt.Sprintf("%d", it.Desc().Tier()))
+			partialReplace = strings.ReplaceAll(partialReplace, prop[4], fmt.Sprintf("%d", classAliases[prop[4]]))
+			line = strings.ReplaceAll(line, prop[0], partialReplace)
 		case "name":
 			partialReplace := strings.ReplaceAll(prop[0], fmt.Sprintf("[%s]", prop[2]), fmt.Sprintf("%d", item.GetIDByName(string(it.Name))))
 			partialReplace = strings.ReplaceAll(partialReplace, prop[4], fmt.Sprintf("%d", item.GetIDByName(prop[4])))
@@ -109,5 +128,5 @@ func (r Rule) Evaluate(it data.Item) (bool, error) {
 
 // MaxQuantity returns the maximum quantity of items that character can have, 0 means no limit
 func (r Rule) MaxQuantity() int {
-	return 0
+	return r.maxQuantity
 }

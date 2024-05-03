@@ -146,20 +146,6 @@ func (gd *GameReader) getItemStats(statsListExPtr uintptr) ([]stat.Data, []stat.
 
 	stats := gd.getStatsData(statCount, uintptr(statPtr))
 	baseStats := gd.getStatsData(baseStatsCount, uintptr(baseStatPtr))
-	//stats := make([]stat.Data, 0)
-	//if statCount < 20 && statCount > 0 {
-	//	stats1 := gd.getStatsData(statCount, statPtr)
-	//	for _, v := range stats1 {
-	//		stats[v.ID] = v
-	//	}
-	//}
-	//
-	//if statExCount < 20 && statExCount > 0 {
-	//	stats2 := gd.getStatsData(statExCount, statExPtr)
-	//	for _, v := range stats2 {
-	//		stats[v.ID] = v
-	//	}
-	//}
 
 	return baseStats, stats
 }

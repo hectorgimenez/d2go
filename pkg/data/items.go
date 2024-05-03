@@ -62,6 +62,10 @@ type Item struct {
 	Type       int
 }
 
+func (i Item) Desc() item.Description {
+	return item.Desc[i.ID]
+}
+
 func (i Item) TypeAsString() string {
 	t, _ := item.TypeForItemName(string(i.Name))
 
