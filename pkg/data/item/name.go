@@ -1,5 +1,7 @@
 package item
 
+import "strings"
+
 const (
 	ScrollOfTownPortal = "ScrollOfTownPortal"
 	ScrollOfIdentify   = "ScrollOfIdentify"
@@ -9,12 +11,22 @@ const (
 )
 
 func GetNameByEnum(itemNumber uint) Name {
-	return Name(available[itemNumber])
+	return Name(Names[itemNumber])
+}
+
+func GetIDByName(itemName string) int {
+	for i, name := range Names {
+		if strings.EqualFold(name, itemName) {
+			return i
+		}
+	}
+
+	return -1
 }
 
 type Name string
 
-var available = []string{
+var Names = []string{
 	"HandAxe",
 	"Axe",
 	"DoubleAxe",

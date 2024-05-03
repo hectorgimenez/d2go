@@ -56,7 +56,8 @@ type Item struct {
 	Location   item.Location
 	Ethereal   bool
 	IsHovered  bool
-	Stats      map[stat.ID]stat.Data
+	Stats      []stat.Data
+	BaseStats  []stat.Data
 	Identified bool
 	Type       int
 }
@@ -91,4 +92,15 @@ func (i Item) IsFromQuest() bool {
 	}
 
 	return false
+}
+
+func (i Item) FindStat(id stat.ID, layer int) (stat.Data, bool) {
+	totalStats := append(i.Stats, i.BaseStats...)
+	for _, s := range totalStats {
+		if s.ID == id && s.Layer == layer {
+			return s, true
+		}
+	}
+
+	return stat.Data{}, false
 }

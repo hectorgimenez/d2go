@@ -108,6 +108,10 @@ func (gd *GameReader) hoveredData() data.HoverData {
 }
 
 func (gd *GameReader) getStatsData(statCount uint, statPtr uintptr) []stat.Data {
+	if statCount == 0 {
+		return []stat.Data{}
+	}
+
 	var stats = make([]stat.Data, 0)
 	statBuffer := gd.Process.ReadBytesFromMemory(statPtr, statCount*10)
 	for i := 0; i < int(statCount); i++ {
