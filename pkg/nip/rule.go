@@ -48,6 +48,7 @@ func (r Rules) EvaluateAll(it data.Item) (Rule, bool) {
 func New(rawRule string, filename string, lineNumber int) (Rule, error) {
 	rule := sanitizeLine(rawRule)
 
+	// Try to get the maxquantity value and purge it from the rule, we can not evaluate it
 	maxQuantity := 0
 	for _, prop := range maxQtyRegexp.FindAllStringSubmatch(rule, -1) {
 		mxQty, err := strconv.Atoi(prop[3])
@@ -103,6 +104,8 @@ func (r Rule) Evaluate(it data.Item) (bool, error) {
 		}
 	}
 
+	// Let's go with other stats now
+	// TODO: properties are missing (enhanceddefense, enhanceddamage, etc)
 	for _, statName := range statsRegexp.FindAllStringSubmatch(line, -1) {
 		statData, found := statAliases[statName[1]]
 		if !found {
