@@ -11,7 +11,7 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/data/item"
 )
 
-func ReadDir(path string) ([]Rule, error) {
+func ReadDir(path string) (Rules, error) {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func ReadDir(path string) ([]Rule, error) {
 	return rules, nil
 }
 
-func ParseNIPFile(filePath string) ([]Rule, error) {
+func ParseNIPFile(filePath string) (Rules, error) {
 	fileReader, err := os.Open(filePath)
 	if err != nil {
 		return nil, err

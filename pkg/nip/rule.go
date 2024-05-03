@@ -23,6 +23,24 @@ type Rule struct {
 	Enabled    bool
 }
 
+type Rules []Rule
+
+func (r Rules) EvaluateAll(it data.Item) (Rule, bool) {
+	for _, rule := range r {
+		if rule.Enabled {
+			result, err := rule.Evaluate(it)
+			if err != nil {
+				continue
+			}
+			if result {
+				return rule, true
+			}
+		}
+	}
+
+	return Rule{}, false
+}
+
 func New(rawRule string, filename string, lineNumber int) (Rule, error) {
 	rawRule = sanitizeLine(rawRule)
 	if rawRule == "" {
