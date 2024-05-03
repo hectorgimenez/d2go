@@ -106,3 +106,8 @@ func (r Rule) Evaluate(it data.Item) (bool, error) {
 
 	return output.(bool), nil
 }
+
+// MaxQuantity returns the maximum quantity of items that character can have, 0 means no limit
+func (r Rule) MaxQuantity() int {
+	return 0
+}
