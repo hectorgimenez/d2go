@@ -3,6 +3,7 @@ package nip
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -61,6 +62,13 @@ func (r Rules) EvaluateAll(it data.Item) (Rule, RuleResult) {
 
 func New(rawRule string, filename string, lineNumber int) (Rule, error) {
 	rule := sanitizeLine(rawRule)
+
+	// Check for not supported stats
+	for _, prop := range statsRegexp.FindAllStringSubmatch(rule, -1) {
+		if slices.Contains(notSupportedStats, prop[1]) {
+			return Rule{}, fmt.Errorf("property %s is not supported, please remove it", prop[1])
+		}
+	}
 
 	// Try to get the maxquantity value and purge it from the rule, we can not evaluate it
 	maxQuantity := 0

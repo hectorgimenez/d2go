@@ -48,9 +48,9 @@ func TestRule_Evaluate(t *testing.T) {
 			want: RuleResultFullMatch,
 		},
 		{
-			name: "Complex rule with flags and enhanced defense",
+			name: "Complex rule with flags",
 			fields: fields{
-				RawLine:    "[type] == armor && [quality] <= superior && [flag] != ethereal # [enhanceddefense] >= 15 && ([itemmaxdurabilitypercent] == 0 || [itemmaxdurabilitypercent] == 15) && ([sockets] == 0 || [sockets] == 3 || [sockets] == 4)",
+				RawLine:    "[type] == armor && [quality] <= superior && [flag] != ethereal # ([itemmaxdurabilitypercent] == 0 || [itemmaxdurabilitypercent] == 15) && ([sockets] == 0 || [sockets] == 3 || [sockets] == 4)",
 				Filename:   "test.nip",
 				LineNumber: 1,
 				Enabled:    true,
@@ -61,7 +61,6 @@ func TestRule_Evaluate(t *testing.T) {
 					Quality:  item.QualitySuperior,
 					Ethereal: false,
 					Stats: []stat.Data{
-						{ID: stat.EnhancedDefense, Value: 20},
 						{ID: stat.MaxDurabilityPercent, Value: 15},
 						{ID: stat.NumSockets, Value: 4},
 					},
@@ -156,6 +155,39 @@ func TestRule_Evaluate(t *testing.T) {
 				require.Equal(t, tt.want, got)
 			} else {
 				require.Error(t, err)
+			}
+		})
+	}
+}
+
+func TestNew(t *testing.T) {
+	type args struct {
+		rawRule    string
+		filename   string
+		lineNumber int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    Rule
+		wantErr bool
+	}{
+		{
+			name: "Enhanced Defense should throw an error",
+			args: args{
+				rawRule: "[type] == armor # [enhanceddefense] >= 15",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := New(tt.args.rawRule, tt.args.filename, tt.args.lineNumber)
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, got)
 			}
 		})
 	}
