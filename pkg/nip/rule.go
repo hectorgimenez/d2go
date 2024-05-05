@@ -138,6 +138,11 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 		return RuleResultNoMatch, fmt.Errorf("error evaluating rule: %w", err)
 	}
 
+	// If stage1 does not match, we can stop here, nothing else to match
+	if !stage1Result.(bool) {
+		return RuleResultNoMatch, nil
+	}
+
 	// Let's go with other stats now
 	// TODO: properties are missing (enhanceddefense, enhanceddamage, etc)
 	stage2 := r.Stages[1]
