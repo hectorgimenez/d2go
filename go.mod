@@ -3,6 +3,7 @@ module github.com/hectorgimenez/d2go
 go 1.22
 
 require (
+	github.com/expr-lang/expr v1.16.5
 	github.com/faiface/beep v1.1.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/sys v0.18.0

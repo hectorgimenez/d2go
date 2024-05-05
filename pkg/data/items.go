@@ -48,6 +48,7 @@ func (i Items) ByLocation(locations ...item.Location) []Item {
 type UnitID int
 
 type Item struct {
+	ID int
 	UnitID
 	Name       item.Name
 	Quality    item.Quality
@@ -55,11 +56,17 @@ type Item struct {
 	Location   item.Location
 	Ethereal   bool
 	IsHovered  bool
-	Stats      map[stat.ID]stat.Data
+	Stats      []stat.Data
+	BaseStats  []stat.Data
 	Identified bool
+	Type       int
 }
 
-func (i Item) Type() string {
+func (i Item) Desc() item.Description {
+	return item.Desc[i.ID]
+}
+
+func (i Item) TypeAsString() string {
 	t, _ := item.TypeForItemName(string(i.Name))
 
 	return t
@@ -89,4 +96,15 @@ func (i Item) IsFromQuest() bool {
 	}
 
 	return false
+}
+
+func (i Item) FindStat(id stat.ID, layer int) (stat.Data, bool) {
+	totalStats := append(i.Stats, i.BaseStats...)
+	for _, s := range totalStats {
+		if s.ID == id && s.Layer == layer {
+			return s, true
+		}
+	}
+
+	return stat.Data{}, false
 }

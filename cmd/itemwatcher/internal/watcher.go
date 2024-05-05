@@ -12,7 +12,6 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/area"
 	"github.com/hectorgimenez/d2go/pkg/data/item"
-	"github.com/hectorgimenez/d2go/pkg/itemfilter"
 	"github.com/hectorgimenez/d2go/pkg/memory"
 	"github.com/hectorgimenez/d2go/pkg/nip"
 )
@@ -55,9 +54,15 @@ func (w *Watcher) Start(ctx context.Context) error {
 
 			d := w.gr.GetData()
 			for _, i := range d.Items.ByLocation(item.LocationGround) {
-				_, match := itemfilter.Evaluate(i, w.rules)
-				if !match {
-					continue
+				for _, r := range w.rules {
+					match, err := r.Evaluate(i)
+					if err != nil {
+						log.Printf("error evaluating rule: %v", err)
+						continue
+					}
+					if !match {
+						continue
+					}
 				}
 
 				found := false

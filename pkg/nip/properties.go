@@ -1,28 +1,14 @@
 package nip
 
-const (
-	// Properties
-	PropertyType    = "type"
-	PropertyName    = "name"
-	PropertyClass   = "class"
-	PropertyQuality = "quality"
-	PropertyFlag    = "flag"
-	PropertyLevel   = "level"
-	PropertyPrefix  = "prefix"
-	PropertySuffix  = "suffix"
+import "github.com/hectorgimenez/d2go/pkg/data/item"
 
-	// Types
-	TypeNormal      = "normal"
-	TypeExceptional = "exceptional"
-	TypeElite       = "elite"
-
-	// Quality
-	QualityLowQuality = "lowquality"
-	QualityNormal     = "normal"
-	QualitySuperior   = "superior"
-	QualityMagic      = "magic"
-	QualitySet        = "set"
-	QualityRare       = "rare"
-	QualityUnique     = "unique"
-	QualityCrafted    = "crafted"
-)
+var quality = map[string]item.Quality{
+	"LowQuality": item.QualityLowQuality,
+	"Normal":     item.QualityNormal,
+	"Superior":   item.QualitySuperior,
+	"Magic":      item.QualityMagic,
+	"Set":        item.QualitySet,
+	"Rare":       item.QualityRare,
+	"Unique":     item.QualityUnique,
+	"Crafted":    item.QualityCrafted,
+}

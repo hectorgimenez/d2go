@@ -46,13 +46,8 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 
 			// Item Stats
 			statsListExPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x88, Uint64))
-			statsListExBuffer := gd.Process.ReadBytesFromMemory(statsListExPtr, 180)
-			statPtr := uintptr(ReadUIntFromBuffer(statsListExBuffer, 0x30, Uint64))
-			statCount := ReadUIntFromBuffer(statsListExBuffer, 0x38, Uint32)
-			statExPtr := uintptr(ReadUIntFromBuffer(statsListExBuffer, 0x88, Uint64))
-			statExCount := ReadUIntFromBuffer(statsListExBuffer, 0x90, Uint32)
 
-			stats := gd.getItemStats(statCount, statPtr, statExCount, statExPtr)
+			baseStats, stats := gd.getItemStats(statsListExPtr)
 
 			name := item.GetNameByEnum(txtFileNo)
 			itemHovered := false
@@ -61,6 +56,7 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 			}
 
 			itm := data.Item{
+				ID:      int(txtFileNo),
 				UnitID:  data.UnitID(unitID),
 				Name:    name,
 				Quality: item.Quality(itemQuality),
@@ -70,6 +66,8 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 				},
 				IsHovered: itemHovered,
 				Stats:     stats,
+				BaseStats: baseStats,
+				Type:      int(itemType),
 			}
 			setProperties(&itm, uint32(flags))
 
@@ -103,7 +101,7 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 				}
 			case 1:
 				location = item.LocationEquipped
-				if itm.Type() == "belt" {
+				if itm.TypeAsString() == "belt" {
 					belt.Name = itm.Name
 				}
 			case 2:
@@ -140,23 +138,16 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 	return items
 }
 
-func (gd *GameReader) getItemStats(statCount uint, statPtr uintptr, statExCount uint, statExPtr uintptr) map[stat.ID]stat.Data {
-	stats := make(map[stat.ID]stat.Data, 0)
-	if statCount < 20 && statCount > 0 {
-		stats1 := gd.getStatsData(statCount, statPtr)
-		for _, v := range stats1 {
-			stats[v.ID] = v
-		}
-	}
+func (gd *GameReader) getItemStats(statsListExPtr uintptr) ([]stat.Data, []stat.Data) {
+	baseStatPtr := gd.Process.ReadUInt(statsListExPtr+0x30, Uint64)
+	baseStatsCount := gd.Process.ReadUInt(statsListExPtr+0x38, Uint64)
+	statPtr := gd.Process.ReadUInt(statsListExPtr+0x88, Uint64)
+	statCount := gd.Process.ReadUInt(statsListExPtr+0x90, Uint64)
 
-	if statExCount < 20 && statExCount > 0 {
-		stats2 := gd.getStatsData(statExCount, statExPtr)
-		for _, v := range stats2 {
-			stats[v.ID] = v
-		}
-	}
+	stats := gd.getStatsData(statCount, uintptr(statPtr))
+	baseStats := gd.getStatsData(baseStatsCount, uintptr(baseStatPtr))
 
-	return stats
+	return baseStats, stats
 }
 
 func setProperties(item *data.Item, flags uint32) {
