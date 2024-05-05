@@ -12,7 +12,7 @@ type Description struct {
 }
 
 type Skill struct {
-	ID         ID
+	ID
 	Name       string
 	LeftSkill  bool
 	RightSkill bool
@@ -24,8 +24,8 @@ type Points struct {
 	Charges  uint
 }
 
-func (sk Skill) Desc() Description {
-	return Desc[sk.ID]
+func (sk ID) Desc() Description {
+	return Desc[sk]
 }
 
 const (
