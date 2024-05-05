@@ -2,7 +2,6 @@ package nip
 
 import (
 	"fmt"
-	"math"
 	"regexp"
 	"slices"
 	"strconv"
@@ -217,7 +216,5 @@ func (r Rule) calculateEnhancedDefense(i data.Item) int {
 		return 0
 	}
 
-	res := float64(defenseStat.Value-itemTypeMaxDefense) / float64(itemTypeMaxDefense) * 100
-
-	return int(math.Ceil(res))
+	return int(float64(defenseStat.Value-itemTypeMaxDefense) / float64(itemTypeMaxDefense) * 100)
 }
