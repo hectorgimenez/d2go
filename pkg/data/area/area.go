@@ -34,6 +34,10 @@ func (a ID) Act() int {
 	return 5
 }
 
+func (a ID) Area() Area {
+	return Areas[a]
+}
+
 const (
 	Abaddon                  ID = 125
 	AncientTunnels           ID = 65
