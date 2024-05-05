@@ -9,6 +9,8 @@ type Description struct {
 	UltraCode       string // Elite
 	InventoryWidth  int
 	InventoryHeight int
+	MinDefense      int
+	MaxDefense      int
 }
 
 func (d Description) Tier() Tier {

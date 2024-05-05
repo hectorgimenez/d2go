@@ -144,6 +144,25 @@ func TestRule_Evaluate(t *testing.T) {
 			},
 			want: RuleResultFullMatch,
 		},
+		{
+			name: "Basic rule for a white superior item with enhanceddefense",
+			fields: fields{
+				RawLine: "[type] == armor && [quality] == superior # [enhanceddefense] >= 15 #",
+				Enabled: true,
+			},
+			args: args{
+				item: data.Item{
+					Identified: true,
+					ID:         373,
+					Name:       "mageplate",
+					Quality:    item.QualitySuperior,
+					Stats: []stat.Data{
+						{ID: stat.Defense, Value: 301},
+					},
+				},
+			},
+			want: RuleResultFullMatch,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -173,9 +192,9 @@ func TestNew(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Enhanced Defense should throw an error",
+			name: "Enhanced Damage should throw an error",
 			args: args{
-				rawRule: "[type] == armor # [enhanceddefense] >= 15",
+				rawRule: "[type] == armor # [enhanceddamage] >= 15",
 			},
 			wantErr: true,
 		},

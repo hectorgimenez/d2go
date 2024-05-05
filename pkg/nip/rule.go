@@ -2,6 +2,7 @@ package nip
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"slices"
 	"strconv"
@@ -149,6 +150,13 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 				return RuleResultNoMatch, fmt.Errorf("property %s is not valid or not supported", statName[1])
 			}
 
+			// Exception for enhanceddefense, is not accurate
+			if statName[0] == "[enhanceddefense]" {
+				enhancedDefense := r.calculateEnhancedDefense(it)
+				stage2 = strings.ReplaceAll(stage2, statName[0], fmt.Sprintf("%d", enhancedDefense))
+				continue
+			}
+
 			layer := 0
 			if len(statData) > 1 {
 				layer = statData[1]
@@ -181,4 +189,35 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 // MaxQuantity returns the maximum quantity of items that character can have, 0 means no limit
 func (r Rule) MaxQuantity() int {
 	return r.maxQuantity
+}
+
+func (r Rule) calculateEnhancedDefense(i data.Item) int {
+	defenseStat, found := i.FindStat(stat.Defense, 0)
+
+	// This is special case for weapons and other stuff without base Defense and with EnhancedDefense, we can return it directly
+	// since EnhancedDefense it's a stat.
+	if !found {
+		if edStat, edStatFound := i.FindStat(stat.EnhancedDefense, 0); edStatFound {
+			return edStat.Value
+		}
+	}
+
+	// Make it only work for white base items
+	if i.Quality != item.QualitySuperior {
+		return 0
+	}
+
+	if i.TypeAsString() != "armor" {
+		return 0
+	}
+
+	itemTypeMaxDefense := i.Desc().MaxDefense
+
+	if defenseStat.Value <= itemTypeMaxDefense {
+		return 0
+	}
+
+	res := float64(defenseStat.Value-itemTypeMaxDefense) / float64(itemTypeMaxDefense) * 100
+
+	return int(math.Ceil(res))
 }

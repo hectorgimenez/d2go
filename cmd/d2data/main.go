@@ -45,7 +45,7 @@ package item
 
 var Desc = map[int]Description{
 {{- range $key, $value := . }}
-    {{ $value.ID }}: {Name: "{{ $value.Name }}", ID: {{ $value.ID }}, Code: "{{ $value.Code }}", NormalCode: "{{ $value.NormalCode }}", UberCode: "{{ $value.UberCode }}", UltraCode: "{{ $value.UltraCode }}", InventoryWidth: {{ $value.Width }}, InventoryHeight: {{ $value.Height }}},
+    {{ $value.ID }}: {Name: "{{ $value.Name }}", ID: {{ $value.ID }}, Code: "{{ $value.Code }}", NormalCode: "{{ $value.NormalCode }}", UberCode: "{{ $value.UberCode }}", UltraCode: "{{ $value.UltraCode }}", InventoryWidth: {{ $value.Width }}, InventoryHeight: {{ $value.Height }}, MinDefense: {{ $value.MinDefense }}, MaxDefense: {{ $value.MaxDefense }}},
 {{- end }}
 }`
 
@@ -83,6 +83,8 @@ type itemDesc struct {
 	Width      int    `json:"invwidth"`
 	Height     int    `json:"invheight"`
 	ID         int    `json:"classid"`
+	MinDefense int    `json:"minac"`
+	MaxDefense int    `json:"maxac"`
 }
 
 // Generate static code from https://github.com/blizzhackers/d2data data files.

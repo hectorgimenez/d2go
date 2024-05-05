@@ -12,8 +12,8 @@
 [type] == circlet   && [quality] == rare && [flag] == ethereal # [itemreplenishdurability] >=1 && [itemaddclassskills] >= 2 && [dexterity]+[strength] >= 10 && ([itemtohitpercentperlevel] >= 1 || [fhr]+[frw] >= 10 || [maxhp]+[maxmana] >= 10 ||[coldresist]+[fireresist]+[lightresist]+[poisonresist] >= 10)
 
 
-[type] == circlet   && [quality] == rare && [flag] != ethereal # [amazonskills] >= 2   && [frw] >= 10 && ([dexterity]+[strength] >= 10 || [maxhp] >= 20) && (([itemtohitpercentperlevel] >= 1) || ([dexterity]+[strength] >= 20) || ([maxhp] >= 10) || ([enhanceddamage] >= 15) || ([fhr] >= 10) || ([fcr] >= 20) || ([coldresist]+[fireresist]+[lightresist]+[poisonresist] >= 10))
-[type] == circlet   && [quality] == rare && [flag] == ethereal # [itemreplenishdurability] >=1 && [amazonskills] >= 2   && [frw] >= 10 && ([dexterity]+[strength] >= 10 || [maxhp] >= 20) && (([itemtohitpercentperlevel] >= 1) || ([dexterity]+[strength] >= 20) || ([maxhp] >= 10) || ([enhanceddamage] >= 15) || ([fhr] >= 10) || ([fcr] >= 10) || ([coldresist]+[fireresist]+[lightresist]+[poisonresist] >= 10))
+[type] == circlet   && [quality] == rare && [flag] != ethereal # [amazonskills] >= 2   && [frw] >= 10 && ([dexterity]+[strength] >= 10 || [maxhp] >= 20) && (([itemtohitpercentperlevel] >= 1) || ([dexterity]+[strength] >= 20) || ([maxhp] >= 10) || ([fhr] >= 10) || ([fcr] >= 20) || ([coldresist]+[fireresist]+[lightresist]+[poisonresist] >= 10))
+[type] == circlet   && [quality] == rare && [flag] == ethereal # [itemreplenishdurability] >=1 && [amazonskills] >= 2   && [frw] >= 10 && ([dexterity]+[strength] >= 10 || [maxhp] >= 20) && (([itemtohitpercentperlevel] >= 1) || ([dexterity]+[strength] >= 20) || ([maxhp] >= 10) || ([fhr] >= 10) || ([fcr] >= 10) || ([coldresist]+[fireresist]+[lightresist]+[poisonresist] >= 10))
 
 
 [type] == circlet   && [quality] == rare && [flag] != ethereal # [paladinskills] >= 2
@@ -94,42 +94,6 @@
 [type] == belt    && [quality] == rare && [flag] != ethereal # [fhr] == 24 && [strength] >= 30 && [maxhp] >= 60
 [type] == belt    && [quality] == rare && [flag] == ethereal # [fhr] == 24 && [strength] >= 25 && [maxhp] >= 45 && [coldresist]+[fireresist]+[lightresist]+[poisonresist] >= 22 && [itemreplenishdurability] >= 1
 [type] == belt    && [quality] == rare && [flag] == ethereal # [fhr] == 24 && [strength] >= 29 && [maxhp] >= 55 && [itemreplenishdurability] >= 1
-
-// javs
-[type] == amazonjavelin && [quality] == rare && [flag] != ethereal # [ias] >= 40 && ([amazonskills]+[javelinandspearskilltab] >= 4) && ([itemreplenishquantity] >= 1 || [itemknockback] >= 1 || [enhanceddamage] >= 200)
-[type] == amazonjavelin && [quality] == rare && [flag] == ethereal # [ias] >= 40 && ([amazonskills]+[javelinandspearskilltab] >= 4) && ([itemknockback] >= 1 || [enhanceddamage] >= 200) && [itemreplenishquantity] >= 1
-//[type] == javelin   && [quality] == rare && [flag] == ethereal # [itemreplenishquantity] >= 1 && (([itemskillonattack] == 66 && [enhanceddamage] >= 300) || [enhanceddamage] >= 350 || ([itemtohitperlevel] >= 1 && [enhanceddamage] >= 250))
-//[type] == amazonjavelin && [quality] == rare && [flag] == ethereal # [itemreplenishquantity] >= 1 && (([itemskillonattack] == 66 && [enhanceddamage] >= 300) || [enhanceddamage] >= 350 || ([itemtohitperlevel] >= 1 && [enhanceddamage] >= 250))
-[type] == thrownweapon  && [quality] == rare && [flag] == ethereal # [itemreplenishquantity] >= 1 && ([enhanceddamage] >= 425 || [itemskillonattack] == 66) && ([enhanceddamage] >= 300 || ([enhanceddamage] >= 225 && [itemtohitperlevel] >= 1))
-[type] == thrownweapon  && [quality] == rare && [flag] == ethereal # [itemreplenishquantity] >= 1 && [ias] >= 20 && ([enhanceddamage] >= 400 || ([enhanceddamage] >= 275 && [itemtohitperlevel] >= 1))
-[type] == thrownweapon  && [quality] == rare && [flag] == ethereal # [itemreplenishquantity] >= 1 && [ias] >= 40 && ([enhanceddamage] >= 350 || ([enhanceddamage] >= 250 && [itemtohitperlevel] >= 1))
-
-// claws
-//[type] == assassinclaw  && [quality] == rare # [assassinskills]+[skilllightningsentry] >= 5 && ([sockets] == 2) && (([ias] >= 20) || ([itemtohitperlevel] >= 1))
-[type] == assassinclaw  && [quality] == rare # [assassinskills]+[skilllightningsentry] >= 3 && [ias] >= 20 && [sockets] == 2 && [itemtohitperlevel] >= 1
-[type] == assassinclaw  && [quality] == rare && [flag] == ethereal # ([enhanceddamage] >= 425 || [itemskillonattack] == 66 || ([itemreplenishdurability] >= 1 || [sockets] == 2)) && ([enhanceddamage] >= 350 || ([enhanceddamage] >= 225 && [itemtohitperlevel] >= 1))
-[type] == assassinclaw  && [quality] == rare && [flag] == ethereal # [ias] >= 20 && ([enhanceddamage] >= 400 || ([enhanceddamage] >= 275 && [itemtohitperlevel] >= 1))
-[type] == assassinclaw  && [quality] == rare && [flag] == ethereal # [ias] >= 40 && ([enhanceddamage] >= 350 || ([enhanceddamage] >= 250 && [itemtohitperlevel] >= 1))
-
-// axes
-[type] == axe    && [quality] == rare && [flag] == ethereal # ([enhanceddamage] >= 425 || [itemskillonattack] == 66 || ([itemreplenishdurability] >= 1 || [sockets] == 2)) && ([enhanceddamage] >= 350 || ([enhanceddamage] >= 225 && [itemtohitperlevel] >= 1))
-[type] == axe    && [quality] == rare && [flag] == ethereal # [ias] >= 20 && ([enhanceddamage] >= 400 || ([enhanceddamage] >= 275 && [itemtohitperlevel] >= 1))
-[type] == axe    && [quality] == rare && [flag] == ethereal # [ias] >= 40 && ([enhanceddamage] >= 350 || ([enhanceddamage] >= 250 && [itemtohitperlevel] >= 1))
-
-// swords
-[type] == sword   && [quality] == rare && [flag] == ethereal # ([enhanceddamage] >= 425 || [itemskillonattack] == 66 || ([itemreplenishdurability] >= 1 || [sockets] == 2)) && ([enhanceddamage] >= 350 || ([enhanceddamage] >= 225 && [itemtohitperlevel] >= 1))
-[type] == sword   && [quality] == rare && [flag] == ethereal # [ias] >= 20 && ([enhanceddamage] >= 400 || ([enhanceddamage] >= 275 && [itemtohitperlevel] >= 1))
-[type] == sword   && [quality] == rare && [flag] == ethereal # [ias] >= 40 && ([enhanceddamage] >= 350 || ([enhanceddamage] >= 250 && [itemtohitperlevel] >= 1))
-
-// maces
-[type] == mace    && [quality] == rare && [flag] == ethereal # ([enhanceddamage] >= 425 || [itemskillonattack] == 66 || ([itemreplenishdurability] >= 1 || [sockets] == 2)) && ([enhanceddamage] >= 350 || ([enhanceddamage] >= 225 && [itemtohitperlevel] >= 1))
-[type] == mace    && [quality] == rare && [flag] == ethereal # [ias] >= 20 && ([enhanceddamage] >= 400 || ([enhanceddamage] >= 275 && [itemtohitperlevel] >= 1))
-[type] == mace    && [quality] == rare && [flag] == ethereal # [ias] >= 40 && ([enhanceddamage] >= 350 || ([enhanceddamage] >= 250 && [itemtohitperlevel] >= 1))
-
-// hammers
-[type] == hammer   && [quality] == rare && [flag] == ethereal # ([enhanceddamage] >= 425 || [itemskillonattack] == 66 || ([itemreplenishdurability] >= 1 || [sockets] == 2)) && ([enhanceddamage] >= 350 || ([enhanceddamage] >= 225 && [itemtohitperlevel] >= 1))
-[type] == hammer   && [quality] == rare && [flag] == ethereal # [ias] >= 20 && ([enhanceddamage] >= 400 || ([enhanceddamage] >= 275 && [itemtohitperlevel] >= 1))
-[type] == hammer   && [quality] == rare && [flag] == ethereal # [ias] >= 40 && ([enhanceddamage] >= 350 || ([enhanceddamage] >= 250 && [itemtohitperlevel] >= 1))
 
 // scepters
 [type] == scepter && [quality] == rare && [flag] == ethereal # [itemreplenishdurability] >= 1 && [skillfistoftheheavens] + [paladinskills] + [palicombatskilltab] + [sockets] + [skillblessedhammer] + [skillconcentration]+[skillholyshield] >= 5

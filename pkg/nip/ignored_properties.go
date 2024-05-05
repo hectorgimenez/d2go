@@ -7,7 +7,6 @@ var notSupportedStats = []string{
 	"plusmaxdamage",
 	"maxdamage",
 	"enhanceddamage",
-	"enhanceddefense",
 	"itemarmorpercent",
 	"itemmindamagepercent",
 	"itemslashdamage",
