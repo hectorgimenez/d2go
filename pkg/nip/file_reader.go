@@ -47,10 +47,17 @@ func ParseNIPFile(filePath string) (Rules, error) {
 	rules := make([]Rule, 0)
 	lineNumber := 0
 
-	dummyItem := data.Item{
-		ID:      516,
-		Name:    "healingpotion",
-		Quality: item.QualityNormal,
+	dummyItems := []data.Item{
+		{
+			ID:      373,
+			Name:    "mageplate",
+			Quality: item.QualityUnique,
+		},
+		{
+			ID:      0,
+			Name:    "handaxe",
+			Quality: item.QualityUnique,
+		},
 	}
 
 	for fileScanner.Scan() {
@@ -64,10 +71,13 @@ func ParseNIPFile(filePath string) (Rules, error) {
 		}
 
 		// We evaluate all the rules at startup to ensure no format errors, if there is a format error we will throw it now instead of during runtime
-		_, err = rule.Evaluate(dummyItem)
-		if err != nil {
-			return nil, fmt.Errorf("error testing rule on [%s:%d]: %w", filePath, lineNumber, err)
+		for _, it := range dummyItems {
+			_, err = rule.Evaluate(it)
+			if err != nil {
+				return nil, fmt.Errorf("error testing rule on [%s:%d]: %w", filePath, lineNumber, err)
+			}
 		}
+
 		rules = append(rules, rule)
 	}
 
