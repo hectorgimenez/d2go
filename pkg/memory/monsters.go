@@ -86,7 +86,7 @@ func getMonsterType(typeFlag byte) data.MonsterType {
 	switch typeFlag {
 	case 10:
 		return data.MonsterTypeSuperUnique
-	case 1 << 2:
+	case 1 << 2, 12:
 		return data.MonsterTypeChampion
 	case 1 << 3:
 		return data.MonsterTypeUnique
