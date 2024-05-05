@@ -55,12 +55,12 @@ func (w *Watcher) Start(ctx context.Context) error {
 			d := w.gr.GetData()
 			for _, i := range d.Items.ByLocation(item.LocationGround) {
 				for _, r := range w.rules {
-					match, err := r.Evaluate(i)
+					res, err := r.Evaluate(i)
 					if err != nil {
 						log.Printf("error evaluating rule: %v", err)
 						continue
 					}
-					if !match {
+					if res == nip.RuleResultNoMatch {
 						continue
 					}
 				}
