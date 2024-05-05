@@ -156,7 +156,7 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 				continue
 			}
 
-			if itemTypes, found := blockedStatsForItemType[statName[0]]; found {
+			if itemTypes, found := blockedStatsForItemType[statName[1]]; found {
 				if slices.Contains(itemTypes, it.TypeAsString()) {
 					return RuleResultNoMatch, fmt.Errorf("property %s is not supported for item type %s", statName[0], it.TypeAsString())
 				}

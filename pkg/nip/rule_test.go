@@ -163,6 +163,23 @@ func TestRule_Evaluate(t *testing.T) {
 			},
 			want: RuleResultFullMatch,
 		},
+		{
+			name: "enhanceddamage should not work for weapons",
+			fields: fields{
+				RawLine: "[type] == axe && [quality] == superior # [enhanceddamage] >= 15 #",
+				Enabled: true,
+			},
+			args: args{
+				item: data.Item{
+					Identified: true,
+					ID:         0,
+					Name:       "handaxe",
+					Quality:    item.QualityUnique,
+					Stats:      []stat.Data{},
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -192,9 +209,9 @@ func TestNew(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Enhanced Damage should throw an error",
+			name: "itemthrustdamage should throw an error",
 			args: args{
-				rawRule: "[type] == armor # [enhanceddamage] >= 15",
+				rawRule: "[type] == axe # [itemthrustdamage] >= 15",
 			},
 			wantErr: true,
 		},
