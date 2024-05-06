@@ -36,6 +36,7 @@ func TestRule_Evaluate(t *testing.T) {
 			},
 			args: args{
 				item: data.Item{
+					ID:       603,
 					Name:     "SmAlLCharM",
 					Quality:  item.QualityMagic,
 					Ethereal: true,
@@ -57,6 +58,7 @@ func TestRule_Evaluate(t *testing.T) {
 			},
 			args: args{
 				item: data.Item{
+					ID:       373,
 					Name:     "mageplate",
 					Quality:  item.QualitySuperior,
 					Ethereal: false,
@@ -76,6 +78,7 @@ func TestRule_Evaluate(t *testing.T) {
 			},
 			args: args{
 				item: data.Item{
+					ID:   373,
 					Name: "mageplate",
 					Stats: []stat.Data{
 						{ID: stat.AddClassSkills, Value: 3, Layer: 1},
@@ -92,6 +95,7 @@ func TestRule_Evaluate(t *testing.T) {
 			},
 			args: args{
 				item: data.Item{
+					ID:   373,
 					Name: "mageplate",
 					Stats: []stat.Data{
 						{ID: stat.SingleSkill, Value: 3, Layer: 55},
@@ -101,20 +105,6 @@ func TestRule_Evaluate(t *testing.T) {
 			want: RuleResultFullMatch,
 		},
 		{
-			name: "Ensure [color] returns error, not supported yet",
-			fields: fields{
-				RawLine: "[type] == armor && [color] == 1000 && [quality] == magic",
-				Enabled: true,
-			},
-			args: args{
-				item: data.Item{
-					Name:    "mageplate",
-					Quality: item.QualityMagic,
-				},
-			},
-			wantErr: true,
-		},
-		{
 			name: "Unid item matching base stats should return partial match",
 			fields: fields{
 				RawLine: "[type] == armor && [quality] == magic # [defense] == 200",
@@ -122,6 +112,7 @@ func TestRule_Evaluate(t *testing.T) {
 			},
 			args: args{
 				item: data.Item{
+					ID:         373,
 					Identified: false,
 					Name:       "mageplate",
 					Quality:    item.QualityMagic,
@@ -137,6 +128,7 @@ func TestRule_Evaluate(t *testing.T) {
 			},
 			args: args{
 				item: data.Item{
+					ID:         373,
 					Identified: false,
 					Name:       "mageplate",
 					Quality:    item.QualityMagic,
@@ -174,7 +166,7 @@ func TestRule_Evaluate(t *testing.T) {
 					Identified: true,
 					ID:         0,
 					Name:       "handaxe",
-					Quality:    item.QualityUnique,
+					Quality:    item.QualitySuperior,
 					Stats:      []stat.Data{},
 				},
 			},
@@ -202,7 +194,7 @@ func TestRule_Evaluate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r, err := New(tt.fields.RawLine, tt.fields.Filename, tt.fields.LineNumber)
+			r, err := NewRule(tt.fields.RawLine, tt.fields.Filename, tt.fields.LineNumber)
 			require.NoError(t, err)
 			got, err := r.Evaluate(tt.args.item)
 			if !tt.wantErr {
@@ -234,10 +226,17 @@ func TestNew(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "Ensure [color] returns error, not supported yet",
+			args: args{
+				rawRule: "[type] == armor && [color] == 1000 && [quality] == magic",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := New(tt.args.rawRule, tt.args.filename, tt.args.lineNumber)
+			got, err := NewRule(tt.args.rawRule, tt.args.filename, tt.args.lineNumber)
 			if tt.wantErr {
 				require.Error(t, err)
 			} else {
@@ -245,5 +244,24 @@ func TestNew(t *testing.T) {
 				require.NotNil(t, got)
 			}
 		})
+	}
+}
+
+func BenchmarkEvaluate(b *testing.B) {
+	it := data.Item{
+		ID:      0,
+		Name:    "Axe",
+		Quality: item.QualitySuperior,
+	}
+
+	rule, err := NewRule(
+		"[type] == amulet && [quality] == crafted # ([shapeshiftingskilltab] >= 2 || [elementalskilltab] >= 2 || [druidsummoningskilltab] >= 2) && [fcr] >= 10 && ([strength]+[maxhp]+[maxmana] >= 60 || [dexterity]+[maxhp]+[maxmana] >= 60 || [strength]+[dexterity]+[maxhp] >= 50 || [strength]+[dexterity]+[maxmana] >= 55)",
+		"test",
+		1,
+	)
+	require.NoError(b, err)
+
+	for n := 0; n < b.N; n++ {
+		rule.Evaluate(it)
 	}
 }

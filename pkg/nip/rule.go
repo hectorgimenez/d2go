@@ -8,67 +8,42 @@ import (
 	"strings"
 
 	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/vm"
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/item"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 )
 
-var (
-	fixedPropsRegexp = regexp.MustCompile(`(\[(type|quality|class|name|flag|color)]\s*(<=|<|>|>=|!=|==)\s*([a-zA-Z]+))`)
-	statsRegexp      = regexp.MustCompile(`\[(.*?)]`)
-	maxQtyRegexp     = regexp.MustCompile(`(\[maxquantity]\s*(<=|<|>|>=|!=|==)\s*([0-9]+))`)
-)
-
-type Rule struct {
-	RawLine     string // Original line, don't use it for evaluation
-	Stages      [3]string
-	Filename    string
-	LineNumber  int
-	Enabled     bool
-	maxQuantity int
-}
-
-type Rules []Rule
-
-type RuleResult int
-
-var (
+const (
 	RuleResultFullMatch RuleResult = 1
 	RuleResultPartial   RuleResult = 2
 	RuleResultNoMatch   RuleResult = 3
 )
 
-func (r Rules) EvaluateAll(it data.Item) (Rule, RuleResult) {
-	bestMatch := RuleResultNoMatch
-	bestMatchingRule := Rule{}
-	for _, rule := range r {
-		if rule.Enabled {
-			result, err := rule.Evaluate(it)
-			if err != nil {
-				continue
-			}
-			if result == RuleResultFullMatch {
-				return rule, result
-			}
-			if result == RuleResultPartial {
-				bestMatch = result
-				bestMatchingRule = rule
-			}
-		}
-	}
+var (
+	fixedPropsRegexp = regexp.MustCompile(`(\[(type|quality|class|name|flag|color)]\s*(<=|<|>|>=|!=|==)\s*([a-zA-Z0-9]+))`)
+	statsRegexp      = regexp.MustCompile(`\[(.*?)]`)
+	maxQtyRegexp     = regexp.MustCompile(`(\[maxquantity]\s*(<=|<|>|>=|!=|==)\s*([0-9]+))`)
+)
 
-	return bestMatchingRule, bestMatch
+type Rule struct {
+	RawLine       string // Original line, don't use it for evaluation
+	Filename      string
+	LineNumber    int
+	Enabled       bool
+	maxQuantity   int
+	stage1        *vm.Program
+	stage2        *vm.Program
+	requiredStats []string
 }
 
-func New(rawRule string, filename string, lineNumber int) (Rule, error) {
-	rule := sanitizeLine(rawRule)
+type RuleResult int
+type Rules []Rule
 
-	// Check for not supported stats
-	for _, prop := range statsRegexp.FindAllStringSubmatch(rule, -1) {
-		if slices.Contains(notSupportedStats, prop[1]) {
-			return Rule{}, fmt.Errorf("property %s is not supported, please remove it", prop[1])
-		}
-	}
+var fixedPropsList = map[string]int{"type": 0, "quality": 0, "class": 0, "name": 0, "flag": 0, "color": 0}
+
+func NewRule(rawRule string, filename string, lineNumber int) (Rule, error) {
+	rule := sanitizeLine(rawRule)
 
 	// Try to get the maxquantity value and purge it from the rule, we can not evaluate it
 	maxQuantity := 0
@@ -87,53 +62,84 @@ func New(rawRule string, filename string, lineNumber int) (Rule, error) {
 		return Rule{}, ErrEmptyRule
 	}
 
-	stages := [3]string{}
-	for i, stg := range strings.Split(rule, "#") {
-		stages[i] = strings.TrimSpace(stg)
-	}
-
-	return Rule{
+	r := Rule{
 		RawLine:     rawRule,
-		Stages:      stages,
 		Filename:    filename,
 		LineNumber:  lineNumber,
 		Enabled:     true,
 		maxQuantity: maxQuantity,
-	}, nil
+	}
+
+	for i, stg := range strings.Split(rule, "#") {
+		line := strings.TrimSpace(stg)
+		if line == "" {
+			break
+		}
+
+		if i == 0 {
+			line, err := replaceStringPropertiesInStage1(line)
+			if err != nil {
+				return Rule{}, err
+			}
+
+			line = strings.ReplaceAll(line, "[", "")
+			line = strings.ReplaceAll(line, "]", "")
+			program, err := expr.Compile(line, expr.Env(fixedPropsList))
+			if err != nil {
+				return Rule{}, fmt.Errorf("error compiling rule: %w", err)
+			}
+			r.stage1 = program
+		}
+
+		if i == 1 {
+			r.requiredStats = getRequiredStatsForRule(line)
+
+			statsMap := make(map[string]int)
+			for _, prop := range r.requiredStats {
+				statsMap[prop] = 0
+				// Check for not supported stats
+				if slices.Contains(notSupportedStats, prop) {
+					return Rule{}, fmt.Errorf("property %s is not supported, please remove it", prop)
+				}
+			}
+
+			line = strings.ReplaceAll(line, "[", "")
+			line = strings.ReplaceAll(line, "]", "")
+			program, err := expr.Compile(line, expr.Env(statsMap))
+			if err != nil {
+				return Rule{}, fmt.Errorf("error compiling rule: %w", err)
+			}
+			r.stage2 = program
+
+			// We only care about first and second part, third one is maxquantity and was already parsed
+			break
+		}
+	}
+
+	return r, nil
 }
 
 func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
-	stage1 := r.Stages[0]
-	baseProperties := fixedPropsRegexp.FindAllStringSubmatch(stage1, -1)
-	for _, prop := range baseProperties {
-		switch prop[2] {
+	stage1Props := make(map[string]int)
+	for prop := range fixedPropsList {
+		switch prop {
 		case "type":
-			partialReplace := strings.ReplaceAll(prop[0], fmt.Sprintf("[%s]", prop[2]), fmt.Sprintf("%d", typeAliases[it.TypeAsString()]))
-			partialReplace = strings.ReplaceAll(partialReplace, prop[4], fmt.Sprintf("%d", typeAliases[prop[4]]))
-			stage1 = strings.ReplaceAll(stage1, prop[0], partialReplace)
+			stage1Props["type"] = typeAliases[it.TypeAsString()]
 		case "quality":
-			partialReplace := strings.ReplaceAll(prop[0], fmt.Sprintf("[%s]", prop[2]), fmt.Sprintf("%d", it.Quality))
-			partialReplace = strings.ReplaceAll(partialReplace, prop[4], fmt.Sprintf("%d", qualityAliases[prop[4]]))
-			stage1 = strings.ReplaceAll(stage1, prop[0], partialReplace)
+			stage1Props["quality"] = int(it.Quality)
 		case "class":
-			partialReplace := strings.ReplaceAll(prop[0], fmt.Sprintf("[%s]", prop[2]), fmt.Sprintf("%d", it.Desc().Tier()))
-			partialReplace = strings.ReplaceAll(partialReplace, prop[4], fmt.Sprintf("%d", classAliases[prop[4]]))
-			stage1 = strings.ReplaceAll(stage1, prop[0], partialReplace)
+			stage1Props["class"] = int(it.Desc().Tier())
 		case "name":
-			partialReplace := strings.ReplaceAll(prop[0], fmt.Sprintf("[%s]", prop[2]), fmt.Sprintf("%d", item.GetIDByName(string(it.Name))))
-			partialReplace = strings.ReplaceAll(partialReplace, prop[4], fmt.Sprintf("%d", item.GetIDByName(prop[4])))
-			stage1 = strings.ReplaceAll(stage1, prop[0], partialReplace)
+			stage1Props["name"] = it.ID
 		case "flag":
-			partialReplace := strings.ReplaceAll(prop[0], fmt.Sprintf("[%s]", prop[2]), fmt.Sprintf("%d", map[bool]int{true: 1, false: 0}[it.Ethereal]))
-			partialReplace = strings.ReplaceAll(partialReplace, prop[4], fmt.Sprintf("%d", 1))
-			stage1 = strings.ReplaceAll(stage1, prop[0], partialReplace)
+			stage1Props["flag"] = map[bool]int{true: 1, false: 0}[it.Ethereal]
 		case "color":
 			// TODO: Not supported yet
 		}
 	}
 
 	// Let's evaluate first stage
-	stage1Result, err := expr.Eval(stage1, nil)
+	stage1Result, err := expr.Run(r.stage1, stage1Props)
 	if err != nil {
 		return RuleResultNoMatch, fmt.Errorf("error evaluating rule: %w", err)
 	}
@@ -143,27 +149,25 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 		return RuleResultNoMatch, nil
 	}
 
-	// Let's go with other stats now
-	// TODO: properties are missing (enhanceddefense, enhanceddamage, etc)
-	stage2 := r.Stages[1]
 	stage2Result := true
-	if stage2 != "" {
-		for _, statName := range statsRegexp.FindAllStringSubmatch(stage2, -1) {
-			statData, found := statAliases[statName[1]]
+	if r.stage2 != nil {
+		stage2Props := make(map[string]int)
+		for _, statName := range r.requiredStats {
+			statData, found := statAliases[statName]
 			if !found {
-				return RuleResultNoMatch, fmt.Errorf("property %s is not valid or not supported", statName[1])
+				return RuleResultNoMatch, fmt.Errorf("property %s is not valid or not supported", statName)
 			}
 
 			// Exception for enhanceddefense, is not accurate
-			if statName[0] == "[enhanceddefense]" {
+			if strings.EqualFold(statName, "enhanceddefense") {
 				enhancedDefense := r.calculateEnhancedDefense(it)
-				stage2 = strings.ReplaceAll(stage2, statName[0], fmt.Sprintf("%d", enhancedDefense))
+				stage2Props[statName] = enhancedDefense
 				continue
 			}
 
-			if itemTypes, found := blockedStatsForItemType[statName[1]]; found {
+			if itemTypes, found := blockedStatsForItemType[statName]; found {
 				if slices.Contains(itemTypes, it.TypeAsString()) {
-					return RuleResultNoMatch, fmt.Errorf("property %s is not supported for item type %s", statName[0], it.TypeAsString())
+					return RuleResultNoMatch, fmt.Errorf("property %s is not supported for item type %s", statName, it.TypeAsString())
 				}
 			}
 
@@ -172,11 +176,10 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 				layer = statData[1]
 			}
 			itemStat, _ := it.FindStat(stat.ID(statData[0]), layer)
-			// By default, value will be 0 is stat is not found, it's okay for evaluation purposes.
-			stage2 = strings.ReplaceAll(stage2, statName[0], fmt.Sprintf("%d", itemStat.Value))
+			stage2Props[statName] = itemStat.Value
 		}
 
-		res, err := expr.Eval(stage2, nil)
+		res, err := expr.Run(r.stage2, stage2Props)
 		if err != nil {
 			return RuleResultNoMatch, fmt.Errorf("error evaluating rule: %w", err)
 		}
@@ -192,8 +195,43 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 	if stage1Result.(bool) && !it.Identified {
 		return RuleResultPartial, nil
 	}
-
 	return RuleResultNoMatch, nil
+}
+
+func replaceStringPropertiesInStage1(stage1 string) (string, error) {
+	baseProperties := fixedPropsRegexp.FindAllStringSubmatch(stage1, -1)
+	for _, prop := range baseProperties {
+		replaceWith := ""
+		switch prop[2] {
+		case "type":
+			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", typeAliases[prop[4]]))
+		case "quality":
+			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", qualityAliases[prop[4]]))
+		case "class":
+			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", classAliases[prop[4]]))
+		case "name":
+			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", item.GetIDByName(prop[4])))
+		case "flag":
+			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", 1))
+		case "color":
+			// TODO: Not supported yet
+			return "", fmt.Errorf("property %s is not supported yet", prop[2])
+		}
+
+		if replaceWith != "" {
+			stage1 = strings.ReplaceAll(stage1, prop[0], replaceWith)
+		}
+	}
+
+	return stage1, nil
+}
+
+func getRequiredStatsForRule(line string) []string {
+	statsList := make([]string, 0)
+	for _, statName := range statsRegexp.FindAllStringSubmatch(line, -1) {
+		statsList = append(statsList, statName[1])
+	}
+	return statsList
 }
 
 // MaxQuantity returns the maximum quantity of items that character can have, 0 means no limit
