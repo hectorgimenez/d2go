@@ -40,6 +40,28 @@ type Rule struct {
 type RuleResult int
 type Rules []Rule
 
+func (r Rules) EvaluateAll(it data.Item) (Rule, RuleResult) {
+	bestMatch := RuleResultNoMatch
+	bestMatchingRule := Rule{}
+	for _, rule := range r {
+		if rule.Enabled {
+			result, err := rule.Evaluate(it)
+			if err != nil {
+				continue
+			}
+			if result == RuleResultFullMatch {
+				return rule, result
+			}
+			if result == RuleResultPartial {
+				bestMatch = result
+				bestMatchingRule = rule
+			}
+		}
+	}
+
+	return bestMatchingRule, bestMatch
+}
+
 var fixedPropsList = map[string]int{"type": 0, "quality": 0, "class": 0, "name": 0, "flag": 0, "color": 0}
 
 func NewRule(rawRule string, filename string, lineNumber int) (Rule, error) {
