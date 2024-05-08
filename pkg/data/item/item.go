@@ -11,6 +11,7 @@ type Description struct {
 	InventoryHeight int
 	MinDefense      int
 	MaxDefense      int
+	Type            string
 }
 
 func (d Description) Tier() Tier {
@@ -23,4 +24,8 @@ func (d Description) Tier() Tier {
 	}
 
 	return TierNormal
+}
+
+func (d Description) GetType() Type {
+	return ItemTypes[d.Type]
 }

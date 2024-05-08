@@ -35,13 +35,13 @@ func ReadDir(path string) (Rules, error) {
 }
 
 func ParseNIPFile(filePath string) (Rules, error) {
-	fileReader, err := os.Open(filePath)
+	fileToRead, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
 	}
-	defer fileReader.Close()
+	defer fileToRead.Close()
 
-	fileScanner := bufio.NewScanner(fileReader)
+	fileScanner := bufio.NewScanner(fileToRead)
 	fileScanner.Split(bufio.ScanLines)
 
 	rules := make([]Rule, 0)

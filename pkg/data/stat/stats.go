@@ -8,6 +8,18 @@ type Data struct {
 	Layer int
 }
 
+type Stats []Data
+
+func (i Stats) FindStat(id ID, layer int) (Data, bool) {
+	for _, s := range i {
+		if s.ID == id && s.Layer == layer {
+			return s, true
+		}
+	}
+
+	return Data{}, false
+}
+
 const (
 	Strength ID = iota
 	Energy
@@ -372,7 +384,7 @@ const (
 	SkillMissileDamageScale
 )
 
-var Stats = []string{
+var StringStats = []string{
 	"strength",
 	"energy",
 	"dexterity",
@@ -737,5 +749,5 @@ var Stats = []string{
 }
 
 func (s ID) String() string {
-	return Stats[s]
+	return StringStats[s]
 }

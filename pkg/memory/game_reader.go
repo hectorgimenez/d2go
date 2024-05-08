@@ -107,13 +107,15 @@ func (gd *GameReader) hoveredData() data.HoverData {
 	return data.HoverData{}
 }
 
-func (gd *GameReader) getStatsData(statCount uint, statPtr uintptr) []stat.Data {
+func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
+	statList := gd.Process.ReadUInt(statListPtr, Uint64)
+	statCount := gd.Process.ReadUInt(statListPtr+0x8, Uint64)
 	if statCount == 0 {
 		return []stat.Data{}
 	}
 
 	var stats = make([]stat.Data, 0)
-	statBuffer := gd.Process.ReadBytesFromMemory(statPtr, statCount*10)
+	statBuffer := gd.Process.ReadBytesFromMemory(uintptr(statList), statCount*10)
 	for i := 0; i < int(statCount); i++ {
 		offset := uint(i * 8)
 		statLayer := ReadUIntFromBuffer(statBuffer, offset, Uint16)

@@ -67,7 +67,6 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 				IsHovered: itemHovered,
 				Stats:     stats,
 				BaseStats: baseStats,
-				Type:      int(itemType),
 			}
 			setProperties(&itm, uint32(flags))
 
@@ -101,7 +100,7 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 				}
 			case 1:
 				location = item.LocationEquipped
-				if itm.TypeAsString() == "belt" {
+				if itm.Type().Code == item.TypeBelt {
 					belt.Name = itm.Name
 				}
 			case 2:
@@ -138,16 +137,59 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 	return items
 }
 
-func (gd *GameReader) getItemStats(statsListExPtr uintptr) ([]stat.Data, []stat.Data) {
-	baseStatPtr := gd.Process.ReadUInt(statsListExPtr+0x30, Uint64)
-	baseStatsCount := gd.Process.ReadUInt(statsListExPtr+0x38, Uint64)
-	statPtr := gd.Process.ReadUInt(statsListExPtr+0x88, Uint64)
-	statCount := gd.Process.ReadUInt(statsListExPtr+0x90, Uint64)
+func (gd *GameReader) getItemStats(statsListExPtr uintptr) (stat.Stats, stat.Stats) {
+	fullStats := gd.getStatsList(statsListExPtr + 0x88)
+	baseStats := gd.getStatsList(statsListExPtr + 0x30)
 
-	stats := gd.getStatsData(statCount, uintptr(statPtr))
-	baseStats := gd.getStatsData(baseStatsCount, uintptr(baseStatPtr))
+	flags := gd.Process.ReadUInt(statsListExPtr+0x1C, Uint64)
 
-	return baseStats, stats
+	lastStatsList := uintptr(gd.Process.ReadUInt(statsListExPtr+0x70, Uint64))
+	if (flags & 0x80000000) == 0 {
+		return baseStats, fullStats
+	}
+	attempts := 0
+	statListFlags := uintptr(0)
+	statListPrev := lastStatsList
+	for (0x40 & statListFlags & 0xFFFFDFFF) == 0 {
+		attempts++
+		if attempts == 10 {
+			break
+		}
+		statListPrev = uintptr(gd.Process.ReadUInt(statListPrev+0x48, Uint64))
+		statListFlags = uintptr(gd.Process.ReadUInt(statListPrev+0x1C, Uint64))
+		if statListPrev == 0 {
+			break
+		}
+	}
+	modifierStats := gd.getStatsList(statListPrev + 0x88)
+	modifierBaseStats := gd.getStatsList(statListPrev + 0x30)
+
+	if len(modifierStats) != 0 || len(modifierBaseStats) != 0 {
+		for _, mStat := range modifierBaseStats {
+			if _, found := fullStats.FindStat(mStat.ID, mStat.Layer); !found {
+				fullStats = append(fullStats, mStat)
+			}
+		}
+
+		modifierStatsPrevEx := uintptr(gd.Process.ReadUInt(statListPrev+0x48, Uint64))
+		modifierBaseStatsPrev := gd.getStatsList(modifierStatsPrevEx + 0x30)
+
+		for _, mStat := range modifierBaseStatsPrev {
+			for i, st := range fullStats {
+				if st.ID == mStat.ID && st.Layer == mStat.Layer && st.Value != mStat.Value {
+					fullStats[i].Value = st.Value + mStat.Value
+				}
+			}
+			if _, found := fullStats.FindStat(mStat.ID, mStat.Layer); !found {
+				fullStats = append(fullStats, mStat)
+			}
+			if _, found := baseStats.FindStat(mStat.ID, mStat.Layer); !found {
+				baseStats = append(baseStats, mStat)
+			}
+		}
+	}
+
+	return baseStats, fullStats
 }
 
 func setProperties(item *data.Item, flags uint32) {

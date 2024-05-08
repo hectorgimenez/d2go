@@ -155,42 +155,6 @@ func TestRule_Evaluate(t *testing.T) {
 			},
 			want: RuleResultFullMatch,
 		},
-		{
-			name: "enhanceddamage should not work for weapons",
-			fields: fields{
-				RawLine: "[type] == axe && [quality] == superior # [enhanceddamage] >= 15 #",
-				Enabled: true,
-			},
-			args: args{
-				item: data.Item{
-					Identified: true,
-					ID:         0,
-					Name:       "handaxe",
-					Quality:    item.QualitySuperior,
-					Stats:      []stat.Data{},
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "enhanceddamage should work for charms and not damage items",
-			fields: fields{
-				RawLine: "[name] == grandcharm && [quality] == magic # [enhanceddamage] >= 15 #",
-				Enabled: true,
-			},
-			args: args{
-				item: data.Item{
-					Identified: true,
-					ID:         605,
-					Name:       "grandcharm",
-					Quality:    item.QualityMagic,
-					Stats: []stat.Data{
-						{ID: stat.EnhancedDamage, Value: 15},
-					},
-				},
-			},
-			want: RuleResultFullMatch,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -219,13 +183,6 @@ func TestNew(t *testing.T) {
 		want    Rule
 		wantErr bool
 	}{
-		{
-			name: "itemthrustdamage should throw an error",
-			args: args{
-				rawRule: "[type] == axe # [itemthrustdamage] >= 15",
-			},
-			wantErr: true,
-		},
 		{
 			name: "Ensure [color] returns error, not supported yet",
 			args: args{

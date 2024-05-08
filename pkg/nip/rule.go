@@ -3,7 +3,6 @@ package nip
 import (
 	"fmt"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -119,10 +118,6 @@ func NewRule(rawRule string, filename string, lineNumber int) (Rule, error) {
 			statsMap := make(map[string]int)
 			for _, prop := range r.requiredStats {
 				statsMap[prop] = 0
-				// Check for not supported stats
-				if slices.Contains(notSupportedStats, prop) {
-					return Rule{}, fmt.Errorf("property %s is not supported, please remove it", prop)
-				}
 			}
 
 			line = strings.ReplaceAll(line, "[", "")
@@ -146,7 +141,7 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 	for prop := range fixedPropsList {
 		switch prop {
 		case "type":
-			stage1Props["type"] = typeAliases[it.TypeAsString()]
+			stage1Props["type"] = it.Type().ID
 		case "quality":
 			stage1Props["quality"] = int(it.Quality)
 		case "class":
@@ -187,12 +182,6 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 				continue
 			}
 
-			if itemTypes, found := blockedStatsForItemType[statName]; found {
-				if slices.Contains(itemTypes, it.TypeAsString()) {
-					return RuleResultNoMatch, fmt.Errorf("property %s is not supported for item type %s", statName, it.TypeAsString())
-				}
-			}
-
 			layer := 0
 			if len(statData) > 1 {
 				layer = statData[1]
@@ -226,7 +215,7 @@ func replaceStringPropertiesInStage1(stage1 string) (string, error) {
 		replaceWith := ""
 		switch prop[2] {
 		case "type":
-			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", typeAliases[prop[4]]))
+			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", item.ItemTypes[typeAliases[prop[4]]].ID))
 		case "quality":
 			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", qualityAliases[prop[4]]))
 		case "class":
@@ -277,7 +266,7 @@ func (r Rule) calculateEnhancedDefense(i data.Item) int {
 		return 0
 	}
 
-	if i.TypeAsString() != "armor" {
+	if !i.Type().IsType(item.TypeArmor) {
 		return 0
 	}
 

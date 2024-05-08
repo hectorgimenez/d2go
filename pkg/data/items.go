@@ -56,20 +56,17 @@ type Item struct {
 	Location   item.Location
 	Ethereal   bool
 	IsHovered  bool
-	Stats      []stat.Data
-	BaseStats  []stat.Data
+	BaseStats  stat.Stats
+	Stats      stat.Stats
 	Identified bool
-	Type       int
 }
 
 func (i Item) Desc() item.Description {
 	return item.Desc[i.ID]
 }
 
-func (i Item) TypeAsString() string {
-	t, _ := item.TypeForItemName(string(i.Name))
-
-	return t
+func (i Item) Type() item.Type {
+	return i.Desc().GetType()
 }
 
 func (i Item) IsPotion() bool {
@@ -89,22 +86,14 @@ func (i Item) IsRejuvPotion() bool {
 }
 
 func (i Item) IsFromQuest() bool {
-	for _, q := range item.QuestItems {
-		if strings.EqualFold(string(i.Name), q) {
-			return true
-		}
-	}
-
-	return false
+	return i.Desc().Type == item.TypeQuest
 }
 
 func (i Item) FindStat(id stat.ID, layer int) (stat.Data, bool) {
-	totalStats := append(i.Stats, i.BaseStats...)
-	for _, s := range totalStats {
-		if s.ID == id && s.Layer == layer {
-			return s, true
-		}
+	st, found := i.Stats.FindStat(id, layer)
+	if found {
+		return st, true
 	}
 
-	return stat.Data{}, false
+	return i.BaseStats.FindStat(id, layer)
 }
