@@ -161,10 +161,9 @@ func (gd *GameReader) getItemStats(statsListExPtr uintptr) (stat.Stats, stat.Sta
 			return baseStats, fullStats
 		}
 	}
-	modifierStats := gd.getStatsList(statListPrev + 0x88)
 	modifierBaseStats := gd.getStatsList(statListPrev + 0x30)
 
-	if len(modifierStats) != 0 || len(modifierBaseStats) != 0 {
+	if len(modifierBaseStats) != 0 {
 		for _, mStat := range modifierBaseStats {
 			if _, found := fullStats.FindStat(mStat.ID, mStat.Layer); !found {
 				fullStats = append(fullStats, mStat)
