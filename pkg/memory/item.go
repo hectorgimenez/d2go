@@ -153,12 +153,12 @@ func (gd *GameReader) getItemStats(statsListExPtr uintptr) (stat.Stats, stat.Sta
 	for (0x40 & statListFlags & 0xFFFFDFFF) == 0 {
 		attempts++
 		if attempts == 10 {
-			break
+			return baseStats, fullStats
 		}
 		statListPrev = uintptr(gd.Process.ReadUInt(statListPrev+0x48, Uint64))
 		statListFlags = uintptr(gd.Process.ReadUInt(statListPrev+0x1C, Uint64))
 		if statListPrev == 0 {
-			break
+			return baseStats, fullStats
 		}
 	}
 	modifierStats := gd.getStatsList(statListPrev + 0x88)
