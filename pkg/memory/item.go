@@ -58,11 +58,6 @@ func (gd *GameReader) Items(rawPlayerUnits RawPlayerUnits, hover data.HoverData)
 			itemX := ReadUIntFromBuffer(pathBuffer, 0x10, Uint16)
 			itemY := ReadUIntFromBuffer(pathBuffer, 0x14, Uint16)
 
-			// Item Stats
-			statsListExPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x88, Uint64))
-
-			baseStats, stats := gd.getItemStats(statsListExPtr)
-
 			name := item.GetNameByEnum(txtFileNo)
 			itemHovered := false
 			if hover.IsHovered && hover.UnitType == 4 && hover.UnitID == data.UnitID(unitID) {
@@ -79,8 +74,6 @@ func (gd *GameReader) Items(rawPlayerUnits RawPlayerUnits, hover data.HoverData)
 					Y: int(itemY),
 				},
 				IsHovered: itemHovered,
-				Stats:     stats,
-				BaseStats: baseStats,
 			}
 			setProperties(&itm, uint32(flags))
 
@@ -131,6 +124,12 @@ func (gd *GameReader) Items(rawPlayerUnits RawPlayerUnits, hover data.HoverData)
 
 			// We don't care about the items we don't know where they are, probably previous games or random crap
 			if location != item.LocationUnknown {
+				// Item Stats
+				statsListExPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x88, Uint64))
+				baseStats, stats := gd.getItemStats(statsListExPtr)
+				itm.Stats = stats
+				itm.BaseStats = baseStats
+
 				if location == item.LocationBelt {
 					belt.Items = append(belt.Items, itm)
 				} else {
