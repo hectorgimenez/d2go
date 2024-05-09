@@ -134,6 +134,7 @@ type Position struct {
 }
 
 type PlayerUnit struct {
+	Address            uintptr
 	Name               string
 	ID                 UnitID
 	Area               area.ID

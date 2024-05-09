@@ -99,6 +99,7 @@ func (gd *GameReader) GetPlayerUnit(mainPlayerUnit RawPlayerUnit) data.PlayerUni
 	}
 
 	d := data.PlayerUnit{
+		Address:            mainPlayerUnit.Address,
 		Name:               mainPlayerUnit.Name,
 		ID:                 mainPlayerUnit.UnitID,
 		Area:               mainPlayerUnit.Area,
