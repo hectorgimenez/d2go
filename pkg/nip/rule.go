@@ -175,13 +175,6 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 				return RuleResultNoMatch, fmt.Errorf("property %s is not valid or not supported", statName)
 			}
 
-			// Exception for enhanceddefense, is not accurate
-			if strings.EqualFold(statName, "enhanceddefense") {
-				enhancedDefense := r.calculateEnhancedDefense(it)
-				stage2Props[statName] = enhancedDefense
-				continue
-			}
-
 			layer := 0
 			if len(statData) > 1 {
 				layer = statData[1]
@@ -248,33 +241,4 @@ func getRequiredStatsForRule(line string) []string {
 // MaxQuantity returns the maximum quantity of items that character can have, 0 means no limit
 func (r Rule) MaxQuantity() int {
 	return r.maxQuantity
-}
-
-func (r Rule) calculateEnhancedDefense(i data.Item) int {
-	defenseStat, found := i.FindStat(stat.Defense, 0)
-
-	// This is special case for weapons and other stuff without base Defense and with EnhancedDefense, we can return it directly
-	// since EnhancedDefense it's a stat.
-	if !found {
-		if edStat, edStatFound := i.FindStat(stat.EnhancedDefense, 0); edStatFound {
-			return edStat.Value
-		}
-	}
-
-	// Make it only work for white base items
-	if i.Quality != item.QualitySuperior {
-		return 0
-	}
-
-	if !i.Type().IsType(item.TypeArmor) {
-		return 0
-	}
-
-	itemTypeMaxDefense := i.Desc().MaxDefense
-
-	if defenseStat.Value <= itemTypeMaxDefense {
-		return 0
-	}
-
-	return int(float64(defenseStat.Value-itemTypeMaxDefense) / float64(itemTypeMaxDefense) * 100)
 }

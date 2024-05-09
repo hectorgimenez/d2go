@@ -54,6 +54,7 @@ type Item struct {
 	Quality    item.Quality
 	Position   Position
 	Location   item.Location
+	Page       int // Used for shared stash
 	Ethereal   bool
 	IsHovered  bool
 	BaseStats  stat.Stats

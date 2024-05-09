@@ -23,10 +23,14 @@ func (gd *GameReader) GetData() data.Data {
 		gd.offset = calculateOffsets(gd.Process)
 	}
 
-	roster := gd.getRoster()
-	playerUnitPtr, corpse := gd.GetPlayerUnitPtr(roster)
+	rawPlayerUnits := gd.GetRawPlayerUnits()
+	roster := gd.getRoster(rawPlayerUnits)
+	mainPlayerUnit := rawPlayerUnits.GetMainPlayer()
+	if mainPlayerUnit.Address == 0 {
+		return gd.previousRead
+	}
 
-	pu := gd.GetPlayerUnit(playerUnitPtr)
+	pu := gd.GetPlayerUnit(mainPlayerUnit)
 	hover := gd.hoveredData()
 
 	// Quests
@@ -36,11 +40,16 @@ func (gd *GameReader) GetData() data.Data {
 
 	gameQuestsBytes = gameQuestsBytes[3:]
 
+	corpseUnit := rawPlayerUnits.GetCorpse()
 	d := data.Data{
-		Corpse:      corpse,
+		Corpse: data.Corpse{
+			Found:     corpseUnit.Address != 0,
+			IsHovered: corpseUnit.IsHovered,
+			Position:  corpseUnit.Position,
+		},
 		Monsters:    gd.Monsters(pu.Position, hover),
 		PlayerUnit:  pu,
-		Items:       gd.Items(pu, hover),
+		Items:       gd.Items(rawPlayerUnits, hover),
 		Objects:     gd.Objects(pu.Position, hover),
 		OpenMenus:   gd.openMenus(),
 		Roster:      roster,
@@ -50,19 +59,15 @@ func (gd *GameReader) GetData() data.Data {
 		KeyBindings: gd.GetKeyBindings(),
 	}
 
-	if playerUnitPtr == 0 {
-		return gd.previousRead
-	}
-
 	gd.previousRead = d
 
 	return d
 }
 
 func (gd *GameReader) InGame() bool {
-	pu, _ := gd.GetPlayerUnitPtr([]data.RosterMember{})
+	playerUnits := gd.GetRawPlayerUnits()
 
-	return pu > 0
+	return playerUnits.GetMainPlayer().UnitID > 0
 }
 
 func (gd *GameReader) openMenus() data.OpenMenus {
@@ -108,8 +113,9 @@ func (gd *GameReader) hoveredData() data.HoverData {
 }
 
 func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
-	statList := gd.Process.ReadUInt(statListPtr, Uint64)
-	statCount := gd.Process.ReadUInt(statListPtr+0x8, Uint64)
+	statsListBuffer := gd.ReadBytesFromMemory(statListPtr, 0x10)
+	statList := ReadUIntFromBuffer(statsListBuffer, 0, Uint64)
+	statCount := ReadUIntFromBuffer(statsListBuffer, 0x08, Uint64)
 	if statCount == 0 {
 		return []stat.Data{}
 	}
@@ -129,12 +135,38 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 			stat.Mana,
 			stat.MaxMana,
 			stat.Stamina,
-			stat.LifePerLevel,
-			stat.ManaPerLevel:
+			stat.MaxStamina:
 			value = int(statValue >> 8)
 		case stat.ColdLength,
 			stat.PoisonLength:
 			value = int(statValue / 25)
+		case stat.DeadlyStrikePerLevel:
+			value = int(float64(statValue) / .8)
+		case stat.HitCausesMonsterToFlee:
+			value = int(float64(statValue) / 1.28)
+		case stat.AttackRatingUndeadPerLevel:
+			value = int(statValue / 2)
+		case stat.MagicFindPerLevel,
+			stat.ExtraGoldPerLevel,
+			stat.DamageDemonPerLevel,
+			stat.DamageUndeadPerLevel,
+			stat.DefensePerLevel,
+			stat.MaxDamagePerLevel,
+			stat.MaxDamagePercentPerLevel,
+			stat.StrengthPerLevel,
+			stat.DexterityPerLevel,
+			stat.VitalityPerLevel,
+			stat.ThornsPerLevel:
+			value = int(statValue / 8)
+		case stat.LifePerLevel,
+			stat.ManaPerLevel:
+			value = int(statValue / 2048)
+		case stat.ReplenishDurability, stat.ReplenishQuantity:
+			value = 2 / int(statValue)
+		case stat.RegenStaminaPerLevel:
+			value = int(statValue) * 10
+		case stat.LevelRequirePercent:
+			value = int(statValue) * -1
 		}
 
 		stats = append(stats, stat.Data{

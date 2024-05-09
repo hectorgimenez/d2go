@@ -149,6 +149,7 @@ func TestRule_Evaluate(t *testing.T) {
 					Name:       "mageplate",
 					Quality:    item.QualitySuperior,
 					Stats: []stat.Data{
+						{ID: stat.EnhancedDefense, Value: 15},
 						{ID: stat.Defense, Value: 301},
 					},
 				},

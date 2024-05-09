@@ -1,6 +1,7 @@
 package data
 
 import (
+	"math"
 	"strings"
 
 	"github.com/hectorgimenez/d2go/pkg/data/quest"
@@ -137,8 +138,8 @@ type PlayerUnit struct {
 	ID                 UnitID
 	Area               area.ID
 	Position           Position
-	Stats              map[stat.ID]int
-	BaseStats          map[stat.ID]int
+	Stats              stat.Stats
+	BaseStats          stat.Stats
 	Skills             map[skill.ID]skill.Points
 	States             state.States
 	Class              Class
@@ -147,21 +148,76 @@ type PlayerUnit struct {
 	AvailableWaypoints []area.ID // Is only filled when WP menu is open and only for the specific selected tab
 }
 
+func (pu PlayerUnit) FindStat(id stat.ID, layer int) (stat.Data, bool) {
+	st, found := pu.Stats.FindStat(id, layer)
+	if found {
+		return st, true
+	}
+
+	return pu.BaseStats.FindStat(id, layer)
+}
+
 func (pu PlayerUnit) MaxGold() int {
-	return goldPerLevel * pu.Stats[stat.Level]
+	lvl, _ := pu.FindStat(stat.Level, 0)
+	return goldPerLevel * lvl.Value
 }
 
 // TotalGold returns the amount of gold, including inventory and stash
 func (pu PlayerUnit) TotalGold() int {
-	return pu.Stats[stat.Gold] + pu.Stats[stat.StashGold]
+	gold, _ := pu.FindStat(stat.Gold, 0)
+	stashGold, _ := pu.FindStat(stat.StashGold, 0)
+
+	return gold.Value + stashGold.Value
 }
 
 func (pu PlayerUnit) HPPercent() int {
-	return int((float64(pu.Stats[stat.Life]) / float64(pu.Stats[stat.MaxLife])) * 100)
+	life, _ := pu.FindStat(stat.Life, 0)
+	maxLife, _ := pu.FindStat(stat.MaxLife, 0)
+
+	return int((float64(life.Value) / float64(maxLife.Value)) * 100)
 }
 
 func (pu PlayerUnit) MPPercent() int {
-	return int((float64(pu.Stats[stat.Mana]) / float64(pu.Stats[stat.MaxMana])) * 100)
+	mana, _ := pu.FindStat(stat.Mana, 0)
+	maxMana, _ := pu.FindStat(stat.MaxMana, 0)
+
+	return int((float64(mana.Value) / float64(maxMana.Value)) * 100)
+}
+
+func (pu PlayerUnit) CastingFrames() int {
+	// Formula detailed here: https://diablo.fandom.com/wiki/Faster_Cast_Rate
+	fcr, _ := pu.FindStat(stat.FasterCastRate, 0)
+	baseAnimation := pu.getCastingBaseSpeed()
+
+	ecfr := math.Floor(float64(fcr.Value*120) / float64(fcr.Value+120))
+	if ecfr > 75 {
+		ecfr = 75
+	}
+
+	// Animation speed for druids is different
+	cf := math.Ceil(256*baseAnimation/math.Floor(float64(256*(100+ecfr))/100.0)) - 1
+
+	return int(cf)
+}
+
+func (pu PlayerUnit) getCastingBaseSpeed() float64 {
+	// TODO: Implement logic for Lightning?
+	switch pu.Class {
+	case Amazon:
+		return 20
+	case Assassin:
+		return 17
+	case Barbarian:
+		return 14
+	case Necromancer, Paladin:
+		return 16
+	case Druid:
+		return 15
+	case Sorceress:
+		return 14
+	}
+
+	return 16
 }
 
 func (pu PlayerUnit) HasDebuff() bool {

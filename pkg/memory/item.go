@@ -1,17 +1,31 @@
 package memory
 
 import (
+	"slices"
 	"sort"
 
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/item"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
+	"github.com/hectorgimenez/d2go/pkg/data/state"
 	"github.com/hectorgimenez/d2go/pkg/utils"
 )
 
-func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items {
+func (gd *GameReader) Items(rawPlayerUnits RawPlayerUnits, hover data.HoverData) data.Items {
+	mainPlayer := rawPlayerUnits.GetMainPlayer()
 	baseAddr := gd.Process.moduleBaseAddressPtr + gd.offset.UnitTable + (4 * 1024)
 	unitTableBuffer := gd.Process.ReadBytesFromMemory(baseAddr, 128*8)
+
+	stashPlayerUnits := make(map[uint]RawPlayerUnit)
+	stashPlayerUnitOrder := make([]uint, 0)
+	for _, pu := range rawPlayerUnits {
+		if pu.States.HasState(state.Sharedstash) {
+			order := gd.ReadUInt(pu.Address+0xD8, Uint64)
+			stashPlayerUnitOrder = append(stashPlayerUnitOrder, order)
+			stashPlayerUnits[order] = pu
+		}
+	}
+	slices.Sort(stashPlayerUnitOrder)
 
 	items := data.Items{}
 	belt := data.Belt{}
@@ -73,29 +87,29 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 			location := item.LocationUnknown
 			switch itemLoc {
 			case 0:
-				if 0x00002000&flags != 0 || (data.UnitID(itemOwnerNPC) != pu.ID) {
+				// Offline only
+				if itemOwnerNPC == 2 || itemOwnerNPC == uint(stashPlayerUnits[stashPlayerUnitOrder[0]].UnitID) {
+					location = item.LocationSharedStash1
+					break
+				}
+				if itemOwnerNPC == 3 || itemOwnerNPC == uint(stashPlayerUnits[stashPlayerUnitOrder[1]].UnitID) {
+					location = item.LocationSharedStash2
+					break
+				}
+				if itemOwnerNPC == 4 || itemOwnerNPC == uint(stashPlayerUnits[stashPlayerUnitOrder[2]].UnitID) {
+					location = item.LocationSharedStash3
+					break
+				}
+
+				if 0x00002000&flags != 0 && itemOwnerNPC == 4294967295 {
 					location = item.LocationVendor
 					break
 				} else if invPage == 0 {
 					location = item.LocationInventory
 					break
 				}
-				if data.UnitID(itemOwnerNPC) == pu.ID || itemOwnerNPC == 1 {
+				if data.UnitID(itemOwnerNPC) == mainPlayer.UnitID || itemOwnerNPC == 1 {
 					location = item.LocationStash
-					break
-				}
-
-				// Offline only
-				if itemOwnerNPC == 2 {
-					location = item.LocationSharedStash1
-					break
-				}
-				if itemOwnerNPC == 3 {
-					location = item.LocationSharedStash2
-					break
-				}
-				if itemOwnerNPC == 4 {
-					location = item.LocationSharedStash3
 					break
 				}
 			case 1:
@@ -115,10 +129,13 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 
 			itm.Location = location
 
-			if location == item.LocationBelt {
-				belt.Items = append(belt.Items, itm)
-			} else {
-				items.AllItems = append(items.AllItems, itm)
+			// We don't care about the items we don't know where they are, probably previous games or random crap
+			if location != item.LocationUnknown {
+				if location == item.LocationBelt {
+					belt.Items = append(belt.Items, itm)
+				} else {
+					items.AllItems = append(items.AllItems, itm)
+				}
 			}
 
 			itemUnitPtr = uintptr(gd.Process.ReadUInt(itemUnitPtr+0x150, Uint64))
@@ -128,8 +145,8 @@ func (gd *GameReader) Items(pu data.PlayerUnit, hover data.HoverData) data.Items
 	items.Belt = belt
 
 	sort.SliceStable(items.AllItems, func(i, j int) bool {
-		distanceI := utils.DistanceFromPoint(pu.Position, items.AllItems[i].Position)
-		distanceJ := utils.DistanceFromPoint(pu.Position, items.AllItems[j].Position)
+		distanceI := utils.DistanceFromPoint(mainPlayer.Position, items.AllItems[i].Position)
+		distanceJ := utils.DistanceFromPoint(mainPlayer.Position, items.AllItems[j].Position)
 
 		return distanceI < distanceJ
 	})
@@ -142,8 +159,8 @@ func (gd *GameReader) getItemStats(statsListExPtr uintptr) (stat.Stats, stat.Sta
 	baseStats := gd.getStatsList(statsListExPtr + 0x30)
 
 	flags := gd.Process.ReadUInt(statsListExPtr+0x1C, Uint64)
-
 	lastStatsList := uintptr(gd.Process.ReadUInt(statsListExPtr+0x70, Uint64))
+
 	if (flags & 0x80000000) == 0 {
 		return baseStats, fullStats
 	}

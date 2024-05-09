@@ -6,137 +6,74 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/area"
 	"github.com/hectorgimenez/d2go/pkg/data/skill"
-	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"github.com/hectorgimenez/d2go/pkg/data/state"
 )
 
-func (gd *GameReader) GetPlayerUnitPtr(roster data.Roster) (playerUnitPtr uintptr, corpse data.Corpse) {
+func (gd *GameReader) GetRawPlayerUnits() RawPlayerUnits {
+	rawPlayerUnits := make(RawPlayerUnits, 0)
+	hover := gd.hoveredData()
 	for i := 0; i < 128; i++ {
 		unitOffset := gd.offset.UnitTable + uintptr(i*8)
 		playerUnitAddr := gd.Process.moduleBaseAddressPtr + unitOffset
 		playerUnit := uintptr(gd.Process.ReadUInt(playerUnitAddr, Uint64))
 		for playerUnit > 0 {
+			unitID := gd.Process.ReadUInt(playerUnit+0x08, Uint32)
 			pInventory := playerUnit + 0x90
 			inventoryAddr := uintptr(gd.Process.ReadUInt(pInventory, Uint64))
 
 			pPath := playerUnit + 0x38
 			pathAddress := uintptr(gd.Process.ReadUInt(pPath, Uint64))
+			room1Ptr := uintptr(gd.Process.ReadUInt(pathAddress+0x20, Uint64))
+			room2Ptr := uintptr(gd.Process.ReadUInt(room1Ptr+0x18, Uint64))
+			levelPtr := uintptr(gd.Process.ReadUInt(room2Ptr+0x90, Uint64))
+			levelNo := gd.Process.ReadUInt(levelPtr+0x1F8, Uint32)
+
 			xPos := gd.Process.ReadUInt(pathAddress+0x02, Uint16)
 			yPos := gd.Process.ReadUInt(pathAddress+0x06, Uint16)
+			pUnitData := playerUnit + 0x10
+			playerNameAddr := uintptr(gd.Process.ReadUInt(pUnitData, Uint64))
+			name := gd.Process.ReadStringFromMemory(playerNameAddr, 0)
 
-			// Only current player has inventory
-			if inventoryAddr > 0 && xPos > 0 && yPos > 0 {
-				expCharPtr := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+gd.offset.Expansion, Uint64))
-				expChar := gd.Process.ReadUInt(expCharPtr+0x5C, Uint16)
-				baseCheck := gd.Process.ReadUInt(inventoryAddr+0x30, Uint16)
-				if expChar > 0 {
-					baseCheck = gd.Process.ReadUInt(inventoryAddr+0x70, Uint16)
-				}
-
-				isCorpse := gd.Process.ReadUInt(playerUnit+0x1A6, Uint8)
-				if isCorpse == 1 {
-					unitID := gd.Process.ReadUInt(playerUnit+0x08, Uint32)
-					hover := gd.hoveredData()
-					corpse = data.Corpse{
-						Found:     true,
-						IsHovered: hover.IsHovered && hover.UnitID == data.UnitID(unitID) && hover.UnitType == 0,
-						Position: data.Position{
-							X: int(xPos),
-							Y: int(yPos),
-						},
-					}
-				}
-
-				if baseCheck > 0 {
-					playerUnitPtr = playerUnit
-				} else {
-					pUnitData := playerUnit + 0x10
-					playerNameAddr := uintptr(gd.Process.ReadUInt(pUnitData, Uint64))
-					name := gd.Process.ReadStringFromMemory(playerNameAddr, 0)
-					for k, rm := range roster {
-						if name != rm.Name {
-							continue
-						}
-
-						roster[k] = data.RosterMember{
-							Name: name,
-							Area: rm.Area,
-							Position: data.Position{
-								X: int(xPos),
-								Y: int(yPos),
-							},
-						}
-					}
-				}
+			expCharPtr := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+gd.offset.Expansion, Uint64))
+			expChar := gd.Process.ReadUInt(expCharPtr+0x5C, Uint16)
+			isMainPlayer := gd.Process.ReadUInt(inventoryAddr+0x30, Uint16)
+			if expChar > 0 {
+				isMainPlayer = gd.Process.ReadUInt(inventoryAddr+0x70, Uint16)
 			}
+			isCorpse := gd.Process.ReadUInt(playerUnit+0x1A6, Uint8)
 
+			statsListExPtr := uintptr(gd.Process.ReadUInt(playerUnit+0x88, Uint64))
+			states := gd.getStates(statsListExPtr)
+
+			rawPlayerUnits = append(rawPlayerUnits, RawPlayerUnit{
+				UnitID:       data.UnitID(unitID),
+				Address:      playerUnit,
+				Name:         name,
+				IsMainPlayer: isMainPlayer > 0,
+				IsCorpse:     isCorpse == 1 && inventoryAddr > 0 && xPos > 0 && yPos > 0,
+				Area:         area.ID(levelNo),
+				Position: data.Position{
+					X: int(xPos),
+					Y: int(yPos),
+				},
+				IsHovered: hover.IsHovered && hover.UnitID == data.UnitID(unitID) && hover.UnitType == 0,
+				States:    states,
+			})
 			playerUnit = uintptr(gd.Process.ReadUInt(playerUnit+0x150, Uint64))
 		}
 	}
 
-	return
+	return rawPlayerUnits
 }
 
-func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
-	unitID := gd.Process.ReadUInt(playerUnit+0x08, Uint32)
-
-	// Read X and Y Positions
-	pPath := playerUnit + 0x38
-	pathAddress := uintptr(gd.Process.ReadUInt(pPath, Uint64))
-	xPos := gd.Process.ReadUInt(pathAddress+0x02, Uint16)
-	yPos := gd.Process.ReadUInt(pathAddress+0x06, Uint16)
-
-	// Player name
-	pUnitData := playerUnit + 0x10
-	playerNameAddr := uintptr(gd.Process.ReadUInt(pUnitData, Uint64))
-	name := gd.Process.ReadStringFromMemory(playerNameAddr, 0)
-
+func (gd *GameReader) GetPlayerUnit(mainPlayerUnit RawPlayerUnit) data.PlayerUnit {
 	// Get Stats
-	statsListExPtr := uintptr(gd.Process.ReadUInt(playerUnit+0x88, Uint64))
-	baseStatPtr := gd.Process.ReadUInt(statsListExPtr+0x30, Uint64)
-	baseStatsCount := gd.Process.ReadUInt(statsListExPtr+0x38, Uint64)
-	statPtr := gd.Process.ReadUInt(statsListExPtr+0x88, Uint64)
-	statCount := gd.Process.ReadUInt(statsListExPtr+0x90, Uint64)
-
-	stats := map[stat.ID]int{}
-	for j := 0; j < int(statCount); j++ {
-		statOffset := uintptr(statPtr) + 0x2 + uintptr(j*8)
-		statNumber := gd.Process.ReadUInt(statOffset, Uint16)
-		statValue := gd.Process.ReadUInt(statOffset+0x02, Uint32)
-
-		switch stat.ID(statNumber) {
-		case stat.Life,
-			stat.MaxLife,
-			stat.Mana,
-			stat.MaxMana:
-			stats[stat.ID(statNumber)] = int(uint32(statValue) >> 8)
-		default:
-			stats[stat.ID(statNumber)] = int(statValue)
-		}
-	}
-
-	baseStats := map[stat.ID]int{}
-	for j := 0; j < int(baseStatsCount); j++ {
-		statOffset := uintptr(baseStatPtr) + 0x2 + uintptr(j*8)
-		statNumber := gd.Process.ReadUInt(statOffset, Uint16)
-		statValue := gd.Process.ReadUInt(statOffset+0x02, Uint32)
-
-		switch stat.ID(statNumber) {
-		case stat.Life,
-			stat.MaxLife,
-			stat.Mana,
-			stat.MaxMana:
-			baseStats[stat.ID(statNumber)] = int(uint32(statValue) >> 8)
-		default:
-			baseStats[stat.ID(statNumber)] = int(statValue)
-		}
-	}
-
-	// States (Buff, Debuff, Auras)
-	states := gd.getStates(statsListExPtr)
+	statsListExPtr := uintptr(gd.Process.ReadUInt(mainPlayerUnit.Address+0x88, Uint64))
+	baseStats := gd.getStatsList(statsListExPtr + 0x30)
+	stats := gd.getStatsList(statsListExPtr + 0x88)
 
 	// Skills
-	skillListPtr := uintptr(gd.Process.ReadUInt(playerUnit+0x100, Uint64))
+	skillListPtr := uintptr(gd.Process.ReadUInt(mainPlayerUnit.Address+0x100, Uint64))
 	skills := gd.getSkills(skillListPtr)
 
 	leftSkillPtr := gd.Process.ReadUInt(skillListPtr+0x08, Uint64)
@@ -148,14 +85,7 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 	rightSkillId := uintptr(gd.Process.ReadUInt(rightSkillTxtPtr, Uint16))
 
 	// Class
-	class := data.Class(gd.Process.ReadUInt(playerUnit+0x174, Uint32))
-
-	// Level number
-	pathPtr := uintptr(gd.Process.ReadUInt(playerUnit+0x38, Uint64))
-	room1Ptr := uintptr(gd.Process.ReadUInt(pathPtr+0x20, Uint64))
-	room2Ptr := uintptr(gd.Process.ReadUInt(room1Ptr+0x18, Uint64))
-	levelPtr := uintptr(gd.Process.ReadUInt(room2Ptr+0x90, Uint64))
-	levelNo := gd.Process.ReadUInt(levelPtr+0x1F8, Uint32)
+	class := data.Class(gd.Process.ReadUInt(mainPlayerUnit.Address+0x174, Uint32))
 
 	availableWPs := make([]area.ID, 0)
 	// Probably there is a better place to pick up those values, since this seems to be very tied to the UI
@@ -163,22 +93,20 @@ func (gd *GameReader) GetPlayerUnit(playerUnit uintptr) data.PlayerUnit {
 	for i := 0; i < 0x48; i = i + 8 {
 		a := binary.LittleEndian.Uint32(wpList[i : i+4])
 		available := binary.LittleEndian.Uint32(wpList[i+4 : i+8])
-		if available == 1 || area.ID(levelNo) == area.ID(a) {
+		if available == 1 || mainPlayerUnit.Area == area.ID(a) {
 			availableWPs = append(availableWPs, area.ID(a))
 		}
 	}
 
 	d := data.PlayerUnit{
-		Name: name,
-		ID:   data.UnitID(unitID),
-		Area: area.ID(levelNo),
-		Position: data.Position{
-			X: int(xPos),
-			Y: int(yPos),
-		},
+		Name:               mainPlayerUnit.Name,
+		ID:                 mainPlayerUnit.UnitID,
+		Area:               mainPlayerUnit.Area,
+		Position:           mainPlayerUnit.Position,
 		Stats:              stats,
+		BaseStats:          baseStats,
 		Skills:             skills,
-		States:             states,
+		States:             mainPlayerUnit.States,
 		Class:              class,
 		LeftSkill:          skill.ID(leftSkillId),
 		RightSkill:         skill.ID(rightSkillId),
