@@ -43,6 +43,8 @@ func (gd *GameReader) GetRawPlayerUnits() RawPlayerUnits {
 			isCorpse := gd.Process.ReadUInt(playerUnit+0x1A6, Uint8)
 
 			statsListExPtr := uintptr(gd.Process.ReadUInt(playerUnit+0x88, Uint64))
+			baseStats := gd.getStatsList(statsListExPtr + 0x30)
+			stats := gd.getStatsList(statsListExPtr + 0x88)
 			states := gd.getStates(statsListExPtr)
 
 			rawPlayerUnits = append(rawPlayerUnits, RawPlayerUnit{
@@ -58,6 +60,8 @@ func (gd *GameReader) GetRawPlayerUnits() RawPlayerUnits {
 				},
 				IsHovered: hover.IsHovered && hover.UnitID == data.UnitID(unitID) && hover.UnitType == 0,
 				States:    states,
+				Stats:     stats,
+				BaseStats: baseStats,
 			})
 			playerUnit = uintptr(gd.Process.ReadUInt(playerUnit+0x150, Uint64))
 		}
@@ -67,11 +71,6 @@ func (gd *GameReader) GetRawPlayerUnits() RawPlayerUnits {
 }
 
 func (gd *GameReader) GetPlayerUnit(mainPlayerUnit RawPlayerUnit) data.PlayerUnit {
-	// Get Stats
-	statsListExPtr := uintptr(gd.Process.ReadUInt(mainPlayerUnit.Address+0x88, Uint64))
-	baseStats := gd.getStatsList(statsListExPtr + 0x30)
-	stats := gd.getStatsList(statsListExPtr + 0x88)
-
 	// Skills
 	skillListPtr := uintptr(gd.Process.ReadUInt(mainPlayerUnit.Address+0x100, Uint64))
 	skills := gd.getSkills(skillListPtr)
@@ -104,8 +103,8 @@ func (gd *GameReader) GetPlayerUnit(mainPlayerUnit RawPlayerUnit) data.PlayerUni
 		ID:                 mainPlayerUnit.UnitID,
 		Area:               mainPlayerUnit.Area,
 		Position:           mainPlayerUnit.Position,
-		Stats:              stats,
-		BaseStats:          baseStats,
+		Stats:              mainPlayerUnit.Stats,
+		BaseStats:          mainPlayerUnit.BaseStats,
 		Skills:             skills,
 		States:             mainPlayerUnit.States,
 		Class:              class,

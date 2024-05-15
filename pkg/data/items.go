@@ -7,12 +7,14 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 )
 
-type Items struct {
-	Belt     Belt
-	AllItems []Item
+type Inventory struct {
+	Belt        Belt
+	AllItems    []Item
+	Gold        int
+	StashedGold [4]int
 }
 
-func (i Items) Find(name item.Name, locations ...item.Location) (Item, bool) {
+func (i Inventory) Find(name item.Name, locations ...item.Location) (Item, bool) {
 	for _, it := range i.AllItems {
 		if strings.EqualFold(string(it.Name), string(name)) {
 			// If no locations are specified, return the first item found
@@ -31,7 +33,7 @@ func (i Items) Find(name item.Name, locations ...item.Location) (Item, bool) {
 	return Item{}, false
 }
 
-func (i Items) ByLocation(locations ...item.Location) []Item {
+func (i Inventory) ByLocation(locations ...item.Location) []Item {
 	var items []Item
 
 	for _, it := range i.AllItems {
@@ -75,19 +77,19 @@ func (i Item) IsPotion() bool {
 }
 
 func (i Item) IsHealingPotion() bool {
-	return strings.Contains(string(i.Name), string(HealingPotion))
+	return i.Type().IsType(item.TypeHealingPotion)
 }
 
 func (i Item) IsManaPotion() bool {
-	return strings.Contains(string(i.Name), string(ManaPotion))
+	return i.Type().IsType(item.TypeManaPotion)
 }
 
 func (i Item) IsRejuvPotion() bool {
-	return strings.Contains(string(i.Name), string(RejuvenationPotion))
+	return i.Type().IsType(item.TypeRejuvPotion)
 }
 
 func (i Item) IsFromQuest() bool {
-	return i.Desc().Type == item.TypeQuest
+	return i.Type().IsType(item.TypeQuest)
 }
 
 func (i Item) FindStat(id stat.ID, layer int) (stat.Data, bool) {

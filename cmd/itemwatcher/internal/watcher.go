@@ -53,7 +53,7 @@ func (w *Watcher) Start(ctx context.Context) error {
 			time.Sleep(100 * time.Millisecond)
 
 			d := w.gr.GetData()
-			for _, i := range d.Items.ByLocation(item.LocationGround) {
+			for _, i := range d.Inventory.ByLocation(item.LocationGround) {
 				for _, r := range w.rules {
 					res, err := r.Evaluate(i)
 					if err != nil {
@@ -92,7 +92,7 @@ func (w *Watcher) Start(ctx context.Context) error {
 			purgedNotifiedItems := make([]itemFootprint, 0)
 			for _, t := range w.alreadyNotifiedItemIDs {
 				found := false
-				for _, it := range d.Items.ByLocation(item.LocationGround) {
+				for _, it := range d.Inventory.ByLocation(item.LocationGround) {
 					if t.Match(d.PlayerUnit.Area, it) {
 						found = true
 					}

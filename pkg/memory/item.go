@@ -11,7 +11,7 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/utils"
 )
 
-func (gd *GameReader) Items(rawPlayerUnits RawPlayerUnits, hover data.HoverData) data.Items {
+func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverData) data.Inventory {
 	mainPlayer := rawPlayerUnits.GetMainPlayer()
 	baseAddr := gd.Process.moduleBaseAddressPtr + gd.offset.UnitTable + (4 * 1024)
 	unitTableBuffer := gd.Process.ReadBytesFromMemory(baseAddr, 128*8)
@@ -27,7 +27,20 @@ func (gd *GameReader) Items(rawPlayerUnits RawPlayerUnits, hover data.HoverData)
 	}
 	slices.Sort(stashPlayerUnitOrder)
 
-	items := data.Items{}
+	// Gold
+	inventoryGold, _ := mainPlayer.BaseStats.FindStat(stat.Gold, 0)
+	mainPlayerStashedGold, _ := mainPlayer.BaseStats.FindStat(stat.StashGold, 0)
+	stashedGold := [4]int{}
+	stashedGold[0] = mainPlayerStashedGold.Value
+	for i, puKey := range stashPlayerUnitOrder {
+		stashGold, _ := stashPlayerUnits[puKey].BaseStats.FindStat(stat.StashGold, 0)
+		stashedGold[i+1] = stashGold.Value
+	}
+
+	inventory := data.Inventory{
+		Gold:        inventoryGold.Value,
+		StashedGold: stashedGold,
+	}
 	belt := data.Belt{}
 	for i := 0; i < 128; i++ {
 		itemOffset := 8 * i
@@ -122,7 +135,7 @@ func (gd *GameReader) Items(rawPlayerUnits RawPlayerUnits, hover data.HoverData)
 
 			itm.Location = location
 
-			// We don't care about the items we don't know where they are, probably previous games or random crap
+			// We don't care about the inventory we don't know where they are, probably previous games or random crap
 			if location != item.LocationUnknown {
 				// Item Stats
 				statsListExPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x88, Uint64))
@@ -133,7 +146,7 @@ func (gd *GameReader) Items(rawPlayerUnits RawPlayerUnits, hover data.HoverData)
 				if location == item.LocationBelt {
 					belt.Items = append(belt.Items, itm)
 				} else {
-					items.AllItems = append(items.AllItems, itm)
+					inventory.AllItems = append(inventory.AllItems, itm)
 				}
 			}
 
@@ -141,16 +154,16 @@ func (gd *GameReader) Items(rawPlayerUnits RawPlayerUnits, hover data.HoverData)
 		}
 	}
 
-	items.Belt = belt
+	inventory.Belt = belt
 
-	sort.SliceStable(items.AllItems, func(i, j int) bool {
-		distanceI := utils.DistanceFromPoint(mainPlayer.Position, items.AllItems[i].Position)
-		distanceJ := utils.DistanceFromPoint(mainPlayer.Position, items.AllItems[j].Position)
+	sort.SliceStable(inventory.AllItems, func(i, j int) bool {
+		distanceI := utils.DistanceFromPoint(mainPlayer.Position, inventory.AllItems[i].Position)
+		distanceJ := utils.DistanceFromPoint(mainPlayer.Position, inventory.AllItems[j].Position)
 
 		return distanceI < distanceJ
 	})
 
-	return items
+	return inventory
 }
 
 func (gd *GameReader) getItemStats(statsListExPtr uintptr) (stat.Stats, stat.Stats) {

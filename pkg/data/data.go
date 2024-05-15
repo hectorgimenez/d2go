@@ -31,7 +31,7 @@ type Data struct {
 	CollisionGrid  [][]bool
 	PlayerUnit     PlayerUnit
 	NPCs           NPCs
-	Items          Items
+	Inventory      Inventory
 	Objects        Objects
 	AdjacentLevels []Level
 	Rooms          []Room
@@ -163,8 +163,8 @@ func (pu PlayerUnit) MaxGold() int {
 	return goldPerLevel * lvl.Value
 }
 
-// TotalGold returns the amount of gold, including inventory and stash
-func (pu PlayerUnit) TotalGold() int {
+// TotalPlayerGold returns the amount of gold, including inventory and player stash (excluding shared stash)
+func (pu PlayerUnit) TotalPlayerGold() int {
 	gold, _ := pu.FindStat(stat.Gold, 0)
 	stashGold, _ := pu.FindStat(stat.StashGold, 0)
 
