@@ -33,12 +33,12 @@ func (i Inventory) Find(name item.Name, locations ...item.Location) (Item, bool)
 	return Item{}, false
 }
 
-func (i Inventory) ByLocation(locations ...item.Location) []Item {
+func (i Inventory) ByLocation(locations ...item.LocationType) []Item {
 	var items []Item
 
 	for _, it := range i.AllItems {
 		for _, l := range locations {
-			if it.Location == l {
+			if it.Location.LocationType == l {
 				items = append(items, it)
 			}
 		}
@@ -56,7 +56,6 @@ type Item struct {
 	Quality    item.Quality
 	Position   Position
 	Location   item.Location
-	Page       int // Used for shared stash
 	Ethereal   bool
 	IsHovered  bool
 	BaseStats  stat.Stats

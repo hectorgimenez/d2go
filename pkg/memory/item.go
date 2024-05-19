@@ -33,6 +33,9 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 	stashedGold := [4]int{}
 	stashedGold[0] = mainPlayerStashedGold.Value
 	for i, puKey := range stashPlayerUnitOrder {
+		if i > 3 {
+			break
+		}
 		stashGold, _ := stashPlayerUnits[puKey].BaseStats.FindStat(stat.StashGold, 0)
 		stashedGold[i+1] = stashGold.Value
 	}
@@ -93,17 +96,19 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 			location := item.LocationUnknown
 			switch itemLoc {
 			case 0:
-				// Offline only
 				if itemOwnerNPC == 2 || itemOwnerNPC == uint(stashPlayerUnits[stashPlayerUnitOrder[0]].UnitID) {
-					location = item.LocationSharedStash1
+					location = item.LocationSharedStash
+					invPage = 1
 					break
 				}
 				if itemOwnerNPC == 3 || itemOwnerNPC == uint(stashPlayerUnits[stashPlayerUnitOrder[1]].UnitID) {
-					location = item.LocationSharedStash2
+					location = item.LocationSharedStash
+					invPage = 2
 					break
 				}
 				if itemOwnerNPC == 4 || itemOwnerNPC == uint(stashPlayerUnits[stashPlayerUnitOrder[2]].UnitID) {
-					location = item.LocationSharedStash3
+					location = item.LocationSharedStash
+					invPage = 3
 					break
 				}
 
@@ -116,6 +121,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 				}
 				if data.UnitID(itemOwnerNPC) == mainPlayer.UnitID || itemOwnerNPC == 1 {
 					location = item.LocationStash
+					invPage = 0
 					break
 				}
 			case 1:
@@ -133,7 +139,10 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 				location = item.LocationCursor
 			}
 
-			itm.Location = location
+			itm.Location = item.Location{
+				LocationType: location,
+				Page:         int(invPage),
+			}
 
 			// We don't care about the inventory we don't know where they are, probably previous games or random crap
 			if location != item.LocationUnknown {

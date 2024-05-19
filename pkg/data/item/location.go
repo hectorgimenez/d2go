@@ -1,19 +1,22 @@
 package item
 
-type Location string
+type LocationType string
+
+type Location struct {
+	LocationType
+	Page int
+}
 
 const (
-	LocationEquipped     Location = "equipped"
-	LocationStash        Location = "stash"
-	LocationSharedStash1 Location = "shared_stash_1"
-	LocationSharedStash2 Location = "shared_stash_2"
-	LocationSharedStash3 Location = "shared_stash_3"
-	LocationBelt         Location = "belt"
-	LocationInventory    Location = "inventory"
-	LocationCube         Location = "cube"
-	LocationVendor       Location = "vendor"
-	LocationGround       Location = "ground"
-	LocationSocket       Location = "socket"
-	LocationUnknown      Location = "unknown"
-	LocationCursor       Location = "cursor"
+	LocationEquipped    LocationType = "equipped"
+	LocationStash       LocationType = "stash"
+	LocationSharedStash LocationType = "shared_stash"
+	LocationBelt        LocationType = "belt"
+	LocationInventory   LocationType = "inventory"
+	LocationCube        LocationType = "cube"
+	LocationVendor      LocationType = "vendor"
+	LocationGround      LocationType = "ground"
+	LocationSocket      LocationType = "socket"
+	LocationUnknown     LocationType = "unknown"
+	LocationCursor      LocationType = "cursor"
 )
