@@ -14,7 +14,7 @@ type Inventory struct {
 	StashedGold [4]int
 }
 
-func (i Inventory) Find(name item.Name, locations ...item.Location) (Item, bool) {
+func (i Inventory) Find(name item.Name, locations ...item.LocationType) (Item, bool) {
 	for _, it := range i.AllItems {
 		if strings.EqualFold(string(it.Name), string(name)) {
 			// If no locations are specified, return the first item found
@@ -23,7 +23,7 @@ func (i Inventory) Find(name item.Name, locations ...item.Location) (Item, bool)
 			}
 
 			for _, l := range locations {
-				if it.Location == l {
+				if it.Location.LocationType == l {
 					return it, true
 				}
 			}
