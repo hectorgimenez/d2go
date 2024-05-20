@@ -33,7 +33,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 	stashedGold := [4]int{}
 	stashedGold[0] = mainPlayerStashedGold.Value
 	for i, puKey := range stashPlayerUnitOrder {
-		if i > 3 {
+		if i > 2 {
 			break
 		}
 		stashGold, _ := stashPlayerUnits[puKey].BaseStats.FindStat(stat.StashGold, 0)
