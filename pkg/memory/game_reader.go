@@ -65,9 +65,9 @@ func (gd *GameReader) GetData() data.Data {
 }
 
 func (gd *GameReader) InGame() bool {
-	playerUnits := gd.GetRawPlayerUnits()
+	player := gd.GetRawPlayerUnits().GetMainPlayer()
 
-	return playerUnits.GetMainPlayer().UnitID > 0
+	return player.UnitID > 0 && player.Position.X > 0 && player.Position.Y > 0 && player.Area > 0
 }
 
 func (gd *GameReader) openMenus() data.OpenMenus {
