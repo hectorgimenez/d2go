@@ -115,11 +115,12 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 				if 0x00002000&flags != 0 && itemOwnerNPC == 4294967295 {
 					location = item.LocationVendor
 					break
-				} else if invPage == 0 {
-					location = item.LocationInventory
-					break
 				}
 				if data.UnitID(itemOwnerNPC) == mainPlayer.UnitID || itemOwnerNPC == 1 {
+					if invPage == 0 {
+						location = item.LocationInventory
+						break
+					}
 					location = item.LocationStash
 					invPage = 0
 					break
