@@ -88,7 +88,7 @@ func (gd *GameReader) GetPlayerUnit(mainPlayerUnit RawPlayerUnit) data.PlayerUni
 
 	availableWPs := make([]area.ID, 0)
 	// Probably there is a better place to pick up those values, since this seems to be very tied to the UI
-	wpList := gd.Process.ReadBytesFromMemory(gd.moduleBaseAddressPtr+0x21AD220, 0x48)
+	wpList := gd.Process.ReadBytesFromMemory(gd.moduleBaseAddressPtr+0x2154EA0, 0x48)
 	for i := 0; i < 0x48; i = i + 8 {
 		a := binary.LittleEndian.Uint32(wpList[i : i+4])
 		available := binary.LittleEndian.Uint32(wpList[i+4 : i+8])

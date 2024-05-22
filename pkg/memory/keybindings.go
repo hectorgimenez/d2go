@@ -2,13 +2,14 @@ package memory
 
 import (
 	"encoding/binary"
+
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/skill"
 )
 
 func (gd *GameReader) GetKeyBindings() data.KeyBindings {
-	blob := gd.ReadBytesFromMemory(gd.moduleBaseAddressPtr+0x1e26934, 0x500)
-	blobSkills := gd.ReadBytesFromMemory(gd.moduleBaseAddressPtr+0x224edc0, 0x500)
+	blob := gd.ReadBytesFromMemory(gd.moduleBaseAddressPtr+0x1e0e934, 0x500)
+	blobSkills := gd.ReadBytesFromMemory(gd.moduleBaseAddressPtr+0x21f6a30, 0x500)
 
 	skillsKB := [16]data.SkillBinding{}
 	for i := 0; i < 7; i++ {

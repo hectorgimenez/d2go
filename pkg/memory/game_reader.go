@@ -34,7 +34,7 @@ func (gd *GameReader) GetData() data.Data {
 	hover := gd.hoveredData()
 
 	// Quests
-	q1 := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x230E9A8, Uint64))
+	q1 := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x220C2D0, Uint64))
 	q2 := uintptr(gd.Process.ReadUInt(q1, Uint64))
 	gameQuestsBytes := gd.Process.ReadBytesFromMemory(q2, 85)
 
@@ -183,9 +183,9 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 func (gd *GameReader) InCharacterSelectionScreen() bool {
 	uiBase := gd.Process.moduleBaseAddressPtr + gd.offset.UI - 0xA
 
-	return gd.Process.ReadUInt(uiBase, Uint8) != 1 && gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x1EC5AA8, Uint64) == 0
+	return gd.Process.ReadUInt(uiBase, Uint8) != 1 && gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x214A5A6, Uint64) == 0
 }
 
 func (gd *GameReader) GetSelectedCharacterName() string {
-	return gd.Process.ReadStringFromMemory(gd.Process.moduleBaseAddressPtr+0x21A2374, 0)
+	return gd.Process.ReadStringFromMemory(gd.Process.moduleBaseAddressPtr+0x2149FF4, 0)
 }
