@@ -21,6 +21,11 @@ var textFiles = []TextFileDesc{
 		DestFile:   "pkg/data/skill/skilldesc.go",
 		Template:   templateSkillDesc,
 	},
+	{
+		SourceFile: "cmd/txttocode/txt/objects.txt",
+		DestFile:   "pkg/data/object/objects.go",
+		Template:   templateObjects,
+	},
 }
 
 type TextFileDesc struct {
