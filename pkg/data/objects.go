@@ -3,8 +3,8 @@ package data
 import "github.com/hectorgimenez/d2go/pkg/data/object"
 
 type Object struct {
-	ID           UnitID
-	Name         object.Name
+	ID UnitID
+	object.Name
 	IsHovered    bool
 	Selectable   bool
 	InteractType object.InteractType
