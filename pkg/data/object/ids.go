@@ -2,6 +2,10 @@ package object
 
 type Name int
 
+func (n Name) Desc() Description {
+	return Desc[int(n)]
+}
+
 const (
 	NotApplicable Name = iota - 1
 	TestData1
