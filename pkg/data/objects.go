@@ -24,6 +24,16 @@ func (o Objects) FindOne(name object.Name) (Object, bool) {
 	return Object{}, false
 }
 
+func (o Objects) FindByID(id UnitID) (Object, bool) {
+	for _, obj := range o {
+		if obj.ID == id {
+			return obj, true
+		}
+	}
+
+	return Object{}, false
+}
+
 func (o Object) IsWaypoint() bool {
 	switch o.Name {
 	case object.WaypointPortal,
