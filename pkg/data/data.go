@@ -41,6 +41,7 @@ type Data struct {
 	TerrorZones    []area.ID
 	Quests         quest.Quests
 	KeyBindings    KeyBindings
+	LegacyGraphics bool
 }
 
 type Room struct {

@@ -47,16 +47,17 @@ func (gd *GameReader) GetData() data.Data {
 			IsHovered: corpseUnit.IsHovered,
 			Position:  corpseUnit.Position,
 		},
-		Monsters:    gd.Monsters(pu.Position, hover),
-		PlayerUnit:  pu,
-		Inventory:   gd.Inventory(rawPlayerUnits, hover),
-		Objects:     gd.Objects(pu.Position, hover),
-		OpenMenus:   gd.openMenus(),
-		Roster:      roster,
-		HoverData:   hover,
-		TerrorZones: gd.TerrorZones(),
-		Quests:      gd.getQuests(gameQuestsBytes),
-		KeyBindings: gd.GetKeyBindings(),
+		Monsters:       gd.Monsters(pu.Position, hover),
+		PlayerUnit:     pu,
+		Inventory:      gd.Inventory(rawPlayerUnits, hover),
+		Objects:        gd.Objects(pu.Position, hover),
+		OpenMenus:      gd.openMenus(),
+		Roster:         roster,
+		HoverData:      hover,
+		TerrorZones:    gd.TerrorZones(),
+		Quests:         gd.getQuests(gameQuestsBytes),
+		KeyBindings:    gd.GetKeyBindings(),
+		LegacyGraphics: gd.LegacyGraphics(),
 	}
 
 	gd.previousRead = d
@@ -188,4 +189,8 @@ func (gd *GameReader) InCharacterSelectionScreen() bool {
 
 func (gd *GameReader) GetSelectedCharacterName() string {
 	return gd.Process.ReadStringFromMemory(gd.Process.moduleBaseAddressPtr+0x2149FF4, 0)
+}
+
+func (gd *GameReader) LegacyGraphics() bool {
+	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x21F6388, Uint64) == 1
 }
