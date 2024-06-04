@@ -126,12 +126,16 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 					break
 				}
 			case 1:
-				location = item.LocationEquipped
-				if itm.Type().Code == item.TypeBelt {
-					belt.Name = itm.Name
+				if data.UnitID(itemOwnerNPC) == mainPlayer.UnitID || itemOwnerNPC == 1 {
+					location = item.LocationEquipped
+					if itm.Type().Code == item.TypeBelt {
+						belt.Name = itm.Name
+					}
 				}
 			case 2:
-				location = item.LocationBelt
+				if data.UnitID(itemOwnerNPC) == mainPlayer.UnitID || itemOwnerNPC == 1 {
+					location = item.LocationBelt
+				}
 			case 3, 5:
 				location = item.LocationGround
 			case 6:
