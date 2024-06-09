@@ -71,6 +71,23 @@ func (r Room) IsInside(p Position) bool {
 	return false
 }
 
+func (r Room) GetWalkableTiles(d Data, room Room) []Position {
+	var walkableTiles []Position
+
+	for x := room.X; x < room.X+room.Width; x++ {
+		for y := room.Y; y < room.Y+room.Height; y++ {
+			if d.CollisionGrid[x][y] {
+				walkableTiles = append(walkableTiles, Position{
+					X: x,
+					Y: y,
+				})
+			}
+		}
+	}
+
+	return walkableTiles
+}
+
 func (d Data) MercHPPercent() int {
 	for _, m := range d.Monsters {
 		if m.IsMerc() {
