@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/faiface/beep"
-	"github.com/faiface/beep/speaker"
-	"github.com/faiface/beep/wav"
+	"github.com/gopxl/beep"
+	"github.com/gopxl/beep/speaker"
+	"github.com/gopxl/beep/wav"
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/area"
 	"github.com/hectorgimenez/d2go/pkg/data/item"
