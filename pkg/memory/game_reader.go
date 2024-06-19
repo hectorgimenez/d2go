@@ -34,7 +34,7 @@ func (gd *GameReader) GetData() data.Data {
 	hover := gd.hoveredData()
 
 	// Quests
-	q1 := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x220C2D0, Uint64))
+	q1 := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x22F69F8, Uint64))
 	q2 := uintptr(gd.Process.ReadUInt(q1, Uint64))
 	gameQuestsBytes := gd.Process.ReadBytesFromMemory(q2, 85)
 
