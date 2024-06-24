@@ -127,14 +127,16 @@ func (m Monster) IsMerc() bool {
 }
 
 func (m Monster) IsPet() bool {
-	if m.Name == npc.DruHawk || m.Name == npc.DruSpiritWolf || m.Name == npc.DruFenris ||
-		m.Name == npc.HeartOfWolverine || m.Name == npc.OakSage || m.Name == npc.DruBear ||
-		m.Name == npc.DruPlaguePoppy || m.Name == npc.DruCycleOfLife || m.Name == npc.ClayGolem ||
-		m.Name == npc.BloodGolem || m.Name == npc.IronGolem || m.Name == npc.FireGolem ||
-		m.Name == npc.NecroSkeleton || m.Name == npc.NecroMage {
+	switch m.Name {
+	case npc.DruHawk, npc.DruSpiritWolf, npc.DruFenris, npc.HeartOfWolverine,
+		npc.OakSage, npc.DruBear, npc.DruPlaguePoppy, npc.VineCreature,
+		npc.DruCycleOfLife, npc.ClayGolem, npc.BloodGolem, npc.IronGolem,
+		npc.FireGolem, npc.NecroSkeleton, npc.NecroMage, npc.Valkyrie,
+		npc.ShadowWarrior, npc.ShadowMaster:
 		return true
+	default:
+		return false
 	}
-	return false
 }
 
 func (m Monster) IsGoodNPC() bool {
