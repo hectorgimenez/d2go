@@ -50,7 +50,7 @@ func (m Monsters) FindOne(id npc.ID, t MonsterType) (Monster, bool) {
 func (m Monsters) Enemies(filters ...MonsterFilter) []Monster {
 	monsters := make([]Monster, 0)
 	for _, mo := range m {
-		if !mo.IsMerc() && !mo.IsSkip() && !mo.IsGoodNPC() && mo.Stats[stat.Life] > 0 {
+		if !mo.IsMerc() && !mo.IsSkip() && !mo.IsGoodNPC() && !mo.IsPet() && mo.Stats[stat.Life] > 0 {
 			monsters = append(monsters, mo)
 		}
 	}
@@ -124,6 +124,19 @@ func (m Monster) IsMerc() bool {
 	}
 
 	return false
+}
+
+func (m Monster) IsPet() bool {
+	switch m.Name {
+	case npc.DruHawk, npc.DruSpiritWolf, npc.DruFenris, npc.HeartOfWolverine,
+		npc.OakSage, npc.DruBear, npc.DruPlaguePoppy, npc.VineCreature,
+		npc.DruCycleOfLife, npc.ClayGolem, npc.BloodGolem, npc.IronGolem,
+		npc.FireGolem, npc.NecroSkeleton, npc.NecroMage, npc.Valkyrie,
+		npc.ShadowWarrior, npc.ShadowMaster:
+		return true
+	default:
+		return false
+	}
 }
 
 func (m Monster) IsGoodNPC() bool {
