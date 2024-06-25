@@ -63,6 +63,13 @@ type Item struct {
 	Identified bool
 }
 
+type Drop struct {
+	Item         Item
+	Rule         string
+	RuleFile     string
+	DropLocation string
+}
+
 func (i Item) Desc() item.Description {
 	return item.Desc[i.ID]
 }
