@@ -241,4 +241,7 @@ func setProperties(item *data.Item, flags uint32) {
 	if 0x00000010&flags != 0 {
 		item.Identified = true
 	}
+	if 0x04000000&flags != 0 {
+		item.IsRuneword = true
+	}
 }
