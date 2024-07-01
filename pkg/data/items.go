@@ -61,6 +61,7 @@ type Item struct {
 	BaseStats  stat.Stats
 	Stats      stat.Stats
 	Identified bool
+	IsRuneword bool
 }
 
 type Drop struct {
