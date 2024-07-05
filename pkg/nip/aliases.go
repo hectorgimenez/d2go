@@ -2,6 +2,7 @@ package nip
 
 import "github.com/hectorgimenez/d2go/pkg/data/item"
 
+var TypeAliases = typeAliases
 var typeAliases = map[string]string{
 	"shield":          item.TypeShield,
 	"armor":           item.TypeArmor,
@@ -120,6 +121,7 @@ var classAliases = map[string]int{
 	"elite":       2,
 }
 
+var StatAliases = statAliases
 var statAliases = map[string][]int{
 	"strength":         {0},
 	"energy":           {1},
