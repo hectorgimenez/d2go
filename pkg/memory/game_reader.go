@@ -160,10 +160,10 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 			stat.VitalityPerLevel,
 			stat.AttackRatingPerLevel,
 			stat.ThornsPerLevel:
-			value = int(math.Min(float64(statValue/8), 1))
+			value = int(math.Max(float64(statValue/8), 1))
 		case stat.LifePerLevel,
 			stat.ManaPerLevel:
-			value = int(math.Min(float64(statValue/2048), 1))
+			value = int(math.Max(float64(statValue/2048), 1))
 		case stat.ReplenishDurability, stat.ReplenishQuantity:
 			value = 2 / int(statValue)
 		case stat.RegenStaminaPerLevel:
