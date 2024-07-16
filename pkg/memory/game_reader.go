@@ -158,7 +158,6 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 			stat.StrengthPerLevel,
 			stat.DexterityPerLevel,
 			stat.VitalityPerLevel,
-			stat.AttackRatingPerLevel,
 			stat.ThornsPerLevel:
 			value = int(math.Max(float64(statValue/8), 1))
 		case stat.LifePerLevel,
@@ -170,6 +169,8 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 			value = int(statValue) * 10
 		case stat.LevelRequirePercent:
 			value = int(statValue) * -1
+		case stat.AttackRatingPerLevel:
+			value = int(math.Max(float64(statValue), 15))
 		}
 
 		stats = append(stats, stat.Data{
