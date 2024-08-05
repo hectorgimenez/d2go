@@ -123,14 +123,14 @@ func TestRule_Evaluate(t *testing.T) {
 		{
 			name: "Basic rule without stats or maxquantity",
 			fields: fields{
-				RawLine: "[type] == armor && [quality] == magic # #",
+				RawLine: "[type] == assassinclaw && [class] == elite && [quality] == magic # #",
 				Enabled: true,
 			},
 			args: args{
 				item: data.Item{
-					ID:         373,
+					ID:         187,
 					Identified: false,
-					Name:       "mageplate",
+					Name:       "GreaterTalons",
 					Quality:    item.QualityMagic,
 				},
 			},
@@ -151,6 +151,29 @@ func TestRule_Evaluate(t *testing.T) {
 					Stats: []stat.Data{
 						{ID: stat.EnhancedDefense, Value: 15},
 						{ID: stat.Defense, Value: 301},
+					},
+				},
+			},
+			want: RuleResultFullMatch,
+		},
+		{
+			name: "Basic rule for a white superior item with enhanceddamage",
+			fields: fields{
+				RawLine: "[type] == sword # [enhanceddamage] >= 15 #",
+				Enabled: true,
+			},
+			args: args{
+				item: data.Item{
+					Identified: true,
+					ID:         234,
+					Name:       "colossusblade",
+					Quality:    item.QualitySuperior,
+					Stats: []stat.Data{
+						{ID: stat.EnhancedDamage, Value: 15},
+						{ID: stat.MinDamage, Value: 28},
+						{ID: stat.MaxDamage, Value: 74},
+						{ID: stat.TwoHandedMinDamage, Value: 66},
+						{ID: stat.TwoHandedMaxDamage, Value: 132},
 					},
 				},
 			},
