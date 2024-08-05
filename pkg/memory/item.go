@@ -199,15 +199,12 @@ func (gd *GameReader) getItemStats(statsListExPtr uintptr) (stat.Stats, stat.Sta
 	statListPtr := lastStatsList
 
 	// Traverse the stat lists to accumulate additional stats
-	for {
-		if statListPtr == 0 {
-			break
-		}
+	for statListPtr != 0 {
 
 		statListFlags := gd.Process.ReadUInt(statListPtr+0x1C, Uint64)
 
 		// If we hit a condition where no further traversal is needed, break
-		if (0x40&statListFlags&0xFFFFDFFF) != 0 || uintptr(gd.Process.ReadUInt(statListPtr+0x48, Uint64)) == 0 {
+		if (0x40 & statListFlags & 0xFFFFDFFF) != 0 {
 			break
 		}
 
