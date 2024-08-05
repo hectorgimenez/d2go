@@ -181,54 +181,83 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 }
 
 func (gd *GameReader) getItemStats(statsListExPtr uintptr) (stat.Stats, stat.Stats) {
+	// Initial full and base stats extraction
 	fullStats := gd.getStatsList(statsListExPtr + 0x88)
 	baseStats := gd.getStatsList(statsListExPtr + 0x30)
 
+	// Flags and last stat list pointers
 	flags := gd.Process.ReadUInt(statsListExPtr+0x1C, Uint64)
 	lastStatsList := uintptr(gd.Process.ReadUInt(statsListExPtr+0x70, Uint64))
 
+	// If the special flag isn't set, return the current base and full stats
 	if (flags & 0x80000000) == 0 {
 		return baseStats, fullStats
 	}
-	attempts := 0
-	statListFlags := uintptr(0)
-	statListPrev := lastStatsList
-	for (0x40 & statListFlags & 0xFFFFDFFF) == 0 {
-		attempts++
-		if attempts == 10 {
-			return baseStats, fullStats
+
+	// Prepare for additional stats processing
+	additionalStats := stat.Stats{}
+	statListPtr := lastStatsList
+
+	// Traverse the stat lists to accumulate additional stats
+	for {
+		if statListPtr == 0 {
+			break
 		}
-		statListPrev = uintptr(gd.Process.ReadUInt(statListPrev+0x48, Uint64))
-		statListFlags = uintptr(gd.Process.ReadUInt(statListPrev+0x1C, Uint64))
-		if statListPrev == 0 {
-			return baseStats, fullStats
+
+		statListFlags := gd.Process.ReadUInt(statListPtr+0x1C, Uint64)
+
+		// If we hit a condition where no further traversal is needed, break
+		if (0x40&statListFlags&0xFFFFDFFF) != 0 || uintptr(gd.Process.ReadUInt(statListPtr+0x48, Uint64)) == 0 {
+			break
+		}
+
+		// Move to the previous stat list
+		statListPtr = uintptr(gd.Process.ReadUInt(statListPtr+0x48, Uint64))
+	}
+
+	// If we found a valid previous stat list
+	if statListPtr != 0 {
+		additionalBaseStats := gd.getStatsList(statListPtr + 0x30)
+
+		// Add only the additional stats that are not already present in fullStats
+		for _, statM := range additionalBaseStats {
+			if _, found := fullStats.FindStat(statM.ID, statM.Layer); !found {
+				additionalStats = append(additionalStats, statM)
+			}
 		}
 	}
-	modifierBaseStats := gd.getStatsList(statListPrev + 0x30)
 
-	if len(modifierBaseStats) != 0 {
-		for _, mStat := range modifierBaseStats {
-			if _, found := fullStats.FindStat(mStat.ID, mStat.Layer); !found {
-				fullStats = append(fullStats, mStat)
-			}
-		}
+	// Merge additional stats into fullStats (but not into baseStats)
+	fullStats = append(fullStats, additionalStats...)
 
-		modifierStatsPrevEx := uintptr(gd.Process.ReadUInt(statListPrev+0x48, Uint64))
-		modifierBaseStatsPrev := gd.getStatsList(modifierStatsPrevEx + 0x30)
+	// Handle base stats from potential modifiers and ensure they don't pollute baseStats
+	statListPtr = lastStatsList
 
-		for _, mStat := range modifierBaseStatsPrev {
-			for i, st := range fullStats {
-				if st.ID == mStat.ID && st.Layer == mStat.Layer && st.Value != mStat.Value {
-					fullStats[i].Value = st.Value + mStat.Value
+	for statListPtr != 0 {
+		statListFlags := gd.Process.ReadUInt(statListPtr+0x1C, Uint64)
+
+		if statListFlags != 0 {
+			modifierBaseStats := gd.getStatsList(statListPtr + 0x30)
+
+			for _, mStat := range modifierBaseStats {
+				// Update fullStats
+				if existingStat, found := fullStats.FindStat(mStat.ID, mStat.Layer); found {
+					existingStat.Value = mStat.Value
+				} else {
+					fullStats = append(fullStats, mStat)
+				}
+
+				// Add to baseStats only if this stat qualifies as a base stat
+				if (flags&0x80000000) != 0 && statListFlags == 0x80000000 {
+					if _, found := baseStats.FindStat(mStat.ID, mStat.Layer); !found {
+						baseStats = append(baseStats, mStat)
+					}
 				}
 			}
-			if _, found := fullStats.FindStat(mStat.ID, mStat.Layer); !found {
-				fullStats = append(fullStats, mStat)
-			}
-			if _, found := baseStats.FindStat(mStat.ID, mStat.Layer); !found {
-				baseStats = append(baseStats, mStat)
-			}
 		}
+
+		// Move to the previous stat list
+		statListPtr = uintptr(gd.Process.ReadUInt(statListPtr+0x48, Uint64))
 	}
 
 	return baseStats, fullStats
