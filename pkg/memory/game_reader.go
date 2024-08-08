@@ -3,6 +3,7 @@ package memory
 import (
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
+	"math"
 )
 
 type GameReader struct {
@@ -48,7 +49,6 @@ func (gd *GameReader) GetData() data.Data {
 			Position:  corpseUnit.Position,
 		},
 		Monsters:       gd.Monsters(pu.Position, hover),
-		Corpses:        gd.Corpses(pu.Position, hover),
 		PlayerUnit:     pu,
 		Inventory:      gd.Inventory(rawPlayerUnits, hover),
 		Objects:        gd.Objects(pu.Position, hover),
@@ -159,16 +159,18 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 			stat.DexterityPerLevel,
 			stat.VitalityPerLevel,
 			stat.ThornsPerLevel:
-			value = int(statValue / 8)
+			value = int(math.Max(float64(statValue/8), 1))
 		case stat.LifePerLevel,
 			stat.ManaPerLevel:
-			value = int(statValue / 2048)
+			value = int(math.Max(float64(statValue/2048), 1))
 		case stat.ReplenishDurability, stat.ReplenishQuantity:
-			value = 2 / int(statValue)
+			value = int(math.Max(float64(2/statValue), 1))
 		case stat.RegenStaminaPerLevel:
 			value = int(statValue) * 10
 		case stat.LevelRequirePercent:
 			value = int(statValue) * -1
+		case stat.AttackRatingPerLevel:
+			value = int(math.Max(float64(statValue), 15))
 		}
 
 		stats = append(stats, stat.Data{
