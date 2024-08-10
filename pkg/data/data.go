@@ -27,6 +27,7 @@ type Data struct {
 	AreaOrigin Position
 	Corpse     Corpse
 	Monsters   Monsters
+	Corpses    Monsters
 	// First slice represents X and second Y
 	CollisionGrid  [][]bool
 	PlayerUnit     PlayerUnit
