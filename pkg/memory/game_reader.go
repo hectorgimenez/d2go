@@ -49,6 +49,7 @@ func (gd *GameReader) GetData() data.Data {
 			Position:  corpseUnit.Position,
 		},
 		Monsters:       gd.Monsters(pu.Position, hover),
+		Corpses:        gd.Corpses(pu.Position, hover),
 		PlayerUnit:     pu,
 		Inventory:      gd.Inventory(rawPlayerUnits, hover),
 		Objects:        gd.Objects(pu.Position, hover),
