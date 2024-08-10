@@ -291,3 +291,7 @@ type OpenMenus struct {
 	SkillSelect   bool
 	Anvil         bool
 }
+
+func (om OpenMenus) IsMenuOpen() bool {
+	return om.Inventory || om.NPCInteract || om.NPCShop || om.Stash || om.Waypoint || om.SkillTree || om.Character || om.QuitMenu || om.Cube || om.SkillSelect || om.Anvil
+}
