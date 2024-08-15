@@ -112,7 +112,7 @@ const (
 	DoubleHerbDuration
 	LightRadius
 	LightColor
-	Requirements
+	RequirePercent
 	LevelRequire
 	IncreasedAttackSpeed
 	LevelRequirePercent
@@ -233,8 +233,8 @@ const (
 	Unused209
 	Unused210
 	Unused211
-	Unused212
-	Unused213
+	PassiveMasteryFasterHitRecovery
+	PassiveMasteryAttackSpeed
 	DefensePerLevel
 	ArmorPercentPerLevel
 	LifePerLevel
@@ -382,6 +382,7 @@ const (
 	PassiveMagicPierce
 	SkillCooldown
 	SkillMissileDamageScale
+	Count
 )
 
 var StringStats = []string{
@@ -597,8 +598,8 @@ var StringStats = []string{
 	"unused209",
 	"unused210",
 	"unused211",
-	"unused212",
-	"unused213",
+	"passivemasteryfasterhitrecovery",
+	"passivemasteryattackspeed",
 	"defenseperlevel",
 	"armorpercentperlevel",
 	"lifeperlevel",
@@ -746,6 +747,7 @@ var StringStats = []string{
 	"passivemagicpierce",
 	"skillcooldown",
 	"skillmissiledamagescale",
+	"count",
 }
 
 func (s ID) String() string {

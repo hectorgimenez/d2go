@@ -126,7 +126,7 @@ const (
 	SyncWarped
 	ConversionSave
 	Pregnant
-	State111
+	GolemMastery
 	Rabies
 	DefenseCurse
 	BloodMana

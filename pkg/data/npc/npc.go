@@ -231,7 +231,7 @@ const (
 	BloodMage4
 	BloodMage5
 	Maggot
-	MummyGenerator
+	Sarcophagus
 	Radament
 	FireBeast
 	IceGlobe
@@ -537,7 +537,7 @@ const (
 	DeathMauler3
 	DeathMauler4
 	DeathMauler5
-	POW
+	Act5POW
 	Act5Townguard
 	Act5Townguard2
 	AncientStatue
@@ -713,7 +713,7 @@ const (
 	Lilith
 	UberDuriel
 	UberBaal
-	EvilHut2
+	DemonSpawner
 	DemonHole
 	PitLord3
 	OblivionKnight4
@@ -737,4 +737,78 @@ const (
 	DarkLord3
 	Specter3
 	BurningSoul3
+	Horse
+	CowKing
+	DarkElder
+	Pig
+	SeaGull
+	SuicideMinion9
+	SuicideMinion10
+	SuicideMinion11
+	Bishibosh
+	Bonebreak
+	Coldcrow
+	Rakanishu
+	Treehead_WoodFist
+	Griswold2
+	The_Countess
+	Pitspawn_Fouldog
+	Flamespike_the_Crawler
+	Boneash
+	Radament2
+	Bloodwitch_the_Wild
+	Fangskin
+	Beetleburst
+	Leatherarm
+	Coldworm_the_Burrower
+	Fire_eye
+	Dark_Elder
+	The_Summoner
+	Ancient_Kaa_the_Soulless
+	The_Smith
+	Web_Mage_the_Burning
+	Witch_Doctor_Endugu
+	Stormtree
+	Sarina_the_Battlemaid
+	Icehawk_Riftwing
+	Ismail_Vilehand
+	Geleb_Flamefinger
+	Bremm_Sparkfist
+	Toorc_Icefist
+	Wyand_Voidfinger
+	Maffer_Dragonhand
+	Winged_Death
+	The_Tormentor
+	Taintbreeder
+	Riftwraith_the_Cannibal
+	Infector_of_Souls
+	Lord_De_Seis
+	Grand_Vizier_of_Chaos
+	The_Cow_King
+	Corpsefire
+	The_Feature_Creep
+	Siege_Boss
+	Ancient_Barbarian1
+	Ancient_Barbarian2
+	Ancient_Barbarian3
+	Axe_Dweller
+	Bonesaw_Breaker
+	Dac_Farren
+	Megaflow_Rectifier
+	Eyeback_Unleashed
+	Thresh_Socket
+	Pindleskin
+	Snapchip_Shatter
+	Anodized_Elite
+	Vinvear_Molech
+	SharpTooth_Slayer
+	Magma_Torquer
+	Blaze_Ripper
+	Frozenstein
+	Nihlathak_Boss
+	Baal_Subject1
+	Baal_Subject2
+	Baal_Subject3
+	Baal_Subject4
+	Baal_Subject5
 )
