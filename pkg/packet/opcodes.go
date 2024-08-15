@@ -745,6 +745,17 @@ func initAck() {
 		},
 	}
 
+	OpCodesAck[72] = OpCodeInfo{
+		Name: "Relator2",
+		Size: 11,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 1, Name: "Gap"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 4, Name: "Padding[4]"},
+		},
+	}
+
 	OpCodesAck[73] = OpCodeInfo{
 		Name:   "PlayerClearCursor",
 		Size:   1,
@@ -768,17 +779,6 @@ func initAck() {
 			{Size: 1, Name: "UnitType"},
 			{Size: 4, Name: "UnitId"},
 			{Size: 4, Name: "StateType"},
-		},
-	}
-	
-	OpCodesAck[72] = OpCodeInfo{
-		Name: "Relator2",
-		Size: 11,
-		Fields: []FieldInfo{
-			{Size: 1, Name: "UnitType"},
-			{Size: 1, Name: "Gap"},
-			{Size: 4, Name: "UnitId"},
-			{Size: 4, Name: "Padding[4]"},
 		},
 	}
 
@@ -1874,6 +1874,12 @@ func initAck() {
 		Fields: []FieldInfo{},
 	}
 
+	OpCodesAck[177] = OpCodeInfo{
+		Name:   "StartGame",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
 	OpCodesAck[178] = OpCodeInfo{
 		Name: "GamesInfo",
 		Size: 53,
@@ -1979,6 +1985,42 @@ func initReq() {
 		},
 	}
 
+	OpCodesReq[8] = OpCodeInfo{
+		Name: "InteractItemWithUnit",
+		Size: 13,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+			{Size: 4, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+		},
+	}
+
+	OpCodesReq[9] = OpCodeInfo{
+		Name: "PickupBufferItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[10] = OpCodeInfo{
+		Name: "PickupUnitItem",
+		Size: 10,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[11] = OpCodeInfo{
+		Name: "InitiateEntityChat",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+		},
+	}
+
 	OpCodesReq[12] = OpCodeInfo{
 		Name: "RightSkillAtLocation",
 		Size: 5,
@@ -2006,6 +2048,42 @@ func initReq() {
 		},
 	}
 
+	OpCodesReq[15] = OpCodeInfo{
+		Name: "OverheadMessage",
+		Size: -1,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "Unknown"},
+			{Size: -1, Name: "Message"},
+		},
+	}
+
+	OpCodesReq[16] = OpCodeInfo{
+		Name: "Chat",
+		Size: -1,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "ChatType"},
+			{Size: -1, Name: "Message"},
+		},
+	}
+
+	OpCodesReq[17] = OpCodeInfo{
+		Name: "PickChanMsg",
+		Size: -1,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "ChatType"},
+			{Size: -1, Name: "Message"},
+		},
+	}
+
+	OpCodesReq[18] = OpCodeInfo{
+		Name: "ChanWhisper",
+		Size: -1,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "ChatType"},
+			{Size: -1, Name: "Message"},
+		},
+	}
+
 	OpCodesReq[19] = OpCodeInfo{
 		Name: "InteractWithUnit",
 		Size: 9,
@@ -2013,6 +2091,18 @@ func initReq() {
 			{Size: 4, Name: "TargetUnitId"},
 			{Size: 4, Name: "ExecuteeUnitId"},
 		},
+	}
+
+	OpCodesReq[20] = OpCodeInfo{
+		Name:   "JoinWarpReply",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[21] = OpCodeInfo{
+		Name:   "LeaveChanReply",
+		Size:   1,
+		Fields: []FieldInfo{},
 	}
 
 	OpCodesReq[22] = OpCodeInfo{
@@ -2065,12 +2155,46 @@ func initReq() {
 		},
 	}
 
+	OpCodesReq[27] = OpCodeInfo{
+		Name: "ChangeItemSlot",
+		Size: 12,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+			{Size: 4, Name: "Position"},
+			{Size: 4, Name: "InventoryId"},
+		},
+	}
+
 	OpCodesReq[28] = OpCodeInfo{
 		Name: "PullItemFromBody",
 		Size: 9,
 		Fields: []FieldInfo{
 			{Size: 4, Name: "ItemGUID"},
 			{Size: 4, Name: "BodyLocation"},
+		},
+	}
+
+	OpCodesReq[29] = OpCodeInfo{
+		Name: "SwitchBeltItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[30] = OpCodeInfo{
+		Name: "UseBeltItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[31] = OpCodeInfo{
+		Name: "UseInventoryItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
 		},
 	}
 
@@ -2099,6 +2223,14 @@ func initReq() {
 		},
 	}
 
+	OpCodesReq[34] = OpCodeInfo{
+		Name: "IdentifyItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
 	OpCodesReq[35] = OpCodeInfo{
 		Name: "ItemToBelt",
 		Size: 9,
@@ -2123,6 +2255,24 @@ func initReq() {
 			{Size: 4, Name: "ItemUnitID"},
 			{Size: 1, Name: "ItemPosXCurrent"},
 			{Size: 1, Name: "ItemPosXPrevious"},
+		},
+	}
+
+	OpCodesReq[37] = OpCodeInfo{
+		Name: "CharToNpc",
+		Size: 13,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "NpcId"},
+			{Size: 4, Name: "ItemId"},
+			{Size: 4, Name: "Unknown"},
+		},
+	}
+
+	OpCodesReq[38] = OpCodeInfo{
+		Name: "NpcToChar",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
 		},
 	}
 
@@ -2178,6 +2328,16 @@ func initReq() {
 		},
 	}
 
+	OpCodesReq[41] = OpCodeInfo{
+		Name: "TakeWPOrPortal",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "WarpType"},
+			{Size: 4, Name: "WarpId"},
+			{Size: 4, Name: "Unknown"},
+		},
+	}
+
 	OpCodesReq[42] = OpCodeInfo{
 		Name: "MoveItemToCube",
 		Size: 21,
@@ -2189,6 +2349,41 @@ func initReq() {
 			{Size: 2, Name: "Unknown"},
 			{Size: 2, Name: "ToPosX"},
 			{Size: 2, Name: "ToPosY"},
+		},
+	}
+
+	OpCodesReq[43] = OpCodeInfo{
+		Name: "MakeEntityMove",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "EntityType"},
+			{Size: 4, Name: "EntityId"},
+		},
+	}
+
+	OpCodesReq[44] = OpCodeInfo{
+		Name: "EntityAction",
+		Size: 13,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "EntityType"},
+			{Size: 4, Name: "EntityId"},
+			{Size: 4, Name: "Action"},
+		},
+	}
+
+	OpCodesReq[45] = OpCodeInfo{
+		Name: "HealMerc",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+		},
+	}
+
+	OpCodesReq[46] = OpCodeInfo{
+		Name: "HealOther",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
 		},
 	}
 
@@ -2205,6 +2400,16 @@ func initReq() {
 		Size: 5,
 		Fields: []FieldInfo{
 			{Size: 4, Name: "UnitID"},
+		},
+	}
+
+	OpCodesReq[49] = OpCodeInfo{
+		Name: "AssignSkillHotkey",
+		Size: 7,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "Skill"},
+			{Size: 4, Name: "ItemId"},
+			{Size: 1, Name: "HotkeyId"},
 		},
 	}
 
@@ -2268,6 +2473,24 @@ func initReq() {
 		},
 	}
 
+	OpCodesReq[54] = OpCodeInfo{
+		Name: "QuestCompleted",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "QuestId"},
+			{Size: 4, Name: "StateFlags"},
+		},
+	}
+
+	OpCodesReq[55] = OpCodeInfo{
+		Name: "MakeEntityInteractable",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "EntityType"},
+			{Size: 4, Name: "EntityId"},
+		},
+	}
+
 	OpCodesReq[56] = OpCodeInfo{
 		Name: "NPCAction",
 		Size: 9,
@@ -2317,12 +2540,24 @@ func initReq() {
 		},
 	}
 
+	OpCodesReq[61] = OpCodeInfo{
+		Name:   "ClearCursor",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
 	OpCodesReq[62] = OpCodeInfo{
 		Name: "ActivateItem",
 		Size: 5,
 		Fields: []FieldInfo{
 			{Size: 4, Name: "ItemId"},
 		},
+	}
+
+	OpCodesReq[63] = OpCodeInfo{
+		Name:   "Terminate",
+		Size:   1,
+		Fields: []FieldInfo{},
 	}
 
 	OpCodesReq[64] = OpCodeInfo{
@@ -2341,12 +2576,35 @@ func initReq() {
 		},
 	}
 
+	OpCodesReq[66] = OpCodeInfo{
+		Name:   "ReloadGame",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
 	OpCodesReq[67] = OpCodeInfo{
 		Name: "RequestUnitUpdate",
 		Size: 9,
 		Fields: []FieldInfo{
 			{Size: 4, Name: "UnitType"},
 			{Size: 4, Name: "UnitID"},
+		},
+	}
+
+	OpCodesReq[68] = OpCodeInfo{
+		Name: "DropGold",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "GoldAmount"},
+		},
+	}
+
+	OpCodesReq[69] = OpCodeInfo{
+		Name: "BindHotkeySkill",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "HotkeyId"},
+			{Size: 2, Name: "SkillId"},
 		},
 	}
 
@@ -2370,11 +2628,75 @@ func initReq() {
 		},
 	}
 
+	OpCodesReq[72] = OpCodeInfo{
+		Name: "RelationRequest",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "EntityId"},
+			{Size: 4, Name: "RelationType"},
+		},
+	}
+
+	OpCodesReq[73] = OpCodeInfo{
+		Name: "PartyRequest",
+		Size: 6,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "PartyId"},
+			{Size: 4, Name: "EntityId"},
+		},
+	}
+
+	OpCodesReq[74] = OpCodeInfo{
+		Name: "UpdatePlayerPos",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "PosX"},
+			{Size: 2, Name: "PosY"},
+		},
+	}
+
 	OpCodesReq[75] = OpCodeInfo{
 		Name: "ToWaypoint",
 		Size: 5,
 		Fields: []FieldInfo{
 			{Size: 4, Name: "LevelNo"},
+		},
+	}
+
+	OpCodesReq[76] = OpCodeInfo{
+		Name: "SwapTwoHandedItem",
+		Size: 17,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId1"},
+			{Size: 4, Name: "ItemId2"},
+			{Size: 4, Name: "BodyLocation1"},
+			{Size: 4, Name: "BodyLocation2"},
+		},
+	}
+
+	OpCodesReq[77] = OpCodeInfo{
+		Name: "RemoveStackedItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[78] = OpCodeInfo{
+		Name: "ItemStackToCursor",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+			{Size: 4, Name: "Amount"},
+		},
+	}
+
+	OpCodesReq[79] = OpCodeInfo{
+		Name: "ItemStackToGround",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+			{Size: 4, Name: "Amount"},
 		},
 	}
 
@@ -2394,6 +2716,14 @@ func initReq() {
 		},
 	}
 
+	OpCodesReq[81] = OpCodeInfo{
+		Name: "RemoveBeltItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
 	OpCodesReq[82] = OpCodeInfo{
 		Name: "NPCReviveMerc",
 		Size: 13,
@@ -2401,6 +2731,15 @@ func initReq() {
 			{Size: 4, Name: "NPCUnitId"},
 			{Size: 4, Name: "MercNameId"},
 			{Size: 4, Name: "MercReviveCosts"},
+		},
+	}
+
+	OpCodesReq[83] = OpCodeInfo{
+		Name: "InsertSocketItem",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+			{Size: 4, Name: "SocketedItemId"},
 		},
 	}
 
@@ -2436,6 +2775,49 @@ func initReq() {
 		},
 	}
 
+	OpCodesReq[86] = OpCodeInfo{
+		Name: "ScrollToBook",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ScrollId"},
+			{Size: 4, Name: "BookId"},
+		},
+	}
+
+	OpCodesReq[87] = OpCodeInfo{
+		Name:   "CloseQuests",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[88] = OpCodeInfo{
+		Name:   "CloseWaypoint",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[89] = OpCodeInfo{
+		Name: "OpenCube",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "CubeId"},
+		},
+	}
+
+	OpCodesReq[90] = OpCodeInfo{
+		Name:   "OpenStash",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[91] = OpCodeInfo{
+		Name: "ChangeSkillRightHand",
+		Size: 3,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+		},
+	}
+
 	OpCodesReq[92] = OpCodeInfo{
 		Name: "QuickItemDrop",
 		Size: 17,
@@ -2448,6 +2830,129 @@ func initReq() {
 		},
 	}
 
+	OpCodesReq[93] = OpCodeInfo{
+		Name: "ChangeSkillLeftHand",
+		Size: 3,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+		},
+	}
+
+	OpCodesReq[94] = OpCodeInfo{
+		Name:   "CloseAllWindows",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[95] = OpCodeInfo{
+		Name: "InventoryToCube",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+			{Size: 4, Name: "CubeId"},
+		},
+	}
+
+	OpCodesReq[96] = OpCodeInfo{
+		Name: "CubeToInventory",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+			{Size: 4, Name: "CubeId"},
+		},
+	}
+
+	OpCodesReq[97] = OpCodeInfo{
+		Name:   "UnselectAllSkillHotkeys",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[98] = OpCodeInfo{
+		Name: "SkillHotkeyToCursor",
+		Size: 2,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "HotkeyId"},
+		},
+	}
+
+	OpCodesReq[99] = OpCodeInfo{
+		Name: "CursorToSkillHotkey",
+		Size: 3,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "HotkeyId"},
+			{Size: 1, Name: "SkillId"},
+		},
+	}
+
+	OpCodesReq[100] = OpCodeInfo{
+		Name: "CancelBuff",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "BuffId"},
+			{Size: 2, Name: "EntityType"},
+		},
+	}
+
+	OpCodesReq[101] = OpCodeInfo{
+		Name: "DelayedState",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "StateId"},
+			{Size: 2, Name: "EntityType"},
+		},
+	}
+
+	OpCodesReq[102] = OpCodeInfo{
+		Name: "SetPlayerMode",
+		Size: 2,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "Mode"},
+		},
+	}
+
+	OpCodesReq[103] = OpCodeInfo{
+		Name:   "Stash_Arrange",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[104] = OpCodeInfo{
+		Name:   "Stash_Collapse",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[105] = OpCodeInfo{
+		Name: "Transmogrify",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[106] = OpCodeInfo{
+		Name:   "ClickMercenaryBtn",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[107] = OpCodeInfo{
+		Name: "ClickStashBtn",
+		Size: 2,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "StashPage"},
+		},
+	}
+
+	OpCodesReq[108] = OpCodeInfo{
+		Name: "ClickBeltBtn",
+		Size: 2,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "BeltSlot"},
+		},
+	}
+
 	OpCodesReq[109] = OpCodeInfo{
 		Name: "Ping",
 		Size: 13,
@@ -2455,6 +2960,14 @@ func initReq() {
 			{Size: 4, Name: "TickCount"},
 			{Size: 4, Name: "Delay"},
 			{Size: 4, Name: "WardenOrZero"},
+		},
+	}
+
+	OpCodesReq[110] = OpCodeInfo{
+		Name: "ClickQuestBtn",
+		Size: 2,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "QuestId"},
 		},
 	}
 
