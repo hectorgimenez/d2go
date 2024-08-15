@@ -548,6 +548,37 @@ func initAck() {
 		},
 	}
 
+	OpCodesAck[84] = OpCodeInfo{
+		Name: "AssignSkill",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 2, Name: "Unknown"},
+		},
+	}
+
+	OpCodesAck[85] = OpCodeInfo{
+		Name: "AssignSkillHotkey",
+		Size: 7,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 1, Name: "HotkeyId"},
+			{Size: 1, Name: "Unknown1"},
+			{Size: 2, Name: "Unknown2"},
+		},
+	}
+
+	OpCodesAck[86] = OpCodeInfo{
+		Name: "UseSkillOnTarget",
+		Size: 13,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 4, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "Unknown"},
+		},
+	}
+
 	OpCodesAck[87] = OpCodeInfo{
 		Name: "NPCEnchant",
 		Size: 14,
