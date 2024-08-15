@@ -33,8 +33,18 @@ func (gd *GameReader) Objects(playerPosition data.Position, hover data.HoverData
 				shrineTextPtr := uintptr(gd.Process.ReadUInt(objectUnitPtr+0x0A, Uint64))
 				shrineType := uint(0)
 				interactType := uint(0)
+				shrineData := object.ShrineData{}
 				if shrineTextPtr > 0 {
 					shrineType = gd.Process.ReadUInt(unitDataPtr+0x08, Uint8)
+					shrineData = object.ShrineData{
+						ShrineName: object.ShrineTypeNames[object.ShrineType(shrineType)],
+						ShrineType: object.ShrineType(shrineType),
+						Position: object.ShrinePosition{
+							X: int(posX),
+							Y: int(posY),
+						},
+					}
+
 				} else {
 					interactType = gd.Process.ReadUInt(unitDataPtr+0x08, Uint8)
 				}
@@ -45,7 +55,7 @@ func (gd *GameReader) Objects(playerPosition data.Position, hover data.HoverData
 					Name:         object.Name(int(txtFileNo)),
 					IsHovered:    data.UnitID(unitID) == hover.UnitID && hover.UnitType == 2 && hover.IsHovered,
 					InteractType: object.InteractType(interactType),
-					ShrineType:   object.ShrineType(shrineType),
+					Shrine:       shrineData,
 					Selectable:   mode == 0,
 					Position: data.Position{
 						X: int(posX),

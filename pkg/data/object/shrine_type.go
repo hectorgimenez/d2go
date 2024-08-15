@@ -2,6 +2,17 @@ package object
 
 type ShrineType uint
 
+type ShrinePosition struct {
+	X int
+	Y int
+}
+
+type ShrineData struct {
+	ShrineName string
+	ShrineType ShrineType
+	Position   ShrinePosition
+}
+
 const (
 	RefillShrine          ShrineType = 0x01
 	HealthShrine          ShrineType = 0x02
@@ -26,3 +37,28 @@ const (
 	ExplosiveShrine       ShrineType = 0x15
 	PoisonShrine          ShrineType = 0x16
 )
+
+var ShrineTypeNames = map[ShrineType]string{
+	RefillShrine:          "Refill Shrine",
+	HealthShrine:          "Health Shrine",
+	ManaShrine:            "Mana Shrine",
+	HPXChangeShrine:       "HP XChange Shrine",
+	ManaXChangeShrine:     "Mana XChange Shrine",
+	ArmorShrine:           "Armor Shrine",
+	CombatShrine:          "Combat Shrine",
+	ResistFireShrine:      "Resist Fire Shrine",
+	ResistColdShrine:      "Resist Cold Shrine",
+	ResistLightningShrine: "Resist Lightning Shrine",
+	ResistPoisonShrine:    "Resist Poison Shrine",
+	SkillShrine:           "Skill Shrine",
+	ManaRegenShrine:       "Mana Regen Shrine",
+	StaminaShrine:         "Stamina Shrine",
+	ExperienceShrine:      "Experience Shrine",
+	UnknownShrine:         "Unknown Shrine",
+	PortalShrine:          "Portal Shrine",
+	GemShrine:             "Gem Shrine",
+	FireShrine:            "Fire Shrine",
+	MonsterShrine:         "Monster Shrine",
+	ExplosiveShrine:       "Explosive Shrine",
+	PoisonShrine:          "Poison Shrine",
+}
