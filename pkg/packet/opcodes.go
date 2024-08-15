@@ -2978,6 +2978,335 @@ func initReq() {
 			{Size: 4, Name: "Tick"},
 		},
 	}
+	
+	OpCodesReq[112] = OpCodeInfo{
+		Name: "StatButtonPressed",
+		Size: 2,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "StatType"},
+		},
+	}
+
+	OpCodesReq[113] = OpCodeInfo{
+		Name: "SkillButtonPressed",
+		Size: 3,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+		},
+	}
+
+	OpCodesReq[114] = OpCodeInfo{
+		Name: "SwitchInventoryPage",
+		Size: 2,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "PageNumber"},
+		},
+	}
+
+	OpCodesReq[115] = OpCodeInfo{
+		Name: "InventoryPosSwitch",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[116] = OpCodeInfo{
+		Name:   "CancelTrade",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[117] = OpCodeInfo{
+		Name:   "AcceptTrade",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[118] = OpCodeInfo{
+		Name: "PutGoldInTrade",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "GoldAmount"},
+		},
+	}
+
+	OpCodesReq[119] = OpCodeInfo{
+		Name: "RemoveGoldFromTrade",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "GoldAmount"},
+		},
+	}
+
+	OpCodesReq[120] = OpCodeInfo{
+		Name: "TradeItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[121] = OpCodeInfo{
+		Name: "CancelTradeItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[122] = OpCodeInfo{
+		Name: "UpdateItemInTrade",
+		Size: 6,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "TradeType"},
+			{Size: 4, Name: "GoldAmount"},
+		},
+	}
+
+	OpCodesReq[123] = OpCodeInfo{
+		Name:   "CharacterPhaseEnd",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[124] = OpCodeInfo{
+		Name: "NPCCancel",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "NPCId"},
+		},
+	}
+
+	OpCodesReq[125] = OpCodeInfo{
+		Name: "PlayerRelationAction",
+		Size: 7,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "ActionType"},
+			{Size: 2, Name: "PlayerId"},
+			{Size: 4, Name: "Param"},
+		},
+	}
+
+	OpCodesReq[126] = OpCodeInfo{
+		Name: "RelationPartyAction",
+		Size: 7,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "ActionType"},
+			{Size: 2, Name: "PlayerId"},
+			{Size: 4, Name: "Param"},
+		},
+	}
+
+	OpCodesReq[127] = OpCodeInfo{
+		Name: "AssignGameItem",
+		Size: 17,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+			{Size: 4, Name: "OwnerId"},
+			{Size: 4, Name: "TradeId"},
+			{Size: 4, Name: "NewItemId"},
+		},
+	}
+
+	OpCodesReq[128] = OpCodeInfo{
+		Name: "PutBufferItemInStore",
+		Size: 13,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+			{Size: 4, Name: "Cost"},
+			{Size: 4, Name: "GambleId"},
+		},
+	}
+
+	OpCodesReq[129] = OpCodeInfo{
+		Name: "RemoveBufferItemFromStore",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[130] = OpCodeInfo{
+		Name: "DynamicInteraction",
+		Size: -1,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "ActionId"},
+			{Size: -1, Name: "Data"},
+		},
+	}
+
+	OpCodesReq[131] = OpCodeInfo{
+		Name: "ClickButton2",
+		Size: 4,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "ButtonType"},
+			{Size: 2, Name: "ButtonId"},
+		},
+	}
+
+	OpCodesReq[132] = OpCodeInfo{
+		Name: "ChatMsg",
+		Size: -1,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "ChatType"},
+			{Size: -1, Name: "Message"},
+		},
+	}
+
+	OpCodesReq[133] = OpCodeInfo{
+		Name: "SpecialMove",
+		Size: 6,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "MoveType"},
+			{Size: 4, Name: "TargetId"},
+		},
+	}
+
+	OpCodesReq[134] = OpCodeInfo{
+		Name: "SpecialMoveAction",
+		Size: 6,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "ActionType"},
+			{Size: 4, Name: "TargetId"},
+		},
+	}
+
+	OpCodesReq[135] = OpCodeInfo{
+		Name: "ChangeGameSettings",
+		Size: 7,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SettingId"},
+			{Size: 4, Name: "Value"},
+		},
+	}
+
+	OpCodesReq[136] = OpCodeInfo{
+		Name: "MoveFollower",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "FollowerId"},
+			{Size: 2, Name: "PosX"},
+			{Size: 2, Name: "PosY"},
+		},
+	}
+
+	OpCodesReq[137] = OpCodeInfo{
+		Name:   "SwapWeapons",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[138] = OpCodeInfo{
+		Name: "DropBufferItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[139] = OpCodeInfo{
+		Name: "SpecialSkill",
+		Size: 17,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 4, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "PosX"},
+			{Size: 2, Name: "PosY"},
+			{Size: 2, Name: "Unknown"},
+		},
+	}
+
+	OpCodesReq[140] = OpCodeInfo{
+		Name: "SpecialSkillEx",
+		Size: 13,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 4, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "Unknown"},
+		},
+	}
+
+	OpCodesReq[141] = OpCodeInfo{
+		Name: "SpecialSkillEx2",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 2, Name: "PosX"},
+			{Size: 2, Name: "PosY"},
+			{Size: 2, Name: "Unknown"},
+		},
+	}
+
+	OpCodesReq[142] = OpCodeInfo{
+		Name: "SpecialSkillEx3",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 2, Name: "Unknown"},
+		},
+	}
+
+	OpCodesReq[143] = OpCodeInfo{
+		Name: "Scroll",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ScrollId"},
+		},
+	}
+
+	OpCodesReq[144] = OpCodeInfo{
+		Name:   "Resurrect",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[145] = OpCodeInfo{
+		Name: "StaffInSocket",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "StaffId"},
+			{Size: 4, Name: "SocketId"},
+		},
+	}
+
+	OpCodesReq[146] = OpCodeInfo{
+		Name: "ItemToCursor",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[147] = OpCodeInfo{
+		Name:   "BuyHealthPotion",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[148] = OpCodeInfo{
+		Name:   "BuyManaPotion",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[149] = OpCodeInfo{
+		Name: "SellItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[150] = OpCodeInfo{
+		Name:   "CainIdentifyItems",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
 
 }
 
