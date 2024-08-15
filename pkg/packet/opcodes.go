@@ -168,7 +168,14 @@ func initAck() {
 			{Size: 2, Name: "UnitY"},
 		},
 	}
-
+	OpCodesAck[16] = OpCodeInfo{
+		Name: "PlayerStop",
+		Size: 6,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+		},
+	}
 	OpCodesAck[17] = OpCodeInfo{
 		Name: "ReportKill",
 		Size: 8,
@@ -176,6 +183,40 @@ func initAck() {
 			{Size: 1, Name: "UnitType"},
 			{Size: 4, Name: "UnitId"},
 			{Size: 2, Name: "Overlay"},
+		},
+	}
+
+	OpCodesAck[18] = OpCodeInfo{
+		Name: "PlayerInGame",
+		Size: 10,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "CharClass"},
+			{Size: 1, Name: "CharName[16]"},
+		},
+	}
+
+	OpCodesAck[19] = OpCodeInfo{
+		Name: "PlayerLeaveGame",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+		},
+	}
+
+	OpCodesAck[20] = OpCodeInfo{
+		Name: "NpcHit",
+		Size: 13,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "AnimationType"},
+			{Size: 2, Name: "UnknownA"},
+			{Size: 1, Name: "UnknownB"},
+			{Size: 1, Name: "LifePercentage"},
+			{Size: 2, Name: "TargetX"},
+			{Size: 2, Name: "TargetY"},
 		},
 	}
 
@@ -331,6 +372,23 @@ func initAck() {
 		},
 	}
 
+	OpCodesAck[36] = OpCodeInfo{
+		Name: "SkillPointsUsed",
+		Size: 6,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "Skill"},
+			{Size: 1, Name: "Amount"},
+		},
+	}
+
+	OpCodesAck[37] = OpCodeInfo{
+		Name: "SkillPointAssignedToSkill",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "Skill"},
+		},
+	}
+
 	OpCodesAck[38] = OpCodeInfo{
 		Name: "Chat",
 		Size: -1,
@@ -389,6 +447,16 @@ func initAck() {
 		},
 	}
 
+	OpCodesAck[43] = OpCodeInfo{
+		Name: "GameQuest",
+		Size: 10,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "QuestId"},
+			{Size: 4, Name: "Unknown1"},
+			{Size: 4, Name: "Unknown2"},
+		},
+	}
+
 	OpCodesAck[44] = OpCodeInfo{
 		Name: "PlaySound",
 		Size: 8,
@@ -398,7 +466,197 @@ func initAck() {
 			{Size: 2, Name: "SoundId"},
 		},
 	}
+	OpCodesAck[45] = OpCodeInfo{
+		Name:   "UnlockD2Character",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
 
+	OpCodesAck[46] = OpCodeInfo{
+		Name:   "D2CharacterPhaseEnd",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[47] = OpCodeInfo{
+		Name: "NPCSetMode",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "Mode"},
+			{Size: 2, Name: "StateInfo"},
+		},
+	}
+
+	OpCodesAck[48] = OpCodeInfo{
+		Name: "NPCSetModeEx",
+		Size: 13,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "Mode"},
+			{Size: 2, Name: "StateInfo"},
+			{Size: 4, Name: "UnitId2"},
+		},
+	}
+
+	OpCodesAck[49] = OpCodeInfo{
+		Name: "NPCSetUniqueState",
+		Size: 14,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "StateId"},
+			{Size: 4, Name: "StateData1"},
+			{Size: 4, Name: "StateData2"},
+		},
+	}
+
+	OpCodesAck[50] = OpCodeInfo{
+		Name: "NPCHeal",
+		Size: 7,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "LifePercentage"},
+		},
+	}
+
+	OpCodesAck[51] = OpCodeInfo{
+		Name: "NPCAssign",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "TxtFileNo"},
+			{Size: 1, Name: "Unk"},
+		},
+	}
+
+	OpCodesAck[52] = OpCodeInfo{
+		Name: "PartyUpdate",
+		Size: 10,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "PartyId"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "PartyFlags"},
+			{Size: 1, Name: "PlayerLevel"},
+		},
+	}
+
+	OpCodesAck[53] = OpCodeInfo{
+		Name: "AssignMerc",
+		Size: 16,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "MercNpcId"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 4, Name: "OwnerId"},
+			{Size: 2, Name: "MercNameId"},
+			{Size: 2, Name: "Unknown1"},
+			{Size: 1, Name: "Unknown2"},
+		},
+	}
+
+	OpCodesAck[54] = OpCodeInfo{
+		Name: "AssignWarp",
+		Size: 6,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+		},
+	}
+
+	OpCodesAck[55] = OpCodeInfo{
+		Name: "PlayNpcMessage",
+		Size: 35,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "Unknown1"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "MessageId"},
+			{Size: 1, Name: "Unknown2"},
+			{Size: 16, Name: "Name[16]"},
+			{Size: 4, Name: "Unknown3"},
+			{Size: 2, Name: "Unknown4"},
+			{Size: 2, Name: "Unknown5"},
+			{Size: 1, Name: "Unknown6"},
+		},
+	}
+
+	OpCodesAck[56] = OpCodeInfo{
+		Name: "QuestSpecial",
+		Size: 15,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "Type"},
+			{Size: 4, Name: "Id"},
+			{Size: 4, Name: "X"},
+			{Size: 4, Name: "Y"},
+			{Size: 1, Name: "State"},
+		},
+	}
+
+	OpCodesAck[57] = OpCodeInfo{
+		Name: "AssignObject",
+		Size: 17,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "ObjectType"},
+			{Size: 2, Name: "PosX"},
+			{Size: 2, Name: "PosY"},
+			{Size: 1, Name: "State"},
+			{Size: 1, Name: "InteractionType"},
+			{Size: 2, Name: "Unknown1"},
+			{Size: 1, Name: "Unknown2"},
+		},
+	}
+
+	OpCodesAck[58] = OpCodeInfo{
+		Name: "AssignSkill",
+		Size: 6,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 1, Name: "UnitType"},
+			{Size: 2, Name: "UnitId"},
+		},
+	}
+
+	OpCodesAck[59] = OpCodeInfo{
+		Name: "UpdateSkill",
+		Size: 14,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "SkillId"},
+			{Size: 4, Name: "Amount"},
+			{Size: 2, Name: "Unknown"},
+		},
+	}
+
+	OpCodesAck[60] = OpCodeInfo{
+		Name: "SetSkill",
+		Size: 13,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "SkillId"},
+			{Size: 1, Name: "Unknown1"},
+			{Size: 4, Name: "Amount"},
+		},
+	}
+
+	OpCodesAck[61] = OpCodeInfo{
+		Name: "GameChat",
+		Size: -1,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "PlayerUUID"},
+			{Size: 1, Name: "ChatKind"},
+			{Size: 1, Name: "Unknown1"},
+			{Size: 4, Name: "Unknown2"},
+			{Size: 1, Name: "Unknown3"},
+			{Size: -1, Name: "Message"},
+		},
+	}
 	OpCodesAck[62] = OpCodeInfo{
 		Name: "UpdateItemStats",
 		Size: -1,
@@ -437,6 +695,45 @@ func initAck() {
 		},
 	}
 
+	OpCodesAck[67] = OpCodeInfo{
+		Name: "UpdateItemUI",
+		Size: 15,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+			{Size: 4, Name: "ItemId"},
+			{Size: 2, Name: "UiFlags"},
+			{Size: 4, Name: "ActionType"},
+		},
+	}
+
+	OpCodesAck[68] = OpCodeInfo{
+		Name: "DeleteItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+		},
+	}
+
+	OpCodesAck[69] = OpCodeInfo{
+		Name: "ItemNameUpdate",
+		Size: -1,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+			{Size: -1, Name: "ItemName"},
+		},
+	}
+
+	OpCodesAck[70] = OpCodeInfo{
+		Name: "ItemAction",
+		Size: 11,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "ActionId"},
+			{Size: 4, Name: "Category"},
+			{Size: 4, Name: "Id"},
+			{Size: 1, Name: "Unknown"},
+		},
+	}
+
 	OpCodesAck[71] = OpCodeInfo{
 		Name: "Relator1",
 		Size: 11,
@@ -447,6 +744,33 @@ func initAck() {
 			{Size: 4, Name: "Padding[4]"},
 		},
 	}
+
+	OpCodesAck[73] = OpCodeInfo{
+		Name:   "PlayerClearCursor",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[74] = OpCodeInfo{
+		Name: "Relator1",
+		Size: 10,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 4, Name: "StateType"},
+		},
+	}
+
+	OpCodesAck[75] = OpCodeInfo{
+		Name: "Relator2",
+		Size: 10,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 4, Name: "StateType"},
+		},
+	}
+	
 	OpCodesAck[72] = OpCodeInfo{
 		Name: "Relator2",
 		Size: 11,
@@ -736,6 +1060,15 @@ func initAck() {
 		},
 	}
 
+	OpCodesAck[102] = OpCodeInfo{
+		Name: "SetNpcUniqueId",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+			{Size: 4, Name: "UniqueId"},
+		},
+	}
+
 	OpCodesAck[103] = OpCodeInfo{
 		Name: "UnitMove",
 		Size: -1,
@@ -789,6 +1122,16 @@ func initAck() {
 		},
 	}
 
+	OpCodesAck[106] = OpCodeInfo{
+		Name: "NpcInteract",
+		Size: 7,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "InteractType"},
+		},
+	}
+
 	OpCodesAck[107] = OpCodeInfo{
 		Name: "UnitAction2",
 		Size: 16,
@@ -825,12 +1168,61 @@ func initAck() {
 		},
 	}
 
+	OpCodesAck[110] = OpCodeInfo{
+		Name: "NpcSetState",
+		Size: 10,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "State"},
+			{Size: 2, Name: "PosX"},
+			{Size: 2, Name: "PosY"},
+		},
+	}
+
+	OpCodesAck[111] = OpCodeInfo{
+		Name: "NpcAction",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "Action"},
+			{Size: 2, Name: "Unknown"},
+		},
+	}
+
 	OpCodesAck[112] = OpCodeInfo{
 		Name: "TerrorZoneNotify",
 		Size: 123,
 		Fields: []FieldInfo{
 			{Size: 2, Name: "ZoneCount"},
 			{Size: -1, Name: "ZoneData"},
+		},
+	}
+
+	OpCodesAck[113] = OpCodeInfo{
+		Name: "NpcMove",
+		Size: 11,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "PosX"},
+			{Size: 2, Name: "PosY"},
+			{Size: 1, Name: "Unknown"},
+		},
+	}
+
+	OpCodesAck[114] = OpCodeInfo{
+		Name: "NpcMoveToTarget",
+		Size: 16,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "PosX"},
+			{Size: 2, Name: "PosY"},
+			{Size: 1, Name: "TargetType"},
+			{Size: 4, Name: "TargetId"},
+			{Size: 1, Name: "Unknown"},
 		},
 	}
 
@@ -971,6 +1363,14 @@ func initAck() {
 		},
 	}
 
+	OpCodesAck[128] = OpCodeInfo{
+		Name: "NpcWantsInteract",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+		},
+	}
+
 	OpCodesAck[129] = OpCodeInfo{
 		Name: "AssignMerc",
 		Size: 20,
@@ -994,7 +1394,67 @@ func initAck() {
 			{Size: 4, Name: "PortalId2"},
 		},
 	}
+	OpCodesAck[131] = OpCodeInfo{
+		Name: "OverheadMessage",
+		Size: -1,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "Unknown1"},
+			{Size: 2, Name: "MessageType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "Unknown2"},
+			{Size: -1, Name: "Message"},
+		},
+	}
 
+	OpCodesAck[132] = OpCodeInfo{
+		Name: "NpcTransaction",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "TradeType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 4, Name: "GoldInInventory"},
+		},
+	}
+
+	OpCodesAck[133] = OpCodeInfo{
+		Name: "PlaySound",
+		Size: 8,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SoundType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "Unknown"},
+		},
+	}
+
+	OpCodesAck[134] = OpCodeInfo{
+		Name: "UpdateItemStats",
+		Size: -1,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "Unknown1"},
+			{Size: 2, Name: "PacketLength"},
+			{Size: -1, Name: "ItemStats"},
+		},
+	}
+
+	OpCodesAck[135] = OpCodeInfo{
+		Name: "UseStackableItem",
+		Size: 6,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+			{Size: 1, Name: "Unknown"},
+		},
+	}
+
+	OpCodesAck[136] = OpCodeInfo{
+		Name: "UseChargedItem",
+		Size: 12,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+			{Size: 2, Name: "SkillId"},
+			{Size: 4, Name: "TargetId"},
+			{Size: 1, Name: "Unknown"},
+		},
+	}
 	OpCodesAck[137] = OpCodeInfo{
 		Name: "UniqueEvents",
 		Size: 2,
