@@ -22,11 +22,6 @@ func init() {
 }
 
 func initAck() {
-	OpCodesAck[0] = OpCodeInfo{
-		Name:   "GameLoading",
-		Size:   1,
-		Fields: []FieldInfo{},
-	}
 
 	OpCodesAck[0] = OpCodeInfo{
 		Name:   "GameLoading",
