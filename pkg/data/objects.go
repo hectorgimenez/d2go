@@ -34,6 +34,10 @@ func (o Objects) FindByID(id UnitID) (Object, bool) {
 	return Object{}, false
 }
 
+func (o Object) IsShrine() bool {
+	return o.InteractType == object.InteractTypeShrine
+}
+
 func (o Object) IsWaypoint() bool {
 	switch o.Name {
 	case object.WaypointPortal,
