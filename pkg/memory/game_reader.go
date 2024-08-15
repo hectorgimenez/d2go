@@ -1,9 +1,10 @@
 package memory
 
 import (
+	"math"
+
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
-	"math"
 )
 
 type GameReader struct {
