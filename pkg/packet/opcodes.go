@@ -1911,6 +1911,446 @@ func initAck() {
 		},
 	}
 
+	OpCodesAck[181] = OpCodeInfo{
+		Name:   "ConnectionTerminated",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[182] = OpCodeInfo{
+		Name: "UseTownPortal",
+		Size: 7,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "PortalNumber"},
+			{Size: 4, Name: "AreaId"},
+		},
+	}
+
+	OpCodesAck[183] = OpCodeInfo{
+		Name:   "ClearCursor",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[184] = OpCodeInfo{
+		Name: "OpenTradeWindow",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "PlayerId"},
+			{Size: 4, Name: "TradeType"},
+		},
+	}
+
+	OpCodesAck[185] = OpCodeInfo{
+		Name:   "CloseTradeWindow",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[186] = OpCodeInfo{
+		Name:   "OpenStash",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[187] = OpCodeInfo{
+		Name:   "CloseStash",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[188] = OpCodeInfo{
+		Name: "UpdateTradeInventory",
+		Size: -1,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "TradeType"},
+			{Size: -1, Name: "ItemData"},
+		},
+	}
+
+	OpCodesAck[189] = OpCodeInfo{
+		Name: "PlayerLifeManaUpdate",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "Life"},
+			{Size: 4, Name: "Mana"},
+		},
+	}
+
+	OpCodesAck[190] = OpCodeInfo{
+		Name: "WalkVerify",
+		Size: 6,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "X"},
+			{Size: 2, Name: "Y"},
+			{Size: 1, Name: "Type"},
+		},
+	}
+
+	OpCodesAck[191] = OpCodeInfo{
+		Name:   "SwitchWeaponSet",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[192] = OpCodeInfo{
+		Name: "ItemActionWorld",
+		Size: 11,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "ActionId"},
+			{Size: 4, Name: "Category"},
+			{Size: 4, Name: "Id"},
+			{Size: 1, Name: "Unknown"},
+		},
+	}
+
+	OpCodesAck[193] = OpCodeInfo{
+		Name: "ItemActionOwned",
+		Size: 11,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "ActionId"},
+			{Size: 4, Name: "Category"},
+			{Size: 4, Name: "Id"},
+			{Size: 1, Name: "Unknown"},
+		},
+	}
+
+	OpCodesAck[194] = OpCodeInfo{
+		Name: "MercReviveCost",
+		Size: 6,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "Cost"},
+			{Size: 1, Name: "Unknown"},
+		},
+	}
+
+	OpCodesAck[195] = OpCodeInfo{
+		Name: "ItemDelete",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesAck[196] = OpCodeInfo{
+		Name:   "GameHandshakeRecv",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[197] = OpCodeInfo{
+		Name:   "GameHandshakeSend",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[198] = OpCodeInfo{
+		Name: "ItemOwnedUpdate",
+		Size: -1,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "Unknown"},
+			{Size: -1, Name: "ItemData"},
+		},
+	}
+
+	OpCodesAck[199] = OpCodeInfo{
+		Name: "UpdateSkill",
+		Size: 13,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "UnitType"},
+			{Size: 1, Name: "CurrentLevel"},
+			{Size: 4, Name: "Quantity"},
+		},
+	}
+
+	OpCodesAck[200] = OpCodeInfo{
+		Name:   "GameHandshakeComplete",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[201] = OpCodeInfo{
+		Name:   "OpenCube",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[202] = OpCodeInfo{
+		Name: "UpdatePlayerItemSkill",
+		Size: 11,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "SkillId"},
+			{Size: 2, Name: "BaseLevel"},
+			{Size: 1, Name: "Quantity"},
+		},
+	}
+
+	OpCodesAck[203] = OpCodeInfo{
+		Name: "UseSkillOnTarget",
+		Size: 13,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 4, Name: "UnitType"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "UnknownA"},
+		},
+	}
+
+	OpCodesAck[204] = OpCodeInfo{
+		Name: "UseSkillOnPoint",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 2, Name: "X"},
+			{Size: 2, Name: "Y"},
+			{Size: 2, Name: "UnknownA"},
+		},
+	}
+
+	OpCodesAck[205] = OpCodeInfo{
+		Name: "UseSkill",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 2, Name: "UnknownA"},
+		},
+	}
+
+	OpCodesAck[206] = OpCodeInfo{
+		Name: "AssignPlayer",
+		Size: 22,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "CharClass"},
+			{Size: 16, Name: "CharName"},
+		},
+	}
+
+	OpCodesAck[207] = OpCodeInfo{
+		Name: "QuestItemState",
+		Size: 6,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "QuestId"},
+			{Size: 4, Name: "State"},
+		},
+	}
+
+	OpCodesAck[208] = OpCodeInfo{
+		Name: "GameQuestAvailability",
+		Size: 34,
+		Fields: []FieldInfo{
+			{Size: 33, Name: "QuestFlags"},
+		},
+	}
+
+	OpCodesAck[209] = OpCodeInfo{
+		Name: "GameQuestLog",
+		Size: 41,
+		Fields: []FieldInfo{
+			{Size: 40, Name: "QuestFlags"},
+		},
+	}
+
+	OpCodesAck[210] = OpCodeInfo{
+		Name:   "NPCTransactionComplete",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[211] = OpCodeInfo{
+		Name: "PartyMemberPulse",
+		Size: 10,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "X"},
+			{Size: 2, Name: "Y"},
+			{Size: 1, Name: "LifePercent"},
+		},
+	}
+
+	OpCodesAck[212] = OpCodeInfo{
+		Name: "PartyMemberUpdate",
+		Size: 10,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "X"},
+			{Size: 2, Name: "Y"},
+			{Size: 1, Name: "LifePercent"},
+		},
+	}
+
+	OpCodesAck[213] = OpCodeInfo{
+		Name: "UpdateItemStats",
+		Size: -1,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "PacketLength"},
+			{Size: -1, Name: "StatData"},
+		},
+	}
+
+	OpCodesAck[214] = OpCodeInfo{
+		Name:   "TradeAccepted",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[215] = OpCodeInfo{
+		Name: "GoldInTrade",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "Gold"},
+		},
+	}
+
+	OpCodesAck[216] = OpCodeInfo{
+		Name: "PetAction",
+		Size: 13,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "PetType"},
+			{Size: 1, Name: "Action"},
+			{Size: 4, Name: "TargetType"},
+			{Size: 2, Name: "TargetId"},
+		},
+	}
+
+	OpCodesAck[217] = OpCodeInfo{
+		Name: "AssignMerc",
+		Size: 16,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "MercId"},
+			{Size: 4, Name: "UnitId"},
+			{Size: 4, Name: "OwnerId"},
+			{Size: 2, Name: "MercNameId"},
+			{Size: 2, Name: "UnknownA"},
+			{Size: 1, Name: "UnknownB"},
+		},
+	}
+
+	OpCodesAck[218] = OpCodeInfo{
+		Name: "SetItemFlags",
+		Size: 13,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+			{Size: 4, Name: "UnitType"},
+			{Size: 4, Name: "Flags"},
+		},
+	}
+
+	OpCodesAck[219] = OpCodeInfo{
+		Name: "SyncQuestData",
+		Size: 96,
+		Fields: []FieldInfo{
+			{Size: 95, Name: "QuestData"},
+		},
+	}
+
+	OpCodesAck[220] = OpCodeInfo{
+		Name: "SyncWaypointData",
+		Size: 26,
+		Fields: []FieldInfo{
+			{Size: 25, Name: "WaypointData"},
+		},
+	}
+
+	OpCodesAck[221] = OpCodeInfo{
+		Name: "PlayNPCMessage",
+		Size: 8,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "MessageId"},
+			{Size: 2, Name: "NPCUnitType"},
+			{Size: 4, Name: "NPCUnitId"},
+		},
+	}
+
+	OpCodesAck[222] = OpCodeInfo{
+		Name:   "OpenWaypoint",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesAck[223] = OpCodeInfo{
+		Name: "PlayerKillCount",
+		Size: 6,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "PlayerGUID"},
+			{Size: 1, Name: "Count"},
+		},
+	}
+
+	OpCodesAck[224] = OpCodeInfo{
+		Name: "NPCMove",
+		Size: 17,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "MoveType"},
+			{Size: 2, Name: "TargetX"},
+			{Size: 2, Name: "TargetY"},
+			{Size: 2, Name: "UnitX"},
+			{Size: 2, Name: "UnitY"},
+			{Size: 2, Name: "UnknownA"},
+			{Size: 1, Name: "UnknownB"},
+		},
+	}
+
+	OpCodesAck[225] = OpCodeInfo{
+		Name: "NPCMoveToTarget",
+		Size: 16,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "MoveType"},
+			{Size: 2, Name: "TargetX"},
+			{Size: 2, Name: "TargetY"},
+			{Size: 4, Name: "TargetUnitType"},
+			{Size: 2, Name: "TargetUnitId"},
+		},
+	}
+
+	OpCodesAck[226] = OpCodeInfo{
+		Name: "NPCState",
+		Size: 8,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "State"},
+			{Size: 2, Name: "UnknownA"},
+		},
+	}
+
+	OpCodesAck[227] = OpCodeInfo{
+		Name: "NPCAction",
+		Size: 7,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "Action"},
+			{Size: 1, Name: "UnknownA"},
+		},
+	}
+
+	OpCodesAck[228] = OpCodeInfo{
+		Name: "NPCAttack",
+		Size: 13,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+			{Size: 1, Name: "AttackType"},
+			{Size: 4, Name: "TargetUnitId"},
+			{Size: 2, Name: "TargetX"},
+			{Size: 2, Name: "TargetY"},
+		},
+	}
+
+	OpCodesAck[229] = OpCodeInfo{
+		Name: "NPCStop",
+		Size: 7,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "UnitId"},
+			{Size: 2, Name: "UnknownA"},
+		},
+	}
+
 }
 
 func initReq() {
@@ -2978,7 +3418,7 @@ func initReq() {
 			{Size: 4, Name: "Tick"},
 		},
 	}
-	
+
 	OpCodesReq[112] = OpCodeInfo{
 		Name: "StatButtonPressed",
 		Size: 2,
@@ -3306,6 +3746,426 @@ func initReq() {
 		Name:   "CainIdentifyItems",
 		Size:   1,
 		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[151] = OpCodeInfo{
+		Name: "ItemToBuffer",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[152] = OpCodeInfo{
+		Name:   "CancelCainIdentify",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[153] = OpCodeInfo{
+		Name:   "CloseAllWindowsInTown",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[154] = OpCodeInfo{
+		Name: "SetSkillHotkey",
+		Size: 4,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "HotkeyId"},
+			{Size: 2, Name: "SkillId"},
+		},
+	}
+
+	OpCodesReq[155] = OpCodeInfo{
+		Name: "RemoveSkillHotkey",
+		Size: 2,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "HotkeyId"},
+		},
+	}
+
+	OpCodesReq[156] = OpCodeInfo{
+		Name: "RunToEntity",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "EntityType"},
+			{Size: 4, Name: "EntityId"},
+		},
+	}
+
+	OpCodesReq[157] = OpCodeInfo{
+		Name: "ShiftLeftSkill",
+		Size: 3,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+		},
+	}
+
+	OpCodesReq[158] = OpCodeInfo{
+		Name: "ShiftLeftSkillHeld",
+		Size: 3,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+		},
+	}
+
+	OpCodesReq[159] = OpCodeInfo{
+		Name: "ShiftLeftSkillOnTarget",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 4, Name: "UnitType"},
+			{Size: 2, Name: "UnitId"},
+		},
+	}
+
+	OpCodesReq[160] = OpCodeInfo{
+		Name: "ShiftLeftSkillOnTargetHeld",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 4, Name: "UnitType"},
+			{Size: 2, Name: "UnitId"},
+		},
+	}
+
+	OpCodesReq[161] = OpCodeInfo{
+		Name: "ShiftLeftSkillOnLocation",
+		Size: 7,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 2, Name: "X"},
+			{Size: 2, Name: "Y"},
+		},
+	}
+
+	OpCodesReq[162] = OpCodeInfo{
+		Name: "ShiftLeftSkillOnLocationHeld",
+		Size: 7,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 2, Name: "X"},
+			{Size: 2, Name: "Y"},
+		},
+	}
+
+	OpCodesReq[163] = OpCodeInfo{
+		Name: "ShiftRightSkill",
+		Size: 3,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+		},
+	}
+
+	OpCodesReq[164] = OpCodeInfo{
+		Name: "ShiftRightSkillHeld",
+		Size: 3,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+		},
+	}
+
+	OpCodesReq[165] = OpCodeInfo{
+		Name: "ShiftRightSkillOnTarget",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 4, Name: "UnitType"},
+			{Size: 2, Name: "UnitId"},
+		},
+	}
+
+	OpCodesReq[166] = OpCodeInfo{
+		Name: "ShiftRightSkillOnTargetHeld",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 4, Name: "UnitType"},
+			{Size: 2, Name: "UnitId"},
+		},
+	}
+
+	OpCodesReq[167] = OpCodeInfo{
+		Name: "ShiftRightSkillOnLocation",
+		Size: 7,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 2, Name: "X"},
+			{Size: 2, Name: "Y"},
+		},
+	}
+
+	OpCodesReq[168] = OpCodeInfo{
+		Name: "ShiftRightSkillOnLocationHeld",
+		Size: 7,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 2, Name: "X"},
+			{Size: 2, Name: "Y"},
+		},
+	}
+
+	OpCodesReq[169] = OpCodeInfo{
+		Name:   "QuestLog",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[170] = OpCodeInfo{
+		Name: "RespectNPC",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "NPCId"},
+		},
+	}
+
+	OpCodesReq[171] = OpCodeInfo{
+		Name:   "PurchaseLife",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[172] = OpCodeInfo{
+		Name: "SetPlayerMode",
+		Size: 2,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "Mode"},
+		},
+	}
+
+	OpCodesReq[173] = OpCodeInfo{
+		Name: "InitiateEntityChat",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "EntityId"},
+		},
+	}
+
+	OpCodesReq[174] = OpCodeInfo{
+		Name: "TerminateEntityChat",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "EntityId"},
+		},
+	}
+
+	OpCodesReq[175] = OpCodeInfo{
+		Name:   "IdentifyFromCain",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[176] = OpCodeInfo{
+		Name:   "Terminate",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[177] = OpCodeInfo{
+		Name: "PlayAudio",
+		Size: 3,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SoundId"},
+		},
+	}
+
+	OpCodesReq[178] = OpCodeInfo{
+		Name: "RequestQuestData",
+		Size: 2,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "QuestId"},
+		},
+	}
+
+	OpCodesReq[179] = OpCodeInfo{
+		Name:   "ResurrectMerc",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[180] = OpCodeInfo{
+		Name: "ItemToBodyLocation",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+			{Size: 4, Name: "BodyLocation"},
+		},
+	}
+
+	OpCodesReq[181] = OpCodeInfo{
+		Name: "ItemFromBodyLocation",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "BodyLocation"},
+		},
+	}
+
+	OpCodesReq[182] = OpCodeInfo{
+		Name: "IncrementAttribute",
+		Size: 2,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "Attribute"},
+		},
+	}
+
+	OpCodesReq[183] = OpCodeInfo{
+		Name: "IncrementSkill",
+		Size: 3,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+		},
+	}
+
+	OpCodesReq[184] = OpCodeInfo{
+		Name: "SelectSkill",
+		Size: 6,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 1, Name: "Unknown1"},
+			{Size: 1, Name: "Unknown2"},
+			{Size: 1, Name: "Unknown3"},
+		},
+	}
+
+	OpCodesReq[185] = OpCodeInfo{
+		Name: "AddBonusPointsToAttribute",
+		Size: 3,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "Attribute"},
+			{Size: 1, Name: "Points"},
+		},
+	}
+
+	OpCodesReq[186] = OpCodeInfo{
+		Name: "AddBonusPointsToSkill",
+		Size: 4,
+		Fields: []FieldInfo{
+			{Size: 2, Name: "SkillId"},
+			{Size: 1, Name: "Points"},
+		},
+	}
+
+	OpCodesReq[187] = OpCodeInfo{
+		Name:   "CloseStash",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[188] = OpCodeInfo{
+		Name:   "CloseHoradricCube",
+		Size:   1,
+		Fields: []FieldInfo{},
+	}
+
+	OpCodesReq[189] = OpCodeInfo{
+		Name: "OpenUiWindow",
+		Size: 2,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "WindowId"},
+		},
+	}
+
+	OpCodesReq[190] = OpCodeInfo{
+		Name: "CloseUiWindow",
+		Size: 2,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "WindowId"},
+		},
+	}
+
+	OpCodesReq[191] = OpCodeInfo{
+		Name: "NpcInteraction",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "NPCId"},
+			{Size: 4, Name: "InteractionType"},
+		},
+	}
+
+	OpCodesReq[192] = OpCodeInfo{
+		Name: "ChangeAct",
+		Size: 2,
+		Fields: []FieldInfo{
+			{Size: 1, Name: "ActNumber"},
+		},
+	}
+
+	OpCodesReq[193] = OpCodeInfo{
+		Name: "MoveItem",
+		Size: 17,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+			{Size: 4, Name: "DestinationType"},
+			{Size: 4, Name: "X"},
+			{Size: 4, Name: "Y"},
+		},
+	}
+
+	OpCodesReq[194] = OpCodeInfo{
+		Name: "SwapTwoHandedItem",
+		Size: 17,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId1"},
+			{Size: 4, Name: "ItemId2"},
+			{Size: 4, Name: "BodyLocation1"},
+			{Size: 4, Name: "BodyLocation2"},
+		},
+	}
+
+	OpCodesReq[195] = OpCodeInfo{
+		Name: "PickupBodyItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[196] = OpCodeInfo{
+		Name: "PlaceBodyItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[197] = OpCodeInfo{
+		Name: "SwapCursorItemWithBody",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+			{Size: 4, Name: "BodyLocation"},
+		},
+	}
+
+	OpCodesReq[198] = OpCodeInfo{
+		Name: "SwapTwoInventoryItems",
+		Size: 21,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId1"},
+			{Size: 4, Name: "ItemId2"},
+			{Size: 4, Name: "X1"},
+			{Size: 4, Name: "Y1"},
+			{Size: 4, Name: "X2"},
+			{Size: 4, Name: "Y2"},
+		},
+	}
+
+	OpCodesReq[199] = OpCodeInfo{
+		Name: "UseInventoryItem",
+		Size: 5,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId"},
+		},
+	}
+
+	OpCodesReq[200] = OpCodeInfo{
+		Name: "StackItems",
+		Size: 9,
+		Fields: []FieldInfo{
+			{Size: 4, Name: "ItemId1"},
+			{Size: 4, Name: "ItemId2"},
+		},
 	}
 
 }
