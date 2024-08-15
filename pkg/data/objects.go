@@ -8,6 +8,7 @@ type Object struct {
 	IsHovered    bool
 	Selectable   bool
 	InteractType object.InteractType
+	ShrineType   object.ShrineType
 	Position     Position
 	Owner        string
 }
@@ -35,7 +36,7 @@ func (o Objects) FindByID(id UnitID) (Object, bool) {
 }
 
 func (o Object) IsShrine() bool {
-	switch object.ShrineType(o.InteractType) {
+	switch o.ShrineType {
 	case object.RefillShrine,
 		object.HealthShrine,
 		object.ManaShrine,
