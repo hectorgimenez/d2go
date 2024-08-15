@@ -35,7 +35,32 @@ func (o Objects) FindByID(id UnitID) (Object, bool) {
 }
 
 func (o Object) IsShrine() bool {
-	return o.InteractType == object.InteractTypeShrine
+	switch object.ShrineType(o.InteractType) {
+	case object.RefillShrine,
+		object.HealthShrine,
+		object.ManaShrine,
+		object.HPXChangeShrine,
+		object.ManaXChangeShrine,
+		object.ArmorShrine,
+		object.CombatShrine,
+		object.ResistFireShrine,
+		object.ResistColdShrine,
+		object.ResistLightningShrine,
+		object.ResistPoisonShrine,
+		object.SkillShrine,
+		object.ManaRegenShrine,
+		object.StaminaShrine,
+		object.ExperienceShrine,
+		object.UnknownShrine,
+		object.PortalShrine,
+		object.GemShrine,
+		object.FireShrine,
+		object.MonsterShrine,
+		object.ExplosiveShrine,
+		object.PoisonShrine:
+		return true
+	}
+	return false
 }
 
 func (o Object) IsWaypoint() bool {
