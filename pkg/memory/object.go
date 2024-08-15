@@ -39,10 +39,6 @@ func (gd *GameReader) Objects(playerPosition data.Position, hover data.HoverData
 					shrineData = object.ShrineData{
 						ShrineName: object.ShrineTypeNames[object.ShrineType(shrineType)],
 						ShrineType: object.ShrineType(shrineType),
-						Position: object.ShrinePosition{
-							X: int(posX),
-							Y: int(posY),
-						},
 					}
 
 				} else {

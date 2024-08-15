@@ -2,15 +2,9 @@ package object
 
 type ShrineType uint
 
-type ShrinePosition struct {
-	X int
-	Y int
-}
-
 type ShrineData struct {
 	ShrineName string
 	ShrineType ShrineType
-	Position   ShrinePosition
 }
 
 const (
