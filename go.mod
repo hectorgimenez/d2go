@@ -6,7 +6,7 @@ require (
 	github.com/expr-lang/expr v1.16.9
 	github.com/gopxl/beep v1.4.1
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/sys v0.21.0
+	golang.org/x/sys v0.24.0
 )
 
 require (
