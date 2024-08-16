@@ -28,21 +28,27 @@ type Data struct {
 	Corpse     Corpse
 	Monsters   Monsters
 	Corpses    Monsters
+	Game       OnlineGame
 	// First slice represents X and second Y
-	CollisionGrid  [][]bool
-	PlayerUnit     PlayerUnit
-	NPCs           NPCs
-	Inventory      Inventory
-	Objects        Objects
-	AdjacentLevels []Level
-	Rooms          []Room
-	OpenMenus      OpenMenus
-	Roster         Roster
-	HoverData      HoverData
-	TerrorZones    []area.ID
-	Quests         quest.Quests
-	KeyBindings    KeyBindings
-	LegacyGraphics bool
+	CollisionGrid           [][]bool
+	PlayerUnit              PlayerUnit
+	NPCs                    NPCs
+	Inventory               Inventory
+	Objects                 Objects
+	AdjacentLevels          []Level
+	Rooms                   []Room
+	OpenMenus               OpenMenus
+	Roster                  Roster
+	HoverData               HoverData
+	TerrorZones             []area.ID
+	Quests                  quest.Quests
+	KeyBindings             KeyBindings
+	LegacyGraphics          bool
+	IsOnline                bool
+	IsIngame                bool
+	IsInCharCreationScreen  bool
+	IsInCharSelectionScreen bool
+	IsInLobby               bool
 }
 
 type Room struct {
@@ -55,6 +61,11 @@ type HoverData struct {
 	IsHovered bool
 	UnitID
 	UnitType int
+}
+
+type OnlineGame struct {
+	LastGameName     string
+	LastGamePassword string
 }
 
 func (r Room) GetCenter() Position {
