@@ -185,6 +185,18 @@ func (p Process) FindPattern(memory []byte, pattern, mask string) uintptr {
 	return 0
 }
 
+func (p Process) FindPatternByOperand(memory []byte, pattern, mask string) uintptr {
+	if offset := p.findPattern(memory, pattern, mask); offset != 0 {
+		// Adjust the address based on the operand value
+		operandAddress := p.moduleBaseAddressPtr + uintptr(offset)
+		operandValue := binary.LittleEndian.Uint32(memory[offset+3 : offset+7])
+		finalAddress := operandAddress + uintptr(operandValue) + 7 // 7 is the length of the instruction
+		return finalAddress
+	}
+
+	return 0
+}
+
 func (p Process) GetPID() uint32 {
 	return p.pid
 }
@@ -233,4 +245,93 @@ func GetProcessModules(processID uint32) ([]ModuleInfo, error) {
 	}
 
 	return moduleInfos, nil
+}
+
+// ReadPointer reads a pointer from the specified memory address.
+func (p *Process) ReadPointer(address uintptr, size int) (uintptr, error) {
+	buffer := p.ReadBytesFromMemory(address, uint(size))
+	if len(buffer) == 0 {
+		return 0, errors.New("failed to read memory")
+	}
+
+	return uintptr(*(*uint64)(unsafe.Pointer(&buffer[0]))), nil
+}
+
+// ReadWidgetContainer reads the WidgetContainer structure.
+func (p *Process) ReadWidgetContainer(address uintptr, full bool) (map[string]interface{}, error) {
+	widgetPtr, err := p.ReadPointer(address+0x8, 8)
+	if err != nil {
+		return nil, err
+	}
+
+	widgetNameLength := p.ReadUInt(address+0x10, 4)
+
+	widgetName := p.ReadStringFromMemory(widgetPtr, uint(widgetNameLength))
+	if widgetName == "" {
+		return nil, errors.New("failed to read widget name")
+	}
+
+	widget_visible := p.ReadUInt(address+0x51, 1) == 1
+	widget_active := p.ReadUInt(address+0x50, 1) == 1
+
+	result := map[string]interface{}{
+		"WidgetNameString": widgetName,
+		"WidgetNameLength": widgetNameLength,
+		"WidgetVisible":    widget_visible,
+		"WidgetActive":     widget_active,
+	}
+
+	if full {
+		childWidgetsListPtr, err := p.ReadPointer(widgetPtr+0x38, 8)
+		if err != nil {
+			return nil, err
+		}
+
+		childWidgetSize := p.ReadUInt(widgetPtr+0x40, 4)
+
+		widgetListPtr, err := p.ReadPointer(widgetPtr+0x68, 8)
+		if err != nil {
+			return nil, err
+		}
+
+		widgetListSize := p.ReadUInt(widgetPtr+0x78, 4)
+
+		widgetList2Ptr, err := p.ReadPointer(widgetPtr+0x80, 8)
+		if err != nil {
+			return nil, err
+		}
+
+		widgetList2Size := p.ReadUInt(widgetPtr+0x90, 4)
+
+		result["ChildWidgetsListPointer"] = childWidgetsListPtr
+		result["ChildWidgetSize"] = childWidgetSize
+		result["WidgetListPointer"] = widgetListPtr
+		result["WidgetListSize"] = widgetListSize
+		result["WidgetList2Pointer"] = widgetList2Ptr
+		result["WidgetList2Size"] = widgetList2Size
+	}
+
+	return result, nil
+}
+
+// ReadWidgetList iterates through a list of widgets given a pointer to the list and its size.
+func (p *Process) ReadWidgetList(listPointer uintptr, listSize int) ([]map[string]interface{}, error) {
+	widgets := []map[string]interface{}{}
+	widgetSize := int(unsafe.Sizeof(uintptr(0)))
+
+	for i := 0; i < listSize; i++ {
+		widgetAddr, err := p.ReadPointer(listPointer+uintptr(i*widgetSize), 8)
+		if err != nil {
+			return nil, err
+		}
+
+		widgetContainer, err := p.ReadWidgetContainer(widgetAddr, false)
+		if err != nil {
+			return nil, err
+		}
+
+		widgets = append(widgets, widgetContainer)
+	}
+
+	return widgets, nil
 }

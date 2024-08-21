@@ -1,9 +1,10 @@
 package memory
 
 import (
+	"math"
+
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
-	"math"
 )
 
 type GameReader struct {
@@ -185,9 +186,10 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 
 // TODO: Take a look to better ways to get this data, now it's very flakky, is just a random memory position + not in game
 func (gd *GameReader) InCharacterSelectionScreen() bool {
-	uiBase := gd.Process.moduleBaseAddressPtr + gd.offset.UI - 0xA
-
-	return gd.Process.ReadUInt(uiBase, Uint8) != 1 && gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x214A5A6, Uint8) == 0
+	cs_visible, err := gd.IsWidgetVisible("CharacterSelectPanel")
+	if err != nil {
+	}
+	return cs_visible
 }
 
 func (gd *GameReader) GetSelectedCharacterName() string {
@@ -196,4 +198,40 @@ func (gd *GameReader) GetSelectedCharacterName() string {
 
 func (gd *GameReader) LegacyGraphics() bool {
 	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x21F6388, Uint64) == 1
+}
+
+// IsWidgetVisible checks if any child widget on the PanelManager has the same name and has the Active and Visible booleans on.
+func (gd *GameReader) IsWidgetVisible(widgetName string) (bool, error) {
+	if gd.offset.PanelManagerContainerOffset == 0 {
+		gd.offset = calculateOffsets(gd.Process)
+	}
+
+	// Assuming PanelManagerContainer address is known and stored in gd
+	panelManagerContainerPtrAddr := gd.Process.moduleBaseAddressPtr + gd.offset.PanelManagerContainerOffset
+
+	// Read the PanelManagerContainer pointer value
+	panelManagerContainerAddr, err := gd.Process.ReadPointer(panelManagerContainerPtrAddr, 8)
+	if err != nil {
+		return false, err
+	}
+	// Read the Panel Managers WidgetContainer
+	widgetContainer, err := gd.Process.ReadWidgetContainer(panelManagerContainerAddr, true)
+	if err != nil {
+		return false, err
+	}
+	// Read the list of child widgets
+	childWidgets, err := gd.Process.ReadWidgetList(widgetContainer["ChildWidgetsListPointer"].(uintptr), int(widgetContainer["ChildWidgetSize"].(uint)))
+	if err != nil {
+		return false, err
+	}
+
+	// Iterate through the child widgets to find the one with the specified name
+	for _, widget := range childWidgets {
+		if widget["WidgetNameString"] == widgetName {
+			if widget["WidgetActive"].(bool) && widget["WidgetVisible"].(bool) {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }
