@@ -48,6 +48,7 @@ func (gd *GameReader) GetData() data.Data {
 		Game: data.OnlineGame{
 			LastGameName:     gd.LastGameName(),
 			LastGamePassword: gd.LastGamePass(),
+			FPS:              gd.FPS(),
 		},
 		Monsters:               gd.Monsters(pu.Position, hover),
 		Corpses:                gd.Corpses(pu.Position, hover),
@@ -205,11 +206,11 @@ func (gd *GameReader) LegacyGraphics() bool {
 
 func (gd *GameReader) IsOnline() bool {
 	// This represents which tab (Online/Offline) we're on in the Character Selection Screen
-	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x2154F50, 1) == 1
+	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x2140ED0, 1) == 1
 }
 
 func (gd *GameReader) IsIngame() bool {
-	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x214CB48, 1) == 1
+	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x22D5D78, 1) == 1
 }
 
 /*
@@ -233,4 +234,8 @@ func (gd *GameReader) LastGameName() string {
 
 func (gd *GameReader) LastGamePass() string {
 	return gd.ReadStringFromMemory(gd.moduleBaseAddressPtr+0x29DBD10+0x60, 0)
+}
+
+func (gd *GameReader) FPS() int {
+	return int(gd.ReadUInt(gd.moduleBaseAddressPtr+0x2140DF4, 4))
 }
