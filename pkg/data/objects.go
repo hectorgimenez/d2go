@@ -8,6 +8,7 @@ type Object struct {
 	IsHovered    bool
 	Selectable   bool
 	InteractType object.InteractType
+	Shrine       object.ShrineData
 	Position     Position
 	Owner        string
 }
@@ -32,6 +33,35 @@ func (o Objects) FindByID(id UnitID) (Object, bool) {
 	}
 
 	return Object{}, false
+}
+
+func (o Object) IsShrine() bool {
+	switch o.Shrine.ShrineType {
+	case object.RefillShrine,
+		object.HealthShrine,
+		object.ManaShrine,
+		object.HPXChangeShrine,
+		object.ManaXChangeShrine,
+		object.ArmorShrine,
+		object.CombatShrine,
+		object.ResistFireShrine,
+		object.ResistColdShrine,
+		object.ResistLightningShrine,
+		object.ResistPoisonShrine,
+		object.SkillShrine,
+		object.ManaRegenShrine,
+		object.StaminaShrine,
+		object.ExperienceShrine,
+		object.UnknownShrine,
+		object.PortalShrine,
+		object.GemShrine,
+		object.FireShrine,
+		object.MonsterShrine,
+		object.ExplosiveShrine,
+		object.PoisonShrine:
+		return true
+	}
+	return false
 }
 
 func (o Object) IsWaypoint() bool {

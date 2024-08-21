@@ -35,7 +35,7 @@ func calculateOffsets(process Process) Offset {
 	uiOffsetPtr := (pattern - process.moduleBaseAddressPtr) + 10 + uintptr(uiOffset)
 
 	// Hover
-	pattern = process.FindPattern(memory, "\xc6\x84\xc2\x00\x00\x00\x00\x00\x48\x8b\x74\x24\x00", "xxx?????xxxx?")
+	pattern = process.FindPattern(memory, "\xc6\x84\xc2\x00\x00\x00\x00\x00\x48\x8b\x74", "xxx?????xxx")
 	hoverOffset := process.ReadUInt(pattern+3, Uint32) - 1
 
 	// Expansion

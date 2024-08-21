@@ -8,8 +8,7 @@ import (
 )
 
 type GameReader struct {
-	offset       Offset
-	previousRead data.Data
+	offset Offset
 	Process
 }
 
@@ -28,9 +27,6 @@ func (gd *GameReader) GetData() data.Data {
 	rawPlayerUnits := gd.GetRawPlayerUnits()
 	roster := gd.getRoster(rawPlayerUnits)
 	mainPlayerUnit := rawPlayerUnits.GetMainPlayer()
-	if mainPlayerUnit.Address == 0 {
-		return gd.previousRead
-	}
 
 	pu := gd.GetPlayerUnit(mainPlayerUnit)
 	hover := gd.hoveredData()
@@ -49,20 +45,29 @@ func (gd *GameReader) GetData() data.Data {
 			IsHovered: corpseUnit.IsHovered,
 			Position:  corpseUnit.Position,
 		},
-		Monsters:       gd.Monsters(pu.Position, hover),
-		PlayerUnit:     pu,
-		Inventory:      gd.Inventory(rawPlayerUnits, hover),
-		Objects:        gd.Objects(pu.Position, hover),
-		OpenMenus:      gd.openMenus(),
-		Roster:         roster,
-		HoverData:      hover,
-		TerrorZones:    gd.TerrorZones(),
-		Quests:         gd.getQuests(gameQuestsBytes),
-		KeyBindings:    gd.GetKeyBindings(),
-		LegacyGraphics: gd.LegacyGraphics(),
+		Game: data.OnlineGame{
+			LastGameName:     gd.LastGameName(),
+			LastGamePassword: gd.LastGamePass(),
+			FPS:              gd.FPS(),
+		},
+		Monsters:               gd.Monsters(pu.Position, hover),
+		Corpses:                gd.Corpses(pu.Position, hover),
+		PlayerUnit:             pu,
+		Inventory:              gd.Inventory(rawPlayerUnits, hover),
+		Objects:                gd.Objects(pu.Position, hover),
+		OpenMenus:              gd.openMenus(),
+		Roster:                 roster,
+		HoverData:              hover,
+		TerrorZones:            gd.TerrorZones(),
+		Quests:                 gd.getQuests(gameQuestsBytes),
+		KeyBindings:            gd.GetKeyBindings(),
+		LegacyGraphics:         gd.LegacyGraphics(),
+		IsOnline:               gd.IsOnline(),
+		IsIngame:               gd.IsIngame(),
+		IsInCharCreationScreen: gd.IsInCharacterCreationScreen(),
+		//IsInLobby:              gd.IsInLobby(),
+		//IsInCharSelectionScreen: gd.IsInCharacterSelectionScreen(),
 	}
-
-	gd.previousRead = d
 
 	return d
 }
@@ -193,11 +198,48 @@ func (gd *GameReader) InCharacterSelectionScreen() bool {
 }
 
 func (gd *GameReader) GetSelectedCharacterName() string {
-	return gd.Process.ReadStringFromMemory(gd.Process.moduleBaseAddressPtr+0x2149FF4, 0)
+	return gd.Process.ReadStringFromMemory(gd.Process.moduleBaseAddressPtr+0x2A01A50, 0)
 }
 
 func (gd *GameReader) LegacyGraphics() bool {
-	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x21F6388, Uint64) == 1
+	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x21E2308, Uint64) == 1
+}
+
+func (gd *GameReader) IsOnline() bool {
+	// This represents which tab (Online/Offline) we're on in the Character Selection Screen
+	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x2140ED0, 1) == 1
+}
+
+func (gd *GameReader) IsIngame() bool {
+	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x22D5D78, 1) == 1
+}
+
+/*
+func (gd *GameReader) IsInLobby() bool {
+	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x21CF488, 1) == 1
+}
+
+func (gd *GameReader) IsInCharacterSelectionScreen() bool {
+	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x1DC7276, 1) != 0
+}
+*/
+
+func (gd *GameReader) IsInCharacterCreationScreen() bool {
+	// Dont use this ;)
+	// This will bug out if you switch to legacy graphics in the character select screen and return 1 until you go back to character screen with d2r graphics
+	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x234A1CE, 1) == 1
+}
+
+func (gd *GameReader) LastGameName() string {
+	return gd.ReadStringFromMemory(gd.moduleBaseAddressPtr+0x29DBD10+0x8, 0)
+}
+
+func (gd *GameReader) LastGamePass() string {
+	return gd.ReadStringFromMemory(gd.moduleBaseAddressPtr+0x29DBD10+0x60, 0)
+}
+
+func (gd *GameReader) FPS() int {
+	return int(gd.ReadUInt(gd.moduleBaseAddressPtr+0x2140DF4, 4))
 }
 
 // IsWidgetVisible checks if any child widget on the PanelManager has the same name and has the Active and Visible booleans on.
