@@ -66,6 +66,7 @@ type HoverData struct {
 type OnlineGame struct {
 	LastGameName     string
 	LastGamePassword string
+	FPS              int
 }
 
 func (r Room) GetCenter() Position {
