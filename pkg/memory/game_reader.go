@@ -192,15 +192,15 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 func (gd *GameReader) InCharacterSelectionScreen() bool {
 	uiBase := gd.Process.moduleBaseAddressPtr + gd.offset.UI - 0xA
 
-	return gd.Process.ReadUInt(uiBase, Uint8) != 1 && gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x214A5A6, Uint8) == 0
+	return gd.Process.ReadUInt(uiBase, Uint8) != 1 && gd.Process.ReadUInt(gd.moduleBaseAddressPtr+2136526, Uint8) == 0
 }
 
 func (gd *GameReader) GetSelectedCharacterName() string {
-	return gd.Process.ReadStringFromMemory(gd.Process.moduleBaseAddressPtr+0x2149FF4, 0)
+	return gd.Process.ReadStringFromMemory(gd.Process.moduleBaseAddressPtr+0x2135F74, 0)
 }
 
 func (gd *GameReader) LegacyGraphics() bool {
-	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x21F6388, Uint64) == 1
+	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x21E2308, Uint64) == 1
 }
 
 func (gd *GameReader) IsOnline() bool {
