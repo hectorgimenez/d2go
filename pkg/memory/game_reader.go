@@ -56,6 +56,7 @@ func (gd *GameReader) GetData() data.Data {
 		Inventory:              gd.Inventory(rawPlayerUnits, hover),
 		Objects:                gd.Objects(pu.Position, hover),
 		OpenMenus:              gd.openMenus(),
+		Widgets:                gd.UpdateWidgets(),
 		Roster:                 roster,
 		HoverData:              hover,
 		TerrorZones:            gd.TerrorZones(),
@@ -191,9 +192,10 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 
 // TODO: Take a look to better ways to get this data, now it's very flakky, is just a random memory position + not in game
 func (gd *GameReader) InCharacterSelectionScreen() bool {
-	uiBase := gd.Process.moduleBaseAddressPtr + gd.offset.UI - 0xA
-
-	return gd.Process.ReadUInt(uiBase, Uint8) != 1 && gd.Process.ReadUInt(gd.moduleBaseAddressPtr+2136526, Uint8) == 0
+	cs_visible, err := gd.IsWidgetVisible("CharacterSelectPanel")
+	if err != nil {
+	}
+	return cs_visible
 }
 
 func (gd *GameReader) GetSelectedCharacterName() string {
@@ -224,6 +226,7 @@ func (gd *GameReader) IsInCharacterSelectionScreen() bool {
 */
 
 func (gd *GameReader) IsInCharacterCreationScreen() bool {
+	// Dont use this ;)
 	// This will bug out if you switch to legacy graphics in the character select screen and return 1 until you go back to character screen with d2r graphics
 	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x234A1CE, 1) == 1
 }
@@ -238,4 +241,43 @@ func (gd *GameReader) LastGamePass() string {
 
 func (gd *GameReader) FPS() int {
 	return int(gd.ReadUInt(gd.moduleBaseAddressPtr+0x2140DF4, 4))
+}
+
+func (gd *GameReader) UpdateWidgets() map[string]map[string]interface{} {
+	widgets := map[string]map[string]interface{}{}
+
+	if gd.offset.PanelManagerContainerOffset == 0 {
+		gd.offset = calculateOffsets(gd.Process)
+	}
+
+	// Assuming PanelManagerContainer address is known and stored in gd
+	panelManagerContainerPtrAddr := gd.Process.moduleBaseAddressPtr + gd.offset.PanelManagerContainerOffset
+
+	// Read the PanelManagerContainer pointer value
+	panelManagerContainerAddr, err := gd.Process.ReadPointer(panelManagerContainerPtrAddr, 8)
+	if err != nil {
+		return widgets
+	}
+	// Read the Panel Managers WidgetContainer
+	widgetContainer, err := gd.Process.ReadWidgetContainer(panelManagerContainerAddr, true)
+	if err != nil {
+		return widgets
+	}
+	// Read the list of child widgets
+	childWidgets, err := gd.Process.ReadWidgetList(widgetContainer["ChildWidgetsListPointer"].(uintptr), int(widgetContainer["ChildWidgetSize"].(uint)))
+	if err != nil {
+		return widgets
+	}
+	return childWidgets
+}
+
+// IsWidgetVisible checks if any child widget on the PanelManager has the same name and has the Active and Visible booleans on.
+func (gd *GameReader) IsWidgetVisible(widgetName string) (bool, error) {
+	widgets := gd.UpdateWidgets()
+	widget, exists := widgets[widgetName]
+	if !exists {
+		return false, nil
+	}
+
+	return widget["WidgetActive"].(bool) && widget["WidgetVisible"].(bool), nil
 }
