@@ -267,13 +267,10 @@ func (gd *GameReader) IsWidgetVisible(widgetName string) (bool, error) {
 		return false, err
 	}
 
-	// Iterate through the child widgets to find the one with the specified name
-	for _, widget := range childWidgets {
-		if widget["WidgetNameString"] == widgetName {
-			if widget["WidgetActive"].(bool) && widget["WidgetVisible"].(bool) {
-				return true, nil
-			}
-		}
+	widget, exists := childWidgets[widgetName]
+	if !exists {
+		return false, nil
 	}
-	return false, nil
+
+	return widget["WidgetActive"].(bool) && widget["WidgetVisible"].(bool), nil
 }
