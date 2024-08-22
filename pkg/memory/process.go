@@ -315,8 +315,8 @@ func (p *Process) ReadWidgetContainer(address uintptr, full bool) (map[string]in
 }
 
 // ReadWidgetList iterates through a list of widgets given a pointer to the list and its size.
-func (p *Process) ReadWidgetList(listPointer uintptr, listSize int) ([]map[string]interface{}, error) {
-	widgets := []map[string]interface{}{}
+func (p *Process) ReadWidgetList(listPointer uintptr, listSize int) (map[string]map[string]interface{}, error) {
+	widgetMap := make(map[string]map[string]interface{})
 	widgetSize := int(unsafe.Sizeof(uintptr(0)))
 
 	for i := 0; i < listSize; i++ {
@@ -330,8 +330,13 @@ func (p *Process) ReadWidgetList(listPointer uintptr, listSize int) ([]map[strin
 			return nil, err
 		}
 
-		widgets = append(widgets, widgetContainer)
+		widgetName, ok := widgetContainer["WidgetNameString"].(string)
+		if !ok {
+			return nil, errors.New("failed to read widget name")
+		}
+
+		widgetMap[widgetName] = widgetContainer
 	}
 
-	return widgets, nil
+	return widgetMap, nil
 }
