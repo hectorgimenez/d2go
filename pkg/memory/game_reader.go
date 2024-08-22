@@ -56,6 +56,7 @@ func (gd *GameReader) GetData() data.Data {
 		Inventory:              gd.Inventory(rawPlayerUnits, hover),
 		Objects:                gd.Objects(pu.Position, hover),
 		OpenMenus:              gd.openMenus(),
+		Widgets:                gd.UpdateWidgets(),
 		Roster:                 roster,
 		HoverData:              hover,
 		TerrorZones:            gd.TerrorZones(),
@@ -242,8 +243,9 @@ func (gd *GameReader) FPS() int {
 	return int(gd.ReadUInt(gd.moduleBaseAddressPtr+0x2140DF4, 4))
 }
 
-// IsWidgetVisible checks if any child widget on the PanelManager has the same name and has the Active and Visible booleans on.
-func (gd *GameReader) IsWidgetVisible(widgetName string) (bool, error) {
+func (gd *GameReader) UpdateWidgets() map[string]map[string]interface{} {
+	widgets := map[string]map[string]interface{}{}
+
 	if gd.offset.PanelManagerContainerOffset == 0 {
 		gd.offset = calculateOffsets(gd.Process)
 	}
@@ -254,20 +256,25 @@ func (gd *GameReader) IsWidgetVisible(widgetName string) (bool, error) {
 	// Read the PanelManagerContainer pointer value
 	panelManagerContainerAddr, err := gd.Process.ReadPointer(panelManagerContainerPtrAddr, 8)
 	if err != nil {
-		return false, err
+		return widgets
 	}
 	// Read the Panel Managers WidgetContainer
 	widgetContainer, err := gd.Process.ReadWidgetContainer(panelManagerContainerAddr, true)
 	if err != nil {
-		return false, err
+		return widgets
 	}
 	// Read the list of child widgets
 	childWidgets, err := gd.Process.ReadWidgetList(widgetContainer["ChildWidgetsListPointer"].(uintptr), int(widgetContainer["ChildWidgetSize"].(uint)))
 	if err != nil {
-		return false, err
+		return widgets
 	}
+	return childWidgets
+}
 
-	widget, exists := childWidgets[widgetName]
+// IsWidgetVisible checks if any child widget on the PanelManager has the same name and has the Active and Visible booleans on.
+func (gd *GameReader) IsWidgetVisible(widgetName string) (bool, error) {
+	widgets := gd.UpdateWidgets()
+	widget, exists := widgets[widgetName]
 	if !exists {
 		return false, nil
 	}

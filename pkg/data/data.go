@@ -38,6 +38,7 @@ type Data struct {
 	AdjacentLevels          []Level
 	Rooms                   []Room
 	OpenMenus               OpenMenus
+	Widgets                 map[string]map[string]interface{}
 	Roster                  Roster
 	HoverData               HoverData
 	TerrorZones             []area.ID
