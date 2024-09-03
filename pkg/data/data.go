@@ -24,13 +24,11 @@ const (
 )
 
 type Data struct {
-	AreaOrigin Position
-	Corpse     Corpse
-	Monsters   Monsters
-	Corpses    Monsters
-	Game       OnlineGame
-	// First slice represents X and second Y
-	CollisionGrid           [][]bool
+	AreaOrigin              Position
+	Corpse                  Corpse
+	Monsters                Monsters
+	Corpses                 Monsters
+	Game                    OnlineGame
 	PlayerUnit              PlayerUnit
 	NPCs                    NPCs
 	Inventory               Inventory
@@ -83,23 +81,6 @@ func (r Room) IsInside(p Position) bool {
 	}
 
 	return false
-}
-
-func (r Room) GetWalkableTiles(d Data, room Room) []Position {
-	var walkableTiles []Position
-
-	for x := room.X; x < room.X+room.Width; x++ {
-		for y := room.Y; y < room.Y+room.Height; y++ {
-			if d.CollisionGrid[x][y] {
-				walkableTiles = append(walkableTiles, Position{
-					X: x,
-					Y: y,
-				})
-			}
-		}
-	}
-
-	return walkableTiles
 }
 
 func (d Data) MercHPPercent() int {
