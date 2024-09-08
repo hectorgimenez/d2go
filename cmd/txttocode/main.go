@@ -113,6 +113,7 @@ func generateItems() error {
 			for i, header := range headers {
 				lineMap[header] = fields[i]
 			}
+
 			lineMap["ID"] = fmt.Sprintf("%d", itemID)
 			lineMap["name"] = strings.ReplaceAll(lineMap["name"], "Heirophant", "Hierophant")
 			lineMap["name"] = strings.ReplaceAll(lineMap["name"], "Colossal", "Colossus")
@@ -120,12 +121,18 @@ func generateItems() error {
 			lineMap["name"] = strings.ReplaceAll(lineMap["name"], "Ornate Armor", "Ornate Plate")
 			lineMap["name"] = strings.ReplaceAll(lineMap["name"], "Essense", "Essence")
 
-			if _, found := lineMap["minac"]; !found {
-				lineMap["minac"] = "0"
+			fieldsToCheck := []string{
+				"minac", "maxac", "mindam", "maxdam", "2handmindam", "2handmaxdam",
+				"minmisdam", "maxmisdam", "speed", "StrBonus", "DexBonus",
+				"reqstr", "reqdex", "durability", "level", "gemsockets",
 			}
-			if _, found := lineMap["maxac"]; !found {
-				lineMap["maxac"] = "0"
+
+			for _, field := range fieldsToCheck {
+				if value, found := lineMap[field]; !found || value == "" {
+					lineMap[field] = "0"
+				}
 			}
+
 			if _, found := lineMap["normcode"]; !found {
 				lineMap["normcode"] = ""
 				lineMap["ubercode"] = ""
