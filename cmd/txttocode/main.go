@@ -126,6 +126,52 @@ func generateItems() error {
 			if _, found := lineMap["maxac"]; !found {
 				lineMap["maxac"] = "0"
 			}
+			if _, found := lineMap["mindam"]; !found {
+				lineMap["mindam"] = "0"
+			}
+			if _, found := lineMap["maxdam"]; !found {
+				lineMap["maxdam"] = "0"
+			}
+			if _, found := lineMap["2handmindam"]; !found {
+				lineMap["2handmindam"] = "0"
+			}
+			if _, found := lineMap["2handmaxdam"]; !found {
+				lineMap["2handmaxdam"] = "0"
+			}
+			if _, found := lineMap["minmisdam"]; !found {
+				lineMap["minmisdam"] = "0"
+			}
+			if _, found := lineMap["maxmisdam"]; !found {
+				lineMap["maxmisdam"] = "0"
+			}
+			if _, found := lineMap["speed"]; !found {
+				lineMap["speed"] = "0"
+			}
+			if _, found := lineMap["StrBonus"]; !found {
+				lineMap["StrBonus"] = "0"
+			}
+			if _, found := lineMap["DexBonus"]; !found {
+				lineMap["DexBonus"] = "0"
+			}
+			if _, found := lineMap["reqstr"]; !found {
+				lineMap["reqstr"] = "0"
+			}
+			if _, found := lineMap["reqdex"]; !found {
+				lineMap["reqdex"] = "0"
+			}
+			if _, found := lineMap["durability"]; !found {
+				lineMap["durability"] = "0"
+			}
+			if _, found := lineMap["level"]; !found {
+				lineMap["level"] = "0"
+			}
+			if _, found := lineMap["gemsockets"]; !found {
+				lineMap["gemsockets"] = "0"
+			}
+			if _, found := lineMap["speed"]; !found {
+				lineMap["speed"] = "0"
+			}
+
 			if _, found := lineMap["normcode"]; !found {
 				lineMap["normcode"] = ""
 				lineMap["ubercode"] = ""
