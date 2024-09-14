@@ -29,6 +29,8 @@ func (q Quality) ToString() string {
 		return "Rare"
 	case QualityUnique:
 		return "Unique"
+	case QualityCrafted:
+		return "Crafted"
 	}
 
 	return "UnknownItemQuality"
