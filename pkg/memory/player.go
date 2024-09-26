@@ -45,7 +45,7 @@ func (gd *GameReader) GetRawPlayerUnits() RawPlayerUnits {
 			statsListExPtr := uintptr(gd.Process.ReadUInt(playerUnit+0x88, Uint64))
 			baseStats := gd.getStatsList(statsListExPtr + 0x30)
 			stats := gd.getStatsList(statsListExPtr + 0x88)
-			states := gd.getStates(statsListExPtr)
+			states := gd.GetStates(statsListExPtr)
 
 			rawPlayerUnits = append(rawPlayerUnits, RawPlayerUnit{
 				UnitID:       data.UnitID(unitID),
@@ -140,8 +140,8 @@ func (gd *GameReader) getSkills(skillListPtr uintptr) map[skill.ID]skill.Points 
 	return skills
 }
 
-func (gd *GameReader) getStates(statsListExPtr uintptr) []state.State {
-	var states []state.State
+func (gd *GameReader) GetStates(statsListExPtr uintptr) state.States {
+	var states state.States
 	for i := 0; i < 6; i++ {
 		offset := i * 4
 		stateByte := gd.Process.ReadUInt(statsListExPtr+0xAD0+uintptr(offset), Uint32)

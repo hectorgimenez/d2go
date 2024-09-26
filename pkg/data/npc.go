@@ -3,6 +3,7 @@ package data
 import (
 	"github.com/hectorgimenez/d2go/pkg/data/npc"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
+	"github.com/hectorgimenez/d2go/pkg/data/state"
 )
 
 type NPC struct {
@@ -20,6 +21,7 @@ type Monster struct {
 	Position  Position
 	Stats     map[stat.ID]int
 	Type      MonsterType
+	States    state.States
 }
 
 type Monsters []Monster

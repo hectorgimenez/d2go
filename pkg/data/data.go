@@ -139,6 +139,7 @@ type Corpse struct {
 	Found     bool
 	IsHovered bool
 	Position  Position
+	States    state.States
 }
 
 type Position struct {
@@ -289,4 +290,24 @@ type OpenMenus struct {
 
 func (om OpenMenus) IsMenuOpen() bool {
 	return om.Inventory || om.NPCInteract || om.NPCShop || om.Stash || om.Waypoint || om.SkillTree || om.Character || om.QuitMenu || om.Cube || om.SkillSelect || om.Anvil
+}
+func (c Corpse) StateNotInteractable() bool {
+	CorpseStates := []state.State{
+		state.CorpseNoselect,
+		state.CorpseNodraw,
+		state.Revive,
+		state.Redeemed,
+		state.Shatter,
+		state.Freeze,
+	}
+
+	for _, s := range c.States {
+		for _, d := range CorpseStates {
+			if s == d {
+				return true
+			}
+		}
+	}
+
+	return false
 }
