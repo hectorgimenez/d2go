@@ -48,6 +48,7 @@ func (gd *GameReader) Monsters(playerPosition data.Position, hover data.HoverDat
 			statCount := gd.Process.ReadUInt(statsListExPtr+0x38, Uint64)
 
 			stats := gd.getMonsterStats(statCount, statPtr)
+			states := gd.GetStates(statsListExPtr)
 
 			// This excludes good NPCs but includes Mercs
 			if !gd.shouldBeIgnored(txtFileNo) || stats[stat.Experience] > 0 {
@@ -59,8 +60,9 @@ func (gd *GameReader) Monsters(playerPosition data.Position, hover data.HoverDat
 						X: int(posX),
 						Y: int(posY),
 					},
-					Stats: stats,
-					Type:  getMonsterType(flag),
+					Stats:  stats,
+					Type:   getMonsterType(flag),
+					States: states,
 				}
 
 				if isCorpse == 0 {
@@ -146,6 +148,7 @@ func (gd *GameReader) Corpses(playerPosition data.Position, hover data.HoverData
 			statCount := gd.Process.ReadUInt(statsListExPtr+0x38, Uint64)
 
 			stats := gd.getMonsterStats(statCount, statPtr)
+			states := gd.GetStates(statsListExPtr)
 
 			hovered := hover.IsHovered && hover.UnitType == 1 && hover.UnitID == data.UnitID(unitID)
 
@@ -158,8 +161,9 @@ func (gd *GameReader) Corpses(playerPosition data.Position, hover data.HoverData
 						X: int(posX),
 						Y: int(posY),
 					},
-					Stats: stats,
-					Type:  getMonsterType(flag),
+					Stats:  stats,
+					Type:   getMonsterType(flag),
+					States: states,
 				}
 
 				corpses = append(corpses, m)

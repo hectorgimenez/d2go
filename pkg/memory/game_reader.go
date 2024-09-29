@@ -44,6 +44,7 @@ func (gd *GameReader) GetData() data.Data {
 			Found:     corpseUnit.Address != 0,
 			IsHovered: corpseUnit.IsHovered,
 			Position:  corpseUnit.Position,
+			States:    corpseUnit.States,
 		},
 		Game: data.OnlineGame{
 			LastGameName:     gd.LastGameName(),
