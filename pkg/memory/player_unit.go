@@ -19,6 +19,7 @@ type RawPlayerUnit struct {
 	States       state.States
 	Stats        stat.Stats
 	BaseStats    stat.Stats
+	Mode         uint
 }
 
 type RawPlayerUnits []RawPlayerUnit

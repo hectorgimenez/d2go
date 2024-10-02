@@ -161,6 +161,7 @@ type PlayerUnit struct {
 	LeftSkill          skill.ID
 	RightSkill         skill.ID
 	AvailableWaypoints []area.ID // Is only filled when WP menu is open and only for the specific selected tab
+	Mode               uint
 }
 
 func (pu PlayerUnit) FindStat(id stat.ID, layer int) (stat.Data, bool) {
