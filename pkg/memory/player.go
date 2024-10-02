@@ -2,6 +2,7 @@ package memory
 
 import (
 	"encoding/binary"
+	"github.com/hectorgimenez/d2go/pkg/data/mode"
 
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/area"
@@ -46,7 +47,7 @@ func (gd *GameReader) GetRawPlayerUnits() RawPlayerUnits {
 			baseStats := gd.getStatsList(statsListExPtr + 0x30)
 			stats := gd.getStatsList(statsListExPtr + 0x88)
 			states := gd.GetStates(statsListExPtr)
-			mode := gd.Process.ReadUInt(playerUnit+0x0c, Uint32)
+			playerMode := mode.PlayerMode(gd.Process.ReadUInt(playerUnit+0x0c, Uint32))
 
 			rawPlayerUnits = append(rawPlayerUnits, RawPlayerUnit{
 				UnitID:       data.UnitID(unitID),
@@ -63,7 +64,7 @@ func (gd *GameReader) GetRawPlayerUnits() RawPlayerUnits {
 				States:    states,
 				Stats:     stats,
 				BaseStats: baseStats,
-				Mode:      mode,
+				Mode:      playerMode,
 			})
 			playerUnit = uintptr(gd.Process.ReadUInt(playerUnit+0x150, Uint64))
 		}

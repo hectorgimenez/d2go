@@ -1,6 +1,7 @@
 package data
 
 import (
+	"github.com/hectorgimenez/d2go/pkg/data/mode"
 	"math"
 	"strings"
 
@@ -161,7 +162,7 @@ type PlayerUnit struct {
 	LeftSkill          skill.ID
 	RightSkill         skill.ID
 	AvailableWaypoints []area.ID // Is only filled when WP menu is open and only for the specific selected tab
-	Mode               uint
+	Mode               mode.PlayerMode
 }
 
 func (pu PlayerUnit) FindStat(id stat.ID, layer int) (stat.Data, bool) {
