@@ -57,6 +57,20 @@ func (i Inventory) ByLocation(locations ...item.LocationType) []Item {
 	return items
 }
 
+func (i Inventory) Matrix() [4][10]bool {
+	invMatrix := [4][10]bool{} // false = empty, true = occupied
+	for _, itm := range i.ByLocation(item.LocationInventory) {
+		for k := range itm.Desc().InventoryWidth {
+			invMatrix[itm.Position.Y][itm.Position.X+k] = true
+		}
+		for k := range itm.Desc().InventoryHeight {
+			invMatrix[itm.Position.Y+k][itm.Position.X] = true
+		}
+	}
+
+	return invMatrix
+}
+
 type UnitID int
 
 type Item struct {
