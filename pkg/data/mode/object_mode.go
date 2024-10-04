@@ -13,11 +13,6 @@ const (
 	ObjectModeSpecial5
 )
 
-// Has  specific mode is set
-func (m ObjectMode) Has(mode ObjectMode) bool {
-	return m&mode != 0
-}
-
 func (m ObjectMode) String() string {
 	switch m {
 	case ObjectModeIdle:
