@@ -54,7 +54,7 @@ func (gd *GameReader) Objects(playerPosition data.Position, hover data.HoverData
 					IsHovered:    data.UnitID(unitID) == hover.UnitID && hover.UnitType == 2 && hover.IsHovered,
 					InteractType: object.InteractType(interactType),
 					Shrine:       shrineData,
-					Selectable:   objectMode.Has(mode.ObjectModeIdle),
+					Selectable:   objectMode == mode.ObjectModeIdle,
 					Position: data.Position{
 						X: int(posX),
 						Y: int(posY),

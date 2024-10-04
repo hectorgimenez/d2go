@@ -1,7 +1,5 @@
 package mode
 
-import "strings"
-
 type ObjectMode uint32
 
 const (
@@ -20,32 +18,25 @@ func (m ObjectMode) Has(mode ObjectMode) bool {
 	return m&mode != 0
 }
 
-// String representation of the mode
 func (m ObjectMode) String() string {
-	modes := []string{}
-	if m.Has(ObjectModeIdle) {
-		modes = append(modes, "Idle")
+	switch m {
+	case ObjectModeIdle:
+		return "Idle"
+	case ObjectModeOperating:
+		return "Operating"
+	case ObjectModeOpened:
+		return "Opened"
+	case ObjectModeSpecial1:
+		return "Special1"
+	case ObjectModeSpecial2:
+		return "Special2"
+	case ObjectModeSpecial3:
+		return "Special3"
+	case ObjectModeSpecial4:
+		return "Special4"
+	case ObjectModeSpecial5:
+		return "Special5"
+	default:
+		return "Unknown"
 	}
-	if m.Has(ObjectModeOperating) {
-		modes = append(modes, "Operating")
-	}
-	if m.Has(ObjectModeOpened) {
-		modes = append(modes, "Opened")
-	}
-	if m.Has(ObjectModeSpecial1) {
-		modes = append(modes, "Special1")
-	}
-	if m.Has(ObjectModeSpecial2) {
-		modes = append(modes, "Special2")
-	}
-	if m.Has(ObjectModeSpecial3) {
-		modes = append(modes, "Special3")
-	}
-	if m.Has(ObjectModeSpecial4) {
-		modes = append(modes, "Special4")
-	}
-	if m.Has(ObjectModeSpecial5) {
-		modes = append(modes, "Special5")
-	}
-	return strings.Join(modes, "|")
 }
