@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"github.com/hectorgimenez/d2go/pkg/data/mode"
 	"sort"
 
 	"github.com/hectorgimenez/d2go/pkg/data"
@@ -20,8 +21,10 @@ func (gd *GameReader) Objects(playerPosition data.Position, hover data.HoverData
 			objectType := gd.Process.ReadUInt(objectUnitPtr+0x00, Uint32)
 			if objectType == 2 {
 				txtFileNo := gd.Process.ReadUInt(objectUnitPtr+0x04, Uint32)
-				mode := gd.Process.ReadUInt(objectUnitPtr+0x0c, Uint32)
 				unitID := gd.Process.ReadUInt(objectUnitPtr+0x08, Uint32)
+
+				// Read the object mode
+				objectMode := mode.ObjectMode(gd.Process.ReadUInt(objectUnitPtr+0x0c, Uint32))
 
 				// Coordinates (X, Y)
 				pathPtr := uintptr(gd.Process.ReadUInt(objectUnitPtr+0x38, Uint64))
@@ -40,7 +43,6 @@ func (gd *GameReader) Objects(playerPosition data.Position, hover data.HoverData
 						ShrineName: object.ShrineTypeNames[object.ShrineType(shrineType)],
 						ShrineType: object.ShrineType(shrineType),
 					}
-
 				} else {
 					interactType = gd.Process.ReadUInt(unitDataPtr+0x08, Uint8)
 				}
@@ -52,12 +54,13 @@ func (gd *GameReader) Objects(playerPosition data.Position, hover data.HoverData
 					IsHovered:    data.UnitID(unitID) == hover.UnitID && hover.UnitType == 2 && hover.IsHovered,
 					InteractType: object.InteractType(interactType),
 					Shrine:       shrineData,
-					Selectable:   mode == 0,
+					Selectable:   objectMode.Has(mode.ObjectModeIdle),
 					Position: data.Position{
 						X: int(posX),
 						Y: int(posY),
 					},
 					Owner: owner,
+					Mode:  objectMode,
 				}
 				objects = append(objects, obj)
 			}
