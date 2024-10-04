@@ -3,20 +3,15 @@ package mode
 type ObjectMode uint32
 
 const (
-	ObjectModeIdle ObjectMode = 1 << iota
-	ObjectModeOperating
-	ObjectModeOpened
-	ObjectModeSpecial1
-	ObjectModeSpecial2
-	ObjectModeSpecial3
-	ObjectModeSpecial4
-	ObjectModeSpecial5
+	ObjectModeIdle      ObjectMode = 0
+	ObjectModeOperating ObjectMode = 1
+	ObjectModeOpened    ObjectMode = 2
+	ObjectModeSpecial1  ObjectMode = 3
+	ObjectModeSpecial2  ObjectMode = 4
+	ObjectModeSpecial3  ObjectMode = 5
+	ObjectModeSpecial4  ObjectMode = 6
+	ObjectModeSpecial5  ObjectMode = 7
 )
-
-// Has  specific mode is set
-func (m ObjectMode) Has(mode ObjectMode) bool {
-	return m&mode != 0
-}
 
 func (m ObjectMode) String() string {
 	switch m {

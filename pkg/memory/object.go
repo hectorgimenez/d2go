@@ -25,7 +25,6 @@ func (gd *GameReader) Objects(playerPosition data.Position, hover data.HoverData
 
 				// Read the object mode
 				objectMode := mode.ObjectMode(gd.Process.ReadUInt(objectUnitPtr+0x0c, Uint32))
-
 				// Coordinates (X, Y)
 				pathPtr := uintptr(gd.Process.ReadUInt(objectUnitPtr+0x38, Uint64))
 				posX := gd.Process.ReadUInt(pathPtr+0x10, Uint16)
