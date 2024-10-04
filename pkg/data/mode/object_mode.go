@@ -3,14 +3,14 @@ package mode
 type ObjectMode uint32
 
 const (
-	ObjectModeIdle ObjectMode = 1 << iota
-	ObjectModeOperating
-	ObjectModeOpened
-	ObjectModeSpecial1
-	ObjectModeSpecial2
-	ObjectModeSpecial3
-	ObjectModeSpecial4
-	ObjectModeSpecial5
+    ObjectModeIdle ObjectMode = iota
+    ObjectModeOperating
+    ObjectModeOpened
+    ObjectModeSpecial1
+    ObjectModeSpecial2
+    ObjectModeSpecial3
+    ObjectModeSpecial4
+    ObjectModeSpecial5
 )
 
 func (m ObjectMode) String() string {
