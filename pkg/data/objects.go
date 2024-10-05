@@ -1,6 +1,9 @@
 package data
 
-import "github.com/hectorgimenez/d2go/pkg/data/object"
+import (
+	"github.com/hectorgimenez/d2go/pkg/data/mode"
+	"github.com/hectorgimenez/d2go/pkg/data/object"
+)
 
 type Object struct {
 	ID UnitID
@@ -11,6 +14,7 @@ type Object struct {
 	Shrine       object.ShrineData
 	Position     Position
 	Owner        string
+	Mode         mode.ObjectMode
 }
 
 type Objects []Object
