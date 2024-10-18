@@ -178,3 +178,9 @@ func (m Monster) IsSkip() bool {
 
 	return false
 }
+func (m Monster) IsSealBoss() bool {
+
+	return (m.Type == MonsterTypeSuperUnique || m.Type == MonsterTypeMinion) && (m.Name == npc.OblivionKnight || (m.Name == npc.DoomKnight) || // Lord De Seis
+		m.Name == npc.VenomLord || // Infector of Souls
+		m.Name == npc.StormCaster) // Grand Vizier of Chaos
+}
