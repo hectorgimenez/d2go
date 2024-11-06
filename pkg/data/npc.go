@@ -129,11 +129,16 @@ func (m Monster) IsMerc() bool {
 }
 
 func (m Monster) IsPet() bool {
+	// Necro revive
+	if m.States.HasState(state.Revive) && m.Type == MonsterTypeMinion {
+		return true
+	}
+
 	switch m.Name {
 	case npc.DruHawk, npc.DruSpiritWolf, npc.DruFenris, npc.HeartOfWolverine,
 		npc.OakSage, npc.DruBear, npc.DruPlaguePoppy, npc.VineCreature,
 		npc.DruCycleOfLife, npc.ClayGolem, npc.BloodGolem, npc.IronGolem,
-		npc.FireGolem, npc.NecroSkeleton, npc.NecroMage, npc.Valkyrie,
+		npc.FireGolem, npc.NecroSkeleton, npc.NecroMage, npc.Valkyrie, npc.Decoy,
 		npc.ShadowWarrior, npc.ShadowMaster:
 		return true
 	default:
