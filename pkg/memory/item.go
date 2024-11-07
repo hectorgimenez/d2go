@@ -121,6 +121,11 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 						location = item.LocationInventory
 						break
 					}
+					if invPage == 3 {
+						location = item.LocationCube
+						invPage = 0
+						break
+					}
 					location = item.LocationStash
 					invPage = 0
 					break

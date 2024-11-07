@@ -130,7 +130,7 @@ func (m Monster) IsMerc() bool {
 
 func (m Monster) IsPet() bool {
 	// Necro revive
-	if m.States.HasState(state.Revive) && m.Type == MonsterTypeMinion {
+	if m.States.HasState(state.Revive) {
 		return true
 	}
 
