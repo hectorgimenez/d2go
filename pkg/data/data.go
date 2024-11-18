@@ -49,6 +49,7 @@ type Data struct {
 	IsInCharCreationScreen  bool
 	IsInCharSelectionScreen bool
 	IsInLobby               bool
+	AreaTransitions         Transitions
 }
 
 type Room struct {

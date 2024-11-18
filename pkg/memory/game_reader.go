@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"github.com/hectorgimenez/d2go/pkg/data/area"
 	"math"
 
 	"github.com/hectorgimenez/d2go/pkg/data"
@@ -30,6 +31,8 @@ func (gd *GameReader) GetData() data.Data {
 
 	pu := gd.GetPlayerUnit(mainPlayerUnit)
 	hover := gd.hoveredData()
+
+	areaTransitions := gd.getAreaTransitions()
 
 	// Quests
 	q1 := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x22E2978, Uint64))
@@ -69,9 +72,60 @@ func (gd *GameReader) GetData() data.Data {
 		IsInCharCreationScreen:  gd.IsInCharacterCreationScreen(),
 		IsInLobby:               gd.IsInLobby(),
 		IsInCharSelectionScreen: gd.IsInCharacterSelectionScreen(),
+		AreaTransitions:         areaTransitions,
 	}
 
 	return d
+}
+func (gd *GameReader) getAreaTransitions() data.Transitions {
+	baseAddr := gd.Process.moduleBaseAddressPtr + gd.offset.UnitTable + (5 * 1024) // Unit type 5 for transitions
+	unitTableBuffer := gd.Process.ReadBytesFromMemory(baseAddr, 128*8)
+
+	transitions := make(data.Transitions, 0)
+
+	// Get current area from player unit
+	currentArea := gd.GetRawPlayerUnits().GetMainPlayer().Area
+
+	for i := 0; i < 128; i++ {
+		offset := 8 * i
+		unitPtr := uintptr(ReadUIntFromBuffer(unitTableBuffer, uint(offset), Uint64))
+
+		for unitPtr > 0 {
+			unitBuffer := gd.Process.ReadBytesFromMemory(unitPtr, 144)
+
+			unitType := ReadUIntFromBuffer(unitBuffer, 0x00, Uint32)
+			if unitType != 5 {
+				continue
+			}
+
+			unitID := ReadUIntFromBuffer(unitBuffer, 0x08, Uint32)
+			unitDataPtr := uintptr(ReadUIntFromBuffer(unitBuffer, 0x10, Uint64))
+			transitionData := gd.Process.ReadBytesFromMemory(unitDataPtr, 0x20)
+
+			toArea := area.ID(ReadUIntFromBuffer(transitionData, 0x08, Uint32))
+			isEntrance := ReadUIntFromBuffer(transitionData, 0x0C, Uint8) > 0
+
+			// Get position
+			pathPtr := uintptr(gd.Process.ReadUInt(unitPtr+0x38, Uint64))
+			posX := gd.Process.ReadUInt(pathPtr+0x02, Uint16)
+			posY := gd.Process.ReadUInt(pathPtr+0x06, Uint16)
+
+			transitions = append(transitions, data.Transition{
+				ID:       data.UnitID(unitID),
+				FromArea: currentArea,
+				ToArea:   toArea,
+				Position: data.Position{
+					X: int(posX),
+					Y: int(posY),
+				},
+				IsEntrance: isEntrance,
+			})
+
+			unitPtr = uintptr(gd.Process.ReadUInt(unitPtr+0x150, Uint64))
+		}
+	}
+
+	return transitions
 }
 
 func (gd *GameReader) InGame() bool {
