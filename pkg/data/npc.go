@@ -179,7 +179,7 @@ func (m Monster) IsMonsterRaiser() bool {
 // IsSkip monster can not be killed as a normal enemy, for example can not be targeted
 func (m Monster) IsSkip() bool {
 	switch m.Name {
-	case npc.WaterWatcherLimb, npc.WaterWatcherHead, npc.BaalTaunt, npc.Act5Combatant, npc.Act5Combatant2, npc.BarricadeTower, npc.DarkWanderer, npc.HorzMissileTrap, npc.VertMissileTrap:
+	case npc.WaterWatcherLimb, npc.WaterWatcherHead, npc.BaalTaunt, npc.Act5Combatant, npc.Act5Combatant2, npc.BarricadeTower, npc.DarkWanderer:
 		return true
 	}
 
