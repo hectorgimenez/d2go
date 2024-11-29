@@ -15,6 +15,7 @@ type Object struct {
 	Position     Position
 	Owner        string
 	Mode         mode.ObjectMode
+	PortalData   object.PortalData
 }
 
 type Objects []Object
@@ -25,7 +26,6 @@ func (o Objects) FindOne(name object.Name) (Object, bool) {
 			return obj, true
 		}
 	}
-
 	return Object{}, false
 }
 
@@ -35,7 +35,6 @@ func (o Objects) FindByID(id UnitID) (Object, bool) {
 			return obj, true
 		}
 	}
-
 	return Object{}, false
 }
 
@@ -67,7 +66,6 @@ func (o Object) IsShrine() bool {
 	}
 	return false
 }
-
 func (o Object) IsWaypoint() bool {
 	switch o.Name {
 	case object.WaypointPortal,
@@ -88,7 +86,6 @@ func (o Object) IsWaypoint() bool {
 		object.ExpansionWaypoint:
 		return true
 	}
-
 	return false
 }
 
@@ -110,7 +107,6 @@ func (o Object) IsChest() bool {
 		502, 504, 505, 518, 524, 525, 526, 529, 530, 531, 532, 533, 534, 535, 540, 541, 544, 545, 556, 580, 581:
 		return true
 	}
-
 	return false
 }
 func (o Object) IsDoor() bool {
@@ -145,7 +141,6 @@ func (o Object) IsDoor() bool {
 		object.ExpansionTownGate:
 		return true
 	}
-
 	return false
 }
 
@@ -154,6 +149,5 @@ func (o Object) IsSuperChest() bool {
 	case 104, 105, 106, 107, 181, 183, 580, 397, 387, 389, 390, 391, 455:
 		return true
 	}
-
 	return false
 }

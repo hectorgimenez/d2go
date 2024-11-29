@@ -3,6 +3,8 @@ package memory
 import (
 	"sort"
 
+	"github.com/hectorgimenez/d2go/pkg/data/mode"
+
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/npc"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
@@ -24,8 +26,7 @@ func (gd *GameReader) Monsters(playerPosition data.Position, hover data.HoverDat
 			txtFileNo := ReadUIntFromBuffer(monsterDataBuffer, 0x04, Uint32)
 			unitID := ReadUIntFromBuffer(monsterDataBuffer, 0x08, Uint32)
 
-			//mode := ReadUIntFromBuffer(monsterDataBuffer, 0x0C, Uint32)
-
+			monsterMode := mode.NpcMode(gd.Process.ReadUInt(monsterUnitPtr+0x0c, Uint32))
 			unitDataPtr := uintptr(ReadUIntFromBuffer(monsterDataBuffer, 0x10, Uint64))
 			//isUnique := gd.Process.ReadUInt(unitDataPtr+0x18, Uint16)
 			flag := gd.Process.ReadBytesFromMemory(unitDataPtr+0x1A, Uint8)[0]
@@ -63,6 +64,7 @@ func (gd *GameReader) Monsters(playerPosition data.Position, hover data.HoverDat
 					Stats:  stats,
 					Type:   getMonsterType(flag),
 					States: states,
+					Mode:   monsterMode,
 				}
 
 				if isCorpse == 0 {
