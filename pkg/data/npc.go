@@ -1,6 +1,7 @@
 package data
 
 import (
+	"github.com/hectorgimenez/d2go/pkg/data/mode"
 	"github.com/hectorgimenez/d2go/pkg/data/npc"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"github.com/hectorgimenez/d2go/pkg/data/state"
@@ -22,6 +23,7 @@ type Monster struct {
 	Stats     map[stat.ID]int
 	Type      MonsterType
 	States    state.States
+	Mode      mode.NpcMode
 }
 
 type Monsters []Monster
@@ -177,9 +179,26 @@ func (m Monster) IsMonsterRaiser() bool {
 // IsSkip monster can not be killed as a normal enemy, for example can not be targeted
 func (m Monster) IsSkip() bool {
 	switch m.Name {
-	case npc.WaterWatcherLimb, npc.WaterWatcherHead, npc.BaalTaunt, npc.Act5Combatant, npc.Act5Combatant2, npc.BarricadeTower:
+	case npc.WaterWatcherLimb, npc.WaterWatcherHead, npc.BaalTaunt, npc.Act5Combatant, npc.Act5Combatant2, npc.BarricadeTower, npc.DarkWanderer, npc.POW:
 		return true
 	}
 
+	return false
+}
+func (m Monster) IsSealBoss() bool {
+
+	return (m.Type == MonsterTypeSuperUnique || m.Type == MonsterTypeMinion) && (m.Name == npc.OblivionKnight || (m.Name == npc.DoomKnight) || // Lord De Seis
+		m.Name == npc.VenomLord || // Infector of Souls
+		m.Name == npc.StormCaster) // Grand Vizier of Chaos
+}
+
+// IsEscapingType Monster cannot be attacked when airborne or hide in water (NpcMode 8)
+func (m Monster) IsEscapingType() bool {
+	switch m.Name {
+	case npc.CarrionBird, npc.CarrionBird2, npc.WaterWatcherLimb, npc.RiverStalkerLimb, npc.StygianWatcherLimb,
+		npc.WaterWatcherHead, npc.RiverStalkerHead, npc.StygianWatcherHead, npc.CloudStalker, npc.Sucker, npc.UndeadScavenger, npc.FoulCrow:
+
+		return true
+	}
 	return false
 }
