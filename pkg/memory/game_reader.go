@@ -200,20 +200,20 @@ func (gd *GameReader) InCharacterSelectionScreen() bool {
 }
 
 func (gd *GameReader) GetSelectedCharacterName() string {
-	return gd.Process.ReadStringFromMemory(gd.Process.moduleBaseAddressPtr+0x2A01A50, 0)
+	return gd.Process.ReadStringFromMemory(gd.Process.moduleBaseAddressPtr+0x222D0A0, 0)
 }
 
 func (gd *GameReader) LegacyGraphics() bool {
-	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x21E2308, Uint64) == 1
+	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x2227998, Uint64) == 1
 }
 
 func (gd *GameReader) IsOnline() bool {
 	// This represents which tab (Online/Offline) we're on in the Character Selection Screen
-	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x2140ED0, 1) == 1
+	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x21864D0, 1) == 1
 }
 
 func (gd *GameReader) IsIngame() bool {
-	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x22D5D78, 1) == 1
+	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x22E51D0, 1) == 1
 }
 
 func (gd *GameReader) IsInLobby() bool {
