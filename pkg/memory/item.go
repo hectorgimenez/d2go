@@ -57,7 +57,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 			itemLoc := ReadUIntFromBuffer(itemDataBuffer, 0x0C, Uint32)
 
 			if itemType != 4 {
-				itemUnitPtr = uintptr(gd.Process.ReadUInt(itemUnitPtr+0x150, Uint64))
+				itemUnitPtr = uintptr(gd.Process.ReadUInt(itemUnitPtr+0x158, Uint64))
 				continue
 			}
 
@@ -169,7 +169,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 				}
 			}
 
-			itemUnitPtr = uintptr(gd.Process.ReadUInt(itemUnitPtr+0x150, Uint64))
+			itemUnitPtr = uintptr(gd.Process.ReadUInt(itemUnitPtr+0x158, Uint64))
 		}
 	}
 
@@ -187,7 +187,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 
 func (gd *GameReader) getItemStats(statsListExPtr uintptr) (stat.Stats, stat.Stats) {
 	// Initial full and base stats extraction
-	fullStats := gd.getStatsList(statsListExPtr + 0x88)
+	fullStats := gd.getStatsList(statsListExPtr + 0xA8)
 	baseStats := gd.getStatsList(statsListExPtr + 0x30)
 
 	// Flags and last stat list pointers

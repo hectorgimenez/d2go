@@ -83,7 +83,7 @@ func (gd *GameReader) Objects(playerPosition data.Position, hover data.HoverData
 					PortalData: portalData,
 				})
 			}
-			objectUnitPtr = uintptr(gd.Process.ReadUInt(objectUnitPtr+0x150, Uint64))
+			objectUnitPtr = uintptr(gd.Process.ReadUInt(objectUnitPtr+0x158, Uint64))
 		}
 	}
 

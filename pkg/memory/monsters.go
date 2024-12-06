@@ -23,7 +23,7 @@ func (gd *GameReader) Monsters(playerPosition data.Position, hover data.HoverDat
 			// Quick corpse check first
 			isCorpse := gd.Process.ReadUInt(monsterUnitPtr+0x1A6, Uint8)
 			if isCorpse != 0 {
-				monsterUnitPtr = uintptr(gd.Process.ReadUInt(monsterUnitPtr+0x150, Uint64))
+				monsterUnitPtr = uintptr(gd.Process.ReadUInt(monsterUnitPtr+0x158, Uint64))
 				continue
 			}
 
@@ -65,7 +65,7 @@ func (gd *GameReader) Monsters(playerPosition data.Position, hover data.HoverDat
 				})
 			}
 
-			monsterUnitPtr = uintptr(gd.Process.ReadUInt(monsterUnitPtr+0x150, Uint64))
+			monsterUnitPtr = uintptr(gd.Process.ReadUInt(monsterUnitPtr+0x158, Uint64))
 		}
 	}
 
@@ -92,7 +92,7 @@ func (gd *GameReader) Corpses(playerPosition data.Position, hover data.HoverData
 		for monsterUnitPtr > 0 {
 			isCorpse := gd.Process.ReadUInt(monsterUnitPtr+0x1A6, Uint8)
 			if isCorpse == 0 {
-				monsterUnitPtr = uintptr(gd.Process.ReadUInt(monsterUnitPtr+0x150, Uint64))
+				monsterUnitPtr = uintptr(gd.Process.ReadUInt(monsterUnitPtr+0x158, Uint64))
 				continue
 			}
 
@@ -129,7 +129,7 @@ func (gd *GameReader) Corpses(playerPosition data.Position, hover data.HoverData
 				})
 			}
 
-			monsterUnitPtr = uintptr(gd.Process.ReadUInt(monsterUnitPtr+0x150, Uint64))
+			monsterUnitPtr = uintptr(gd.Process.ReadUInt(monsterUnitPtr+0x158, Uint64))
 		}
 	}
 
