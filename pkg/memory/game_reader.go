@@ -89,7 +89,7 @@ func (gd *GameReader) openMenus() data.OpenMenus {
 
 	return data.OpenMenus{
 		Inventory:     buffer[0x01] != 0,
-		LoadingScreen: buffer[0x16C] != 0,
+		LoadingScreen: buffer[0x168] != 0,
 		NPCInteract:   buffer[0x08] != 0,
 		NPCShop:       buffer[0x0B] != 0,
 		Stash:         buffer[0x18] != 0,
@@ -175,6 +175,7 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 			value = int(math.Max(float64(2/statValue), 1))
 		case stat.RegenStaminaPerLevel:
 			value = int(statValue) * 10
+
 		case stat.LevelRequirePercent:
 			value = int(statValue) * -1
 		case stat.AttackRatingPerLevel:
@@ -200,7 +201,7 @@ func (gd *GameReader) InCharacterSelectionScreen() bool {
 }
 
 func (gd *GameReader) GetSelectedCharacterName() string {
-	return gd.Process.ReadStringFromMemory(gd.Process.moduleBaseAddressPtr+0x222D0A0, 0)
+	return gd.Process.ReadStringFromMemory(gd.Process.moduleBaseAddressPtr+0x222D0A8, 0)
 }
 
 func (gd *GameReader) LegacyGraphics() bool {
