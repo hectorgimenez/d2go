@@ -88,7 +88,7 @@ func (gd *GameReader) GetPlayerUnit(mainPlayerUnit RawPlayerUnit) data.PlayerUni
 	rightSkillId := uintptr(gd.Process.ReadUInt(rightSkillTxtPtr, Uint16))
 
 	// Class
-	class := data.Class(gd.Process.ReadUInt(mainPlayerUnit.Address+0x174, Uint32))
+	class := data.Class(gd.Process.ReadUInt(mainPlayerUnit.Address+0x17C, Uint32))
 
 	availableWPs := make([]area.ID, 0)
 	// Probably there is a better place to pick up those values, since this seems to be very tied to the UI
