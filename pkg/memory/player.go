@@ -42,7 +42,7 @@ func (gd *GameReader) GetRawPlayerUnits() RawPlayerUnits {
 			if expChar > 0 {
 				isMainPlayer = gd.Process.ReadUInt(inventoryAddr+0x70, Uint16)
 			}
-			isCorpse := gd.Process.ReadUInt(playerUnit+0x1A6, Uint8)
+			isCorpse := gd.Process.ReadUInt(playerUnit+0x1AE, Uint8)
 
 			statsListExPtr := uintptr(gd.Process.ReadUInt(playerUnit+0x88, Uint64))
 			baseStats := gd.getStatsList(statsListExPtr + 0x30)
