@@ -5,7 +5,7 @@ type Status int16
 type States []Status
 
 func (s States) Completed() bool {
-	return s.HasStatus(StatusUpdateQuestLogCompleted)
+	return s.HasStatus(StatusUpdateQuestLogCompleted) || s.HasStatus(StatusPrimaryGoalCompleted) || s.HasStatus(StatusUnknown1) || s.HasStatus(StatusUnknown2)
 }
 
 func (s States) HasStatus(st Status) bool {
@@ -18,6 +18,7 @@ func (s States) HasStatus(st Status) bool {
 	return false
 }
 
+// Note that quest order isnt what is represented visually in game
 const (
 	Act1DenOfEvil Quest = iota
 	Act1SistersBurialGrounds
