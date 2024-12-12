@@ -245,13 +245,11 @@ func (gd *GameReader) IsInCharacterCreationScreen() bool {
 }
 
 func (gd *GameReader) LastGameName() string {
-	// outdated
-	return gd.ReadStringFromMemory(gd.moduleBaseAddressPtr+0x29DBD10+0x8, 0)
+	return gd.ReadStringFromMemory(gd.moduleBaseAddressPtr+0x2587FB8, 0)
 }
 
 func (gd *GameReader) LastGamePass() string {
-	// outdated
-	return gd.ReadStringFromMemory(gd.moduleBaseAddressPtr+0x29DBD10+0x60, 0)
+	return gd.ReadStringFromMemory(gd.moduleBaseAddressPtr+0x2588018, 0)
 }
 
 func (gd *GameReader) FPS() int {
