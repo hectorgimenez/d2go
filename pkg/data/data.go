@@ -282,12 +282,18 @@ type OpenMenus struct {
 	Stash         bool
 	Waypoint      bool
 	MapShown      bool
+	NewSkills     bool
 	SkillTree     bool
 	Character     bool
 	QuitMenu      bool
 	Cube          bool
 	SkillSelect   bool
 	Anvil         bool
+	MercInventory bool
+	IniScroll     bool
+	BeltRows      bool
+	QuestScreen   bool
+	QuestLogs     bool
 }
 
 func (om OpenMenus) IsMenuOpen() bool {
