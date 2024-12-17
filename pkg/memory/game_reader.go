@@ -97,11 +97,17 @@ func (gd *GameReader) openMenus() data.OpenMenus {
 		Waypoint:      buffer[0x13] != 0,
 		MapShown:      isMapShown != 0,
 		SkillTree:     buffer[0x04] != 0,
+	        NewSkills:     buffer[0x07] != 0,
 		Character:     buffer[0x02] != 0,
 		QuitMenu:      buffer[0x09] != 0,
 		Cube:          buffer[0x19] != 0,
 		SkillSelect:   buffer[0x03] != 0,
 		Anvil:         buffer[0x0D] != 0,
+		MercInventory: buffer[0x24] != 0,
+		IniScroll:     buffer[0x10] != 0,
+		BeltRows:      buffer[0x1F] != 0,
+		QuestScreen:   buffer[0x0F] != 0,
+		QuestLog:      buffer[0x11] != 0,
 	}
 }
 
