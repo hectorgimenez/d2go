@@ -1,9 +1,10 @@
 package data
 
 import (
-	"github.com/hectorgimenez/d2go/pkg/data/mode"
 	"math"
 	"strings"
+
+	"github.com/hectorgimenez/d2go/pkg/data/mode"
 
 	"github.com/hectorgimenez/d2go/pkg/data/quest"
 
@@ -49,6 +50,7 @@ type Data struct {
 	IsInCharCreationScreen  bool
 	IsInCharSelectionScreen bool
 	IsInLobby               bool
+	HasMerc                 bool
 }
 
 type Room struct {
@@ -275,19 +277,25 @@ type PointOfInterest struct {
 }
 
 type OpenMenus struct {
-	Inventory     bool
-	LoadingScreen bool
-	NPCInteract   bool
-	NPCShop       bool
-	Stash         bool
-	Waypoint      bool
-	MapShown      bool
-	SkillTree     bool
-	Character     bool
-	QuitMenu      bool
-	Cube          bool
-	SkillSelect   bool
-	Anvil         bool
+	Inventory      bool
+	LoadingScreen  bool
+	NPCInteract    bool
+	NPCShop        bool
+	Stash          bool
+	Waypoint       bool
+	MapShown       bool
+	NewSkills      bool
+	NewStats       bool
+	SkillTree      bool
+	Character      bool
+	QuitMenu       bool
+	Cube           bool
+	SkillSelect    bool
+	Anvil          bool
+	MercInventory  bool
+	BeltRows       bool
+	QuestLog       bool
+	PortraitsShown bool
 }
 
 func (om OpenMenus) IsMenuOpen() bool {
