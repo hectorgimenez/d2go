@@ -32,11 +32,12 @@ func (gd *GameReader) GetData() data.Data {
 	hover := gd.hoveredData()
 
 	// Quests
-	q1 := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x22E2978, Uint64))
-	q2 := uintptr(gd.Process.ReadUInt(q1, Uint64))
-	gameQuestsBytes := gd.Process.ReadBytesFromMemory(q2, 85)
+	// q1 := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x22E2978, Uint64))
+	// q2 := uintptr(gd.Process.ReadUInt(q1, Uint64))
+	// q2 := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x22F1E79, Uint64))
+	gameQuestsBytes := gd.Process.ReadBytesFromMemory(gd.moduleBaseAddressPtr+0x22F1E79, 85)
 
-	gameQuestsBytes = gameQuestsBytes[3:]
+	// gameQuestsBytes = gameQuestsBytes[3:]
 
 	corpseUnit := rawPlayerUnits.GetCorpse()
 	d := data.Data{
@@ -245,13 +246,11 @@ func (gd *GameReader) IsInCharacterCreationScreen() bool {
 }
 
 func (gd *GameReader) LastGameName() string {
-	// outdated
-	return gd.ReadStringFromMemory(gd.moduleBaseAddressPtr+0x29DBD10+0x8, 0)
+	return gd.ReadStringFromMemory(gd.moduleBaseAddressPtr+0x2587FB8, 0)
 }
 
 func (gd *GameReader) LastGamePass() string {
-	// outdated
-	return gd.ReadStringFromMemory(gd.moduleBaseAddressPtr+0x29DBD10+0x60, 0)
+	return gd.ReadStringFromMemory(gd.moduleBaseAddressPtr+0x2588018, 0)
 }
 
 func (gd *GameReader) FPS() int {
