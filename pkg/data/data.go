@@ -51,6 +51,7 @@ type Data struct {
 	IsInCharSelectionScreen bool
 	IsInLobby               bool
 	HasMerc                 bool
+	ActiveWeaponSlot        int
 }
 
 type Room struct {
