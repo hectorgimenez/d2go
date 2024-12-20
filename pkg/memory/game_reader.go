@@ -70,6 +70,7 @@ func (gd *GameReader) GetData() data.Data {
 		IsInCharCreationScreen:  gd.IsInCharacterCreationScreen(),
 		IsInLobby:               gd.IsInLobby(),
 		IsInCharSelectionScreen: gd.IsInCharacterSelectionScreen(),
+		HasMerc:                 gd.HasMerc(),
 	}
 
 	return d
@@ -89,19 +90,25 @@ func (gd *GameReader) openMenus() data.OpenMenus {
 	isMapShown := gd.Process.ReadUInt(gd.Process.moduleBaseAddressPtr+gd.offset.UI, Uint8)
 
 	return data.OpenMenus{
-		Inventory:     buffer[0x01] != 0,
-		LoadingScreen: buffer[0x168] != 0,
-		NPCInteract:   buffer[0x08] != 0,
-		NPCShop:       buffer[0x0B] != 0,
-		Stash:         buffer[0x18] != 0,
-		Waypoint:      buffer[0x13] != 0,
-		MapShown:      isMapShown != 0,
-		SkillTree:     buffer[0x04] != 0,
-		Character:     buffer[0x02] != 0,
-		QuitMenu:      buffer[0x09] != 0,
-		Cube:          buffer[0x19] != 0,
-		SkillSelect:   buffer[0x03] != 0,
-		Anvil:         buffer[0x0D] != 0,
+		Inventory:      buffer[0x01] != 0,
+		LoadingScreen:  buffer[0x168] != 0,
+		NPCInteract:    buffer[0x08] != 0,
+		NPCShop:        buffer[0x0B] != 0,
+		Stash:          buffer[0x18] != 0,
+		Waypoint:       buffer[0x13] != 0,
+		MapShown:       isMapShown != 0,
+		SkillTree:      buffer[0x04] != 0,
+		NewSkills:      buffer[0x07] != 0,
+		NewStats:       buffer[0x06] != 0,
+		Character:      buffer[0x02] != 0,
+		QuitMenu:       buffer[0x09] != 0,
+		Cube:           buffer[0x19] != 0,
+		SkillSelect:    buffer[0x03] != 0,
+		Anvil:          buffer[0x0D] != 0,
+		MercInventory:  buffer[0x1E] != 0,
+		BeltRows:       buffer[0x1A] != 0,
+		QuestLog:       buffer[0xE] != 0,
+		PortraitsShown: buffer[0x1D] != 0,
 	}
 }
 
@@ -257,6 +264,9 @@ func (gd *GameReader) FPS() int {
 	return int(gd.ReadUInt(gd.moduleBaseAddressPtr+0x2140DF4, 4))
 }
 
+func (gd *GameReader) HasMerc() bool {
+	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x22e51d0+0x12, Uint8) != 0
+}
 func (gd *GameReader) UpdateWidgets() map[string]map[string]interface{} {
 	widgets := map[string]map[string]interface{}{}
 
