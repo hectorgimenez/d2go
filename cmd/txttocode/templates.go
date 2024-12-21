@@ -67,6 +67,6 @@ package object
 
 var Desc = map[int]Description{
 {{- range $key, $value := . }}
-	{{ index $value "*ID" }}: {Name: "{{ $value.Name }}", ID: {{ index $value "*ID" }}, SizeX: {{ $value.SizeX }}, SizeY: {{ $value.SizeY }}, HasCollision: {{ if eq $value.HasCollision0 "1" }}true{{ else }}false{{ end }}},
+	{{ index $value "*ID" }}: {Name: "{{ $value.Name }}", ID: {{ index $value "*ID" }}, SizeX: {{ $value.SizeX }}, SizeY: {{ $value.SizeY }}, Left: {{ $value.Left }}, Top: {{ $value.Top }}, Width: {{ $value.Width }}, Height: {{ $value.Height }}, Yoffset: {{ $value.Yoffset }}, Xoffset: {{ $value.Xoffset }}, HasCollision: {{ if eq $value.HasCollision0 "1" }}true{{ else }}false{{ end }}},
 {{- end }}
 }`
