@@ -57,6 +57,7 @@ func (gd *GameReader) GetData() data.Data {
 		PlayerUnit:              pu,
 		Inventory:               gd.Inventory(rawPlayerUnits, hover),
 		Objects:                 gd.Objects(pu.Position, hover),
+		Entrances:               gd.Entrances(pu.Position, hover),
 		OpenMenus:               gd.openMenus(),
 		Widgets:                 gd.UpdateWidgets(),
 		Roster:                  roster,

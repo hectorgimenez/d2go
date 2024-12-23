@@ -35,6 +35,7 @@ type Data struct {
 	NPCs                    NPCs
 	Inventory               Inventory
 	Objects                 Objects
+	Entrances               Entrances
 	AdjacentLevels          []Level
 	Rooms                   []Room
 	OpenMenus               OpenMenus
