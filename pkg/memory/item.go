@@ -157,7 +157,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 			// We don't care about the inventory we don't know where they are, probably previous games or random crap
 			if location != item.LocationUnknown {
 				// Item Stats
-				statsListExPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0xA8, Uint64))
+				statsListExPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x88, Uint64))
 				baseStats, stats := gd.getItemStats(statsListExPtr)
 				itm.Stats = stats
 				itm.BaseStats = baseStats
