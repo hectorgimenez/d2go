@@ -1,5 +1,10 @@
 package stat
 
+import (
+	"strconv"
+	"strings"
+)
+
 type ID int16
 
 type Data struct {
@@ -9,12 +14,12 @@ type Data struct {
 }
 
 func (d Data) Name() string {
-	return StatStringMap[int(d.ID)][d.Layer]
+	return strings.Replace(StatStringMap[int(d.ID)][d.Layer], "#", strconv.Itoa(d.Value), 1)
 }
 
 // Alternative method name
 func (d Data) String() string {
-	return StatStringMap[int(d.ID)][d.Layer]
+	return strings.Replace(StatStringMap[int(d.ID)][d.Layer], "#", strconv.Itoa(d.Value), 1)
 }
 
 type Stats []Data
