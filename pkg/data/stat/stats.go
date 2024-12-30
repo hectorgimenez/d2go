@@ -13,11 +13,6 @@ type Data struct {
 	Layer int
 }
 
-func (d Data) Name() string {
-	return strings.Replace(StatStringMap[int(d.ID)][d.Layer], "#", strconv.Itoa(d.Value), 1)
-}
-
-// Alternative method name
 func (d Data) String() string {
 	return strings.Replace(StatStringMap[int(d.ID)][d.Layer], "#", strconv.Itoa(d.Value), 1)
 }
