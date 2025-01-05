@@ -192,7 +192,7 @@ func (gd *GameReader) getItemStats(statsListExPtr uintptr) (stat.Stats, stat.Sta
 
 	// Flags and last stat list pointers
 	flags := gd.Process.ReadUInt(statsListExPtr+0x1C, Uint64)
-	lastStatsList := uintptr(gd.Process.ReadUInt(statsListExPtr+0x70, Uint64))
+	lastStatsList := uintptr(gd.Process.ReadUInt(statsListExPtr+0x90, Uint64))
 
 	// If the special flag isn't set, return the current base and full stats
 	if (flags & 0x80000000) == 0 {
