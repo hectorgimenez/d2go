@@ -75,16 +75,24 @@ type UnitID int
 type Item struct {
 	ID int
 	UnitID
-	Name       item.Name
-	Quality    item.Quality
-	Position   Position
-	Location   item.Location
-	Ethereal   bool
-	IsHovered  bool
-	BaseStats  stat.Stats
-	Stats      stat.Stats
-	Identified bool
-	IsRuneword bool
+	Name                item.Name
+	Quality             item.Quality
+	Position            Position
+	Location            item.Location
+	Ethereal            bool
+	IsHovered           bool
+	BaseStats           stat.Stats
+	Stats               stat.Stats
+	Identified          bool
+	IsRuneword          bool
+	IsNamed             bool
+	IsStartItem         bool
+	IsEar               bool
+	IsBroken            bool
+	IsEquipped          bool
+	HasSockets          bool
+	InTradeGambleScreen bool
+	IsInSocket          bool
 }
 
 type Drop struct {
