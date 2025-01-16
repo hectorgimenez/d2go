@@ -300,7 +300,7 @@ type OpenMenus struct {
 }
 
 func (om OpenMenus) IsMenuOpen() bool {
-	return om.Inventory || om.NPCInteract || om.NPCShop || om.Stash || om.Waypoint || om.SkillTree || om.Character || om.QuitMenu || om.Cube || om.SkillSelect || om.Anvil
+	return om.Inventory || om.NPCInteract || om.NPCShop || om.Stash || om.Waypoint || om.SkillTree || om.Character || om.QuitMenu || om.Cube || om.SkillSelect || om.Anvil || om.QuestLog
 }
 func (c Corpse) StateNotInteractable() bool {
 	CorpseStates := []state.State{
