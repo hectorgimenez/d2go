@@ -785,15 +785,15 @@ var StatStringMap = map[int]map[int]string{
 	19: {0: "+# to Attack Rating"},                                    // tohit
 	20: {0: "#% Increased Chance of Blocking"},                        // toblock
 	21: {
-		0: "Adds #-# Damage",      // mindamage
+		0: "#-# Damage",           // mindamage
 		1: "+# to Minimum Damage", // plusmindamage
 	},
 	22: {
-		0: "maxdamage ????",
+		0: "#",                    // maxdamage
 		1: "+# to Maximum Damage", // plusmaxdamage
 	},
-	23: {0: "secondarymindamage ????"},
-	24: {0: "secondarymaxdamage ????"},
+	23: {0: "#"}, //minimum dmg for 2hand weapons - secondarymindamage
+	24: {0: "#"}, // maximum dmg for 2hand weapons - secondarymaxdamage
 	25: {0: "damagepercent ????"},
 	26: {0: "manarecovery ????"},
 	27: {0: "Regenerate Mana #%"},   // manarecoverybonus
@@ -840,17 +840,17 @@ var StatStringMap = map[int]map[int]string{
 	65: {0: "stamdrainmaxdam ????"},
 	66: {0: "stunlength ????"},
 	67: {0: "+#% Faster Run/Walk"},
-	68: {0: "+#% Increased Attack Speed"},
+	68: {0: "#"}, // attackrate
 	69: {0: "otheranimrate ????"},
 	70: {0: "Quantity: #"},
 	71: {0: "Value: #"},
 	72: {0: "Durability: # of #"},                      // durability
-	73: {0: "Increase Maximum Durability #%"},          // maxdurability
+	73: {0: "#"},                                       // maxdurability
 	74: {0: "Replenish Life +#"},                       // hpregen
 	75: {0: "Increase Maximum Durability #%"},          //itemmaxdurabilitypercent
 	76: {0: "Increase Maximum Life #%"},                //itemmaxmanapercent
 	77: {0: "Increase Maximum Mana #%"},                //itemmaxmanapercent
-	78: {0: "itemattackertakesdamage"},                 //itemattackertakesdamage
+	78: {0: "Attacker Takes Damage of #"},              //itemattackertakesdamage
 	79: {0: "#% Extra Gold from Monsters"},             //itemgoldbonus
 	80: {0: "#% Better Chance of Getting Magic Items"}, //itemmagicbonus
 	81: {0: "Knockback"},                               //itemknockback
