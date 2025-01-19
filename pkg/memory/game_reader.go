@@ -110,6 +110,7 @@ func (gd *GameReader) openMenus() data.OpenMenus {
 		BeltRows:       buffer[0x1A] != 0,
 		QuestLog:       buffer[0xE] != 0,
 		PortraitsShown: buffer[0x1D] != 0,
+		ChatOpen:       buffer[0x05] != 0,
 	}
 }
 
