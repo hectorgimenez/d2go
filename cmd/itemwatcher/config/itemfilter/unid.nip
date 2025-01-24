@@ -162,7 +162,3 @@
 //[name] == grandcharm 		&& [quality] == unique										// gheed's fortune
 [name] == largecharm 		&& [quality] == unique 										// hellfire torch
 [name] == smallcharm 		&& [quality] == unique										// annihilus
-
-// magic charms for cubing
-//[name] == grandcharm 		&& [quality] == magic && [level] >= 91
-//[name] == smallcharm 		&& [quality] == magic && [level] >= 91
