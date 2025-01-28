@@ -118,6 +118,10 @@ func (i Item) IsRejuvPotion() bool {
 	return i.Type().IsType(item.TypeRejuvPotion)
 }
 
+func (i Item) IsKey() bool {
+	return i.Type().IsType(item.TypeKey)
+}
+
 func (i Item) IsFromQuest() bool {
 	return i.Type().IsType(item.TypeQuest)
 }
