@@ -272,7 +272,7 @@ func setProperties(item *data.Item, flags uint32) {
 	if 0x1000000&flags != 0 {
 		item.IsNamed = true
 	}
-	if 0x4000000&flags != 0 {
+	if 0x400000&flags != 0 {
 		item.Ethereal = true
 	}
 	if 0x20000&flags != 0 {
