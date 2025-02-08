@@ -282,7 +282,7 @@ func setProperties(item *data.Item, flags uint32) {
 		item.IsEar = true
 	}
 	if 0x2000&flags != 0 {
-		item.InTradeGambleScreen = true
+		item.InTradeOrStoreScreen = true
 	}
 	if 0x800&flags != 0 {
 		item.HasSockets = true
