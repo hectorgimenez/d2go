@@ -14,7 +14,6 @@ type GameReader struct {
 
 var WidgetStateFlags = map[string]uint64{
 	"WeaponSwap": 0xF2D7CF8E9CC08212,
-	// Add more flags when discovered.
 }
 
 func NewGameReader(process Process) *GameReader {
@@ -356,21 +355,3 @@ func (gd *GameReader) GetActiveWeaponSlot() int {
 	}
 	return state
 }
-
-/*func (gd *GameReader) UpdateWidgetStatesInData(data *data.Data) {
-	// Get standard widgets first
-	widgets := gd.UpdateWidgets()
-
-	// Add state information for widgets that have state flags
-	for widgetName, stateFlag := range WidgetStateFlags {
-		if state, err := gd.GetWidgetState(stateFlag); err == nil {
-			if widgets[widgetName] == nil {
-				widgets[widgetName] = make(map[string]interface{})
-			}
-			widgets[widgetName]["State"] = state
-		}
-	}
-
-	// Update the Data structure's Widgets map
-	data.Widgets = widgets
-}*/
