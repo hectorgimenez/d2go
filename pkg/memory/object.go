@@ -3,6 +3,7 @@ package memory
 import (
 	"sort"
 
+	"github.com/hectorgimenez/d2go/pkg/data/entrance"
 	"github.com/hectorgimenez/d2go/pkg/data/mode"
 
 	"github.com/hectorgimenez/d2go/pkg/data"
@@ -96,4 +97,40 @@ func (gd *GameReader) Objects(playerPosition data.Position, hover data.HoverData
 	}
 
 	return objects
+}
+func (gd *GameReader) Entrances(playerPosition data.Position, hover data.HoverData) []data.Entrance {
+	baseAddr := gd.Process.moduleBaseAddressPtr + gd.offset.UnitTable + (5 * 1024)
+	unitTableBuffer := gd.Process.ReadBytesFromMemory(baseAddr, 128*8)
+
+	var entrances []data.Entrance
+
+	for i := 0; i < 128; i++ {
+		entranceOffset := 8 * i
+		entranceUnitPtr := uintptr(ReadUIntFromBuffer(unitTableBuffer, uint(entranceOffset), Uint64))
+
+		for entranceUnitPtr > 0 {
+
+			if entranceType := gd.Process.ReadUInt(entranceUnitPtr+0x00, Uint32); entranceType == 5 {
+				txtFileNo := gd.Process.ReadUInt(entranceUnitPtr+0x04, Uint32)
+				unitID := gd.Process.ReadUInt(entranceUnitPtr+0x08, Uint32)
+
+				pathPtr := uintptr(gd.Process.ReadUInt(entranceUnitPtr+0x38, Uint64))
+				posX := gd.Process.ReadUInt(pathPtr+0x10, Uint16)
+				posY := gd.Process.ReadUInt(pathPtr+0x14, Uint16)
+
+				entrances = append(entrances, data.Entrance{
+					ID:        data.UnitID(unitID),
+					Name:      entrance.Name(txtFileNo),
+					IsHovered: data.UnitID(unitID) == hover.UnitID && hover.UnitType == 5 && hover.IsHovered,
+					Position: data.Position{
+						X: int(posX),
+						Y: int(posY),
+					},
+				})
+			}
+			entranceUnitPtr = uintptr(gd.Process.ReadUInt(entranceUnitPtr+0x158, Uint64))
+		}
+	}
+
+	return entrances
 }

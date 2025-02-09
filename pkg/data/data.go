@@ -35,6 +35,7 @@ type Data struct {
 	NPCs                    NPCs
 	Inventory               Inventory
 	Objects                 Objects
+	Entrances               Entrances
 	AdjacentLevels          []Level
 	Rooms                   []Room
 	OpenMenus               OpenMenus
@@ -297,10 +298,11 @@ type OpenMenus struct {
 	BeltRows       bool
 	QuestLog       bool
 	PortraitsShown bool
+	ChatOpen       bool
 }
 
 func (om OpenMenus) IsMenuOpen() bool {
-	return om.Inventory || om.NPCInteract || om.NPCShop || om.Stash || om.Waypoint || om.SkillTree || om.Character || om.QuitMenu || om.Cube || om.SkillSelect || om.Anvil
+	return om.Inventory || om.NPCInteract || om.NPCShop || om.Stash || om.Waypoint || om.SkillTree || om.Character || om.QuitMenu || om.Cube || om.SkillSelect || om.Anvil || om.ChatOpen || om.QuestLog || om.BeltRows || om.MercInventory
 }
 func (c Corpse) StateNotInteractable() bool {
 	CorpseStates := []state.State{

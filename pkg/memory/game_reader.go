@@ -62,6 +62,7 @@ func (gd *GameReader) GetData() data.Data {
 		PlayerUnit:              pu,
 		Inventory:               gd.Inventory(rawPlayerUnits, hover),
 		Objects:                 gd.Objects(pu.Position, hover),
+		Entrances:               gd.Entrances(pu.Position, hover),
 		OpenMenus:               gd.openMenus(),
 		Widgets:                 gd.UpdateWidgets(),
 		Roster:                  roster,
@@ -115,6 +116,7 @@ func (gd *GameReader) openMenus() data.OpenMenus {
 		BeltRows:       buffer[0x1A] != 0,
 		QuestLog:       buffer[0xE] != 0,
 		PortraitsShown: buffer[0x1D] != 0,
+		ChatOpen:       buffer[0x05] != 0,
 	}
 }
 
