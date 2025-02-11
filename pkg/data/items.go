@@ -72,6 +72,17 @@ func (i Inventory) Matrix() [4][10]bool {
 
 type UnitID int
 
+type ItemAffixes struct {
+	Rare struct {
+		Prefix int16
+		Suffix int16
+	}
+	Magic struct {
+		Prefixes [3]int16 // Prefix1, Prefix2, Prefix3
+		Suffixes [3]int16 // Suffix1, Suffix2, Suffix3
+	}
+}
+
 type Item struct {
 	ID int
 	UnitID
@@ -79,12 +90,14 @@ type Item struct {
 	Quality              item.Quality
 	Position             Position
 	Location             item.Location
+	IsRuneword           bool
 	Ethereal             bool
 	IsHovered            bool
 	BaseStats            stat.Stats
 	Stats                stat.Stats
+	Affixes              ItemAffixes
+	Sockets              []Item
 	Identified           bool
-	IsRuneword           bool
 	IsNamed              bool
 	IsStartItem          bool
 	IsEar                bool
