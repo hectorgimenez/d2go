@@ -266,13 +266,38 @@ func (gd *GameReader) getItemStats(statsListExPtr uintptr) (stat.Stats, stat.Sta
 }
 
 func setProperties(item *data.Item, flags uint32) {
-	if 0x00400000&flags != 0 {
+	if 0x4000000&flags != 0 {
+		item.IsRuneword = true
+	}
+	if 0x1000000&flags != 0 {
+		item.IsNamed = true
+	}
+	if 0x400000&flags != 0 {
 		item.Ethereal = true
 	}
-	if 0x00000010&flags != 0 {
+	if 0x20000&flags != 0 {
+		item.IsStartItem = true
+	}
+	if 0x10000&flags != 0 {
+		item.IsEar = true
+	}
+	if 0x2000&flags != 0 {
+		item.InTradeOrStoreScreen = true
+	}
+	if 0x800&flags != 0 {
+		item.HasSockets = true
+	}
+	if 0x100&flags != 0 {
+		item.IsBroken = true
+	}
+	if 0x10&flags != 0 {
 		item.Identified = true
 	}
-	if 0x04000000&flags != 0 {
-		item.IsRuneword = true
+	// Only jewels and runes, gems don't work
+	if 0x8&flags != 0 {
+		item.IsInSocket = true
+	}
+	if 0x1&flags != 0 {
+		item.IsEquipped = true
 	}
 }
