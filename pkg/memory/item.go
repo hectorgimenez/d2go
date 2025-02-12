@@ -81,6 +81,9 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 			itemOwnerNPC := ReadUIntFromBuffer(unitDataBuffer, 0x0C, Uint32)
 			sequenceNumber := ReadUIntFromBuffer(itemDataBuffer, 0x11, Uint8)
 
+			// This seems to connect all items that belong to mainplayer even those socketed (FFFFFFFF)
+			// extraDataPtr := uintptr(gd.Process.ReadUInt(unitDataPtr+0xA0, Uint64))
+
 			// Item coordinates (X, Y)
 			pathPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x38, Uint64))
 			pathBuffer := gd.Process.ReadBytesFromMemory(pathPtr, 144)
@@ -92,16 +95,19 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 			if hover.IsHovered && hover.UnitType == 4 && hover.UnitID == data.UnitID(unitID) {
 				itemHovered = true
 			}
+			// Read rare affixes (should make rare item name)
+			rarePrefix := int16(gd.Process.ReadUInt(unitDataPtr+0x42, Uint16))
+			rareSuffix := int16(gd.Process.ReadUInt(unitDataPtr+0x44, Uint16))
 
-			affixDataPtr := uintptr(gd.Process.ReadUInt(itemUnitPtr+0x010, Uint64))
-			rarePrefix := int16(gd.Process.ReadUInt(affixDataPtr+uintptr(0x42), Uint16))
-			rareSuffix := int16(gd.Process.ReadUInt(affixDataPtr+uintptr(0x44), Uint16))
-			prefix1 := int16(gd.Process.ReadUInt(affixDataPtr+uintptr(0x48), Uint16))
-			prefix2 := int16(gd.Process.ReadUInt(affixDataPtr+uintptr(0x4A), Uint16))
-			prefix3 := int16(gd.Process.ReadUInt(affixDataPtr+uintptr(0x4C), Uint16))
-			suffix1 := int16(gd.Process.ReadUInt(affixDataPtr+uintptr(0x4E), Uint16))
-			suffix2 := int16(gd.Process.ReadUInt(affixDataPtr+uintptr(0x50), Uint16))
-			suffix3 := int16(gd.Process.ReadUInt(affixDataPtr+uintptr(0x52), Uint16))
+			// Read magic affixes
+			// From prefix1  we can also tell Runeword name : Spirit 20635, cta 20519 , infinity 20566  getlocalestring.txt
+			var prefixes [3]int16
+			var suffixes [3]int16
+
+			for i := 0; i < 3; i++ {
+				prefixes[i] = int16(gd.Process.ReadUInt(unitDataPtr+0x48+uintptr(i*2), Uint16))
+				suffixes[i] = int16(gd.Process.ReadUInt(unitDataPtr+0x4E+uintptr(i*2), Uint16))
+			}
 
 			itm := &data.Item{
 				ID:      int(txtFileNo),
@@ -125,9 +131,8 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 						Prefixes [3]int16
 						Suffixes [3]int16
 					}{
-						//From prefix1  we can also tell Runeword name : Spirit 20635, cta 20519 , infinity 20566  getlocalestring.txt
-						Prefixes: [3]int16{prefix1, prefix2, prefix3},
-						Suffixes: [3]int16{suffix1, suffix2, suffix3},
+						Prefixes: prefixes,
+						Suffixes: suffixes,
 					},
 				},
 				Sockets: make([]data.Item, 0),
@@ -195,7 +200,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 			}
 
 			bodyLoc := item.LocNone
-			equipSlotFlags := uint16(gd.Process.ReadUInt(affixDataPtr+uintptr(0x54), Uint16))
+			equipSlotFlags := uint16(gd.Process.ReadUInt(unitDataPtr+uintptr(0x54), Uint16))
 			if equipSlotFlags&0xFF00 == 0xFF00 {
 				equipSlot := uint8(equipSlotFlags & 0xFF)
 				switch equipSlot {
@@ -249,8 +254,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 				} else {
 					numSockets, hasSockets := itm.Stats.FindStat(stat.NumSockets, 0)
 					hasSocketFlag := (flags & 0x800) != 0 // Check if item has socket flag set
-
-					if hasSocketFlag { // If item can have sockets
+					if hasSocketFlag {                    // If item can have sockets
 						if !hasSockets {
 							// Item has socket capability but no NumSockets stat
 						} else if numSockets.Value > 0 {
