@@ -452,6 +452,6 @@ func setProperties(item *data.Item, flags uint32) {
 		item.IsInSocket = true
 	}
 	if 0x1&flags != 0 {
-		item.IsEquipped = true // Doesnt seem to work will need double check.
+		item.HasBeenEquipped = true // Item was recently equipped (same game)
 	}
 }
