@@ -192,13 +192,3 @@ func (i Item) HasAutoAffix(id int16) bool {
 func (i Item) GetSocketedItems() []Item {
 	return i.Sockets
 }
-
-func (i Item) GetRunewordName() item.RunewordName {
-	if !i.IsRuneword {
-		return item.RunewordNone
-	}
-	if runeword, exists := item.RunewordIDMap[i.Affixes.Magic.Prefixes[0]]; exists {
-		return runeword
-	}
-	return item.RunewordNone
-}
