@@ -12,9 +12,9 @@ import (
 )
 
 type ItemData struct {
-	Item           *data.Item
-	SequenceNumber uint
-	Flags          uint32
+	Item      *data.Item
+	ThisPtr   uintptr // Pointer to this item
+	ParentPtr uintptr // Parent pointer (only set for socketed items)
 }
 
 func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverData) data.Inventory {
@@ -52,8 +52,8 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 	}
 	belt := data.Belt{}
 
-	baseItems := make([]ItemData, 0)
-	socketedItems := make([]ItemData, 0)
+	baseItems := make([]ItemData, 0)     // Items that can have sockets
+	socketedItems := make([]ItemData, 0) // Items that are in sockets
 	allItems := make([]*data.Item, 0)
 
 	for i := 0; i < 128; i++ {
@@ -79,14 +79,11 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 			invPage := ReadUIntFromBuffer(unitDataBuffer, 0x55, Uint8)
 			itemQuality := ReadUIntFromBuffer(unitDataBuffer, 0x00, Uint32)
 			itemOwnerNPC := ReadUIntFromBuffer(unitDataBuffer, 0x0C, Uint32)
-			sequenceNumber := ReadUIntFromBuffer(itemDataBuffer, 0x11, Uint8)
 
-			// This seems to connect all items that belong to mainplayer even those socketed (FFFFFFFF)
-			// extraDataPtr := uintptr(gd.Process.ReadUInt(unitDataPtr+0xA0, Uint64))
-
-			// Item coordinates (X, Y)
+			// Path and position data
 			pathPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x38, Uint64))
 			pathBuffer := gd.Process.ReadBytesFromMemory(pathPtr, 144)
+			// Item coordinates (X, Y)
 			itemX := ReadUIntFromBuffer(pathBuffer, 0x10, Uint16)
 			itemY := ReadUIntFromBuffer(pathBuffer, 0x14, Uint16)
 
@@ -95,9 +92,12 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 			if hover.IsHovered && hover.UnitType == 4 && hover.UnitID == data.UnitID(unitID) {
 				itemHovered = true
 			}
+
 			// Read rare affixes (should make rare item name)
 			rarePrefix := int16(gd.Process.ReadUInt(unitDataPtr+0x42, Uint16))
 			rareSuffix := int16(gd.Process.ReadUInt(unitDataPtr+0x44, Uint16))
+
+			autoAffix := int16(gd.Process.ReadUInt(unitDataPtr+0x46, Uint16))
 
 			// Read magic affixes
 			// From prefix1  we can also tell Runeword name : Spirit 20635, cta 20519 , infinity 20566  getlocalestring.txt
@@ -127,6 +127,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 						Prefix: rarePrefix,
 						Suffix: rareSuffix,
 					},
+					AutoAffix: autoAffix,
 					Magic: struct {
 						Prefixes [3]int16
 						Suffixes [3]int16
@@ -246,27 +247,25 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 				itm.BaseStats = baseStats
 
 				if location == item.LocationSocket {
+					// Get parent pointer for socketed items
+					itemExtraData := uintptr(gd.Process.ReadUInt(unitDataPtr+0xA0, Uint64))
+					parentItemPtr := uintptr(0)
+					if itemExtraData != 0 {
+						parentItemPtr = uintptr(gd.Process.ReadUInt(itemExtraData+0x08, Uint64))
+					}
+
 					socketedItems = append(socketedItems, ItemData{
-						Item:           itm,
-						SequenceNumber: sequenceNumber,
-						Flags:          uint32(flags),
+						Item:      itm,
+						ParentPtr: parentItemPtr,
 					})
 				} else {
-					numSockets, hasSockets := itm.Stats.FindStat(stat.NumSockets, 0)
-					hasSocketFlag := (flags & 0x800) != 0 // Check if item has socket flag set
-					if hasSocketFlag {                    // If item can have sockets
-						if !hasSockets {
-							// Item has socket capability but no NumSockets stat
-						} else if numSockets.Value > 0 {
-							// Item has actual sockets
-							baseItems = append(baseItems, ItemData{
-								Item:           itm,
-								SequenceNumber: sequenceNumber,
-								Flags:          uint32(flags),
-							})
-						} else {
-							// Item has socket capability but zero sockets - probably empty
-						}
+					// Store base item pointer if it has sockets
+					numSockets, _ := itm.Stats.FindStat(stat.NumSockets, 0)
+					if numSockets.Value > 0 {
+						baseItems = append(baseItems, ItemData{
+							Item:    itm,
+							ThisPtr: itemUnitPtr,
+						})
 					}
 				}
 
@@ -281,86 +280,49 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 		}
 	}
 
+	// Link sockets to their base items
 	for _, baseItem := range baseItems {
 		numSockets, _ := baseItem.Item.Stats.FindStat(stat.NumSockets, 0)
 		if numSockets.Value == 0 {
 			continue
 		}
 
-		var potentialSockets []ItemData
-
-		// Get ownership bit from base item
-		baseOwnership := baseItem.Flags & 0x800000
-
-		for _, socketItem := range socketedItems {
-			if socketItem.SequenceNumber <= baseItem.SequenceNumber {
-				continue
-			}
-
-			maxSeqDiff := uint(numSockets.Value + 3)
-			if socketItem.SequenceNumber > baseItem.SequenceNumber+maxSeqDiff {
-				continue
-			}
-
-			// Check ownership flag
-			socketOwnership := socketItem.Flags & 0x800000
-			if socketOwnership != baseOwnership {
-				continue
-			}
-
-			// Position validation
-			if socketItem.Item.Position.X >= numSockets.Value {
-				continue
-			}
-			potentialSockets = append(potentialSockets, socketItem)
-		}
-
-		// Sort by sequence proximity
-		sort.Slice(potentialSockets, func(i, j int) bool {
-			diffI := potentialSockets[i].SequenceNumber - baseItem.SequenceNumber
-			diffJ := potentialSockets[j].SequenceNumber - baseItem.SequenceNumber
-			return diffI < diffJ
-		})
-
-		// Take closest sockets while preventing X position duplicates
-		usedPositions := make(map[int]bool)
 		var matchingSockets []ItemData
-
-		for _, socketItem := range potentialSockets {
-			x := socketItem.Item.Position.X
-			if usedPositions[x] {
-				continue
+		// Find all sockets that point to this base item
+		for _, socketItem := range socketedItems {
+			if socketItem.ParentPtr == baseItem.ThisPtr {
+				matchingSockets = append(matchingSockets, socketItem)
 			}
-
-			usedPositions[x] = true
-			matchingSockets = append(matchingSockets, socketItem)
 		}
 
+		// Sort sockets by X position
 		sort.Slice(matchingSockets, func(i, j int) bool {
 			return matchingSockets[i].Item.Position.X < matchingSockets[j].Item.Position.X
 		})
 
+		// If number of sockets matches and positions are valid, assign them
 		if len(matchingSockets) == numSockets.Value {
-			isValid := true
-			for i, s := range matchingSockets {
-				if s.Item.Position.X != i {
-					isValid = false
+			// Verify positions are consecutive starting from 0
+			validPositions := true
+			for i, socket := range matchingSockets {
+				if socket.Item.Position.X != i {
+					validPositions = false
 					break
 				}
 			}
 
-			if isValid {
+			if validPositions {
 				finalSockets := make([]data.Item, len(matchingSockets))
 				for i, s := range matchingSockets {
 					finalSockets[i] = *s.Item
 				}
-
 				baseItem.Item.Sockets = finalSockets
 			}
 		}
 	}
 
 	// Build final inventory
+	inventory.AllItems = make([]data.Item, 0)
 	for _, itm := range allItems {
 		if itm.Location.LocationType != item.LocationSocket &&
 			itm.Location.LocationType != item.LocationBelt {
@@ -375,10 +337,8 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 		distanceJ := utils.DistanceFromPoint(mainPlayer.Position, inventory.AllItems[j].Position)
 		return distanceI < distanceJ
 	})
-
 	return inventory
 }
-
 func (gd *GameReader) getItemStats(statsListExPtr uintptr) (stat.Stats, stat.Stats) {
 	// Initial full and base stats extraction
 	fullStats := gd.getStatsList(statsListExPtr + 0xA8)
@@ -476,7 +436,7 @@ func setProperties(item *data.Item, flags uint32) {
 		item.IsEar = true
 	}
 	if 0x2000&flags != 0 {
-		item.InTradeOrStoreScreen = true
+		item.InTradeOrStoreScreen = true // If item is sold to vendor or placed in trade with another player
 	}
 	if 0x800&flags != 0 {
 		item.HasSockets = true
@@ -492,6 +452,6 @@ func setProperties(item *data.Item, flags uint32) {
 		item.IsInSocket = true
 	}
 	if 0x1&flags != 0 {
-		item.IsEquipped = true
+		item.IsEquipped = true // Doesnt seem to work will need double check.
 	}
 }
