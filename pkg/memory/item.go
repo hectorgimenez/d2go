@@ -141,6 +141,13 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 
 			setProperties(itm, uint32(flags))
 
+			// Set runeword name if the item is a runeword
+			if itm.IsRuneword && len(prefixes) > 0 {
+				if runeword, exists := item.RunewordIDMap[prefixes[0]]; exists {
+					itm.RunewordName = runeword
+				}
+			}
+
 			location := item.LocationUnknown
 			switch itemLoc {
 			case 0:

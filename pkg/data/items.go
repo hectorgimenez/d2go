@@ -89,9 +89,9 @@ type Item struct {
 	UnitID
 	Name                 item.Name
 	Quality              item.Quality
+	RunewordName         item.RunewordName
 	Position             Position
 	Location             item.Location
-	IsRuneword           bool
 	Ethereal             bool
 	IsHovered            bool
 	BaseStats            stat.Stats
@@ -99,6 +99,7 @@ type Item struct {
 	Affixes              ItemAffixes
 	Sockets              []Item
 	Identified           bool
+	IsRuneword           bool
 	IsNamed              bool
 	IsStartItem          bool
 	IsEar                bool
@@ -190,4 +191,14 @@ func (i Item) HasAutoAffix(id int16) bool {
 // GetSocketedItems Returns all items socketed in item
 func (i Item) GetSocketedItems() []Item {
 	return i.Sockets
+}
+
+func (i Item) GetRunewordName() item.RunewordName {
+	if !i.IsRuneword {
+		return item.RunewordNone
+	}
+	if runeword, exists := item.RunewordIDMap[i.Affixes.Magic.Prefixes[0]]; exists {
+		return runeword
+	}
+	return item.RunewordNone
 }
