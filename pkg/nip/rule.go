@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	fixedPropsRegexp = regexp.MustCompile(`(\[(type|quality|class|name|flag|color)]\s*(<=|<|>|>=|!=|==)\s*([a-zA-Z0-9]+))`)
+	fixedPropsRegexp = regexp.MustCompile(`(\[(type|quality|class|name|flag|color|prefix|suffix)]\s*(<=|<|>|>=|!=|==)\s*([a-zA-Z0-9]+))`)
 	statsRegexp      = regexp.MustCompile(`\[(.*?)]`)
 	maxQtyRegexp     = regexp.MustCompile(`(\[maxquantity]\s*(<=|<|>|>=|!=|==)\s*([0-9]+))`)
 )
@@ -61,7 +61,7 @@ func (r Rules) EvaluateAll(it data.Item) (Rule, RuleResult) {
 	return bestMatchingRule, bestMatch
 }
 
-var fixedPropsList = map[string]int{"type": 0, "quality": 0, "class": 0, "name": 0, "flag": 0, "color": 0}
+var fixedPropsList = map[string]int{"type": 0, "quality": 0, "class": 0, "name": 0, "flag": 0, "color": 0, "prefix": 0, "suffix": 0}
 
 func NewRule(rawRule string, filename string, lineNumber int) (Rule, error) {
 	rule := sanitizeLine(rawRule)
@@ -127,7 +127,6 @@ func NewRule(rawRule string, filename string, lineNumber int) (Rule, error) {
 				return Rule{}, fmt.Errorf("error compiling rule: %w", err)
 			}
 			r.stage2 = program
-
 			// We only care about first and second part, third one is maxquantity and was already parsed
 			break
 		}
@@ -150,6 +149,30 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 			stage1Props["name"] = it.ID
 		case "flag":
 			stage1Props["flag"] = map[bool]int{true: 1, false: 0}[it.Ethereal]
+		case "prefix":
+			// Check both rare prefix and magic prefixes
+			if it.Affixes.Rare.Prefix != 0 {
+				stage1Props["prefix"] = int(it.Affixes.Rare.Prefix)
+			}
+			// Check magic prefixes
+			for _, prefix := range it.Affixes.Magic.Prefixes {
+				if prefix != 0 {
+					stage1Props["prefix"] = int(prefix)
+					break
+				}
+			}
+		case "suffix":
+			// Check both rare suffix and magic suffixes
+			if it.Affixes.Rare.Suffix != 0 {
+				stage1Props["suffix"] = int(it.Affixes.Rare.Suffix)
+			}
+			// Check magic suffixes
+			for _, suffix := range it.Affixes.Magic.Suffixes {
+				if suffix != 0 {
+					stage1Props["suffix"] = int(suffix)
+					break
+				}
+			}
 		case "color":
 			// TODO: Not supported yet
 		}
@@ -217,6 +240,9 @@ func replaceStringPropertiesInStage1(stage1 string) (string, error) {
 			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", item.GetIDByName(prop[4])))
 		case "flag":
 			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", 1))
+		case "prefix", "suffix":
+			// Handle prefix/suffix IDs directly
+			replaceWith = strings.ReplaceAll(prop[0], prop[4], prop[4])
 		case "color":
 			// TODO: Not supported yet
 			return "", fmt.Errorf("property %s is not supported yet", prop[2])
