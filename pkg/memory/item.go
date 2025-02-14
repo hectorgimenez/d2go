@@ -48,9 +48,13 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 	}
 	belt := data.Belt{}
 
-	socketedItemsMap := make(map[data.UnitID][]*data.Item, 32) // Maps parent unit ID to socketed items
-	baseItemsMap := make(map[data.UnitID]*data.Item, 16)       // Maps base item unit ID to item
-	allItems := make([]*data.Item, 0, 64)                      // Most inventories have <64 items
+	type socketInfo struct {
+		item     *data.Item
+		position int // Store X position
+	}
+	socketedItemsMap := make(map[data.UnitID][]socketInfo, 120) // Up to ~120 items could be socketable
+	baseItemsMap := make(map[data.UnitID]*data.Item, 120)       // Same number of potential base items
+	allItems := make([]*data.Item, 0, 480)                      // max capacity: 400 (stashes) + 40 (inv) + 12 (cube) + 12 (equipped) + 16 (belt)
 
 	// Pre-allocate buffers for repeated use
 	var itemDataBuffer = make([]byte, 144)
@@ -80,8 +84,6 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 
 			txtFileNo := ReadUIntFromBuffer(itemDataBuffer, 0x04, Uint32)
 			unitID := ReadUIntFromBuffer(itemDataBuffer, 0x08, Uint32)
-
-			// itemLoc = 0 in inventory, 1 equipped, 2 in belt, 3 on ground, 4 cursor, 5 dropping, 6 socketed
 			itemLoc := ReadUIntFromBuffer(itemDataBuffer, 0x0C, Uint32)
 
 			unitDataPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x10, Uint64))
@@ -94,7 +96,6 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 			itemQuality := ReadUIntFromBuffer(unitDataBuffer, 0x00, Uint32)
 			itemOwnerNPC := ReadUIntFromBuffer(unitDataBuffer, 0x0C, Uint32)
 
-			// Path and position data
 			pathPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x38, Uint64))
 			if err := gd.Process.ReadIntoBuffer(pathPtr, pathBuffer); err != nil {
 				itemUnitPtr = nextItemPtr
@@ -124,7 +125,6 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 			// Read rare affixes
 			rarePrefix := int16(gd.Process.ReadUInt(unitDataPtr+0x42, Uint16))
 			rareSuffix := int16(gd.Process.ReadUInt(unitDataPtr+0x44, Uint16))
-
 			autoAffix := int16(gd.Process.ReadUInt(unitDataPtr+0x46, Uint16))
 
 			// Read magic affixes
@@ -154,7 +154,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 			}
 
 			// Set runeword name if applicable
-			if itm.IsRuneword && len(prefixes) > 0 {
+			if itm.IsRuneword {
 				if runeword, exists := item.RunewordIDMap[prefixes[0]]; exists {
 					itm.RunewordName = runeword
 				}
@@ -266,7 +266,10 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 						// Read parent unit ID directly from base item memory structure
 						if err := gd.Process.ReadIntoBuffer(parentInfoPtr, itemDataBuffer); err == nil {
 							parentUnitID := data.UnitID(ReadUIntFromBuffer(itemDataBuffer, 0x08, Uint32))
-							socketedItemsMap[parentUnitID] = append(socketedItemsMap[parentUnitID], itm)
+							socketedItemsMap[parentUnitID] = append(socketedItemsMap[parentUnitID], socketInfo{
+								item:     itm,
+								position: itm.Position.X,
+							})
 						}
 					}
 				}
@@ -296,32 +299,27 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 		}
 
 		// Get socket list for this base item
-		socketItems := socketedItemsMap[baseUnitID]
-		if len(socketItems) != numSockets.Value {
+		sockets := socketedItemsMap[baseUnitID]
+		if len(sockets) != numSockets.Value {
 			continue
 		}
 
-		// Sort sockets by X position
-		if len(socketItems) > 1 {
-			sort.Slice(socketItems, func(i, j int) bool {
-				return socketItems[i].Position.X < socketItems[j].Position.X
+		// Sort by position if we have multiple sockets
+		if len(sockets) > 1 {
+			// In-place sort by position
+			sort.Slice(sockets, func(i, j int) bool {
+				return sockets[i].position < sockets[j].position
 			})
 		}
 
-		// Verify socket positions and build final list
-		validPositions := true
-		sockets := make([]data.Item, 0, numSockets.Value)
-
-		for i, socket := range socketItems {
-			if socket.Position.X != i {
-				validPositions = false
+		// Validate socket positions and build final list in one pass
+		baseItem.Sockets = make([]data.Item, 0, numSockets.Value)
+		for i, socket := range sockets {
+			if socket.position != i {
+				baseItem.Sockets = nil // Reset if positions are invalid
 				break
 			}
-			sockets = append(sockets, *socket)
-		}
-
-		if validPositions {
-			baseItem.Sockets = sockets
+			baseItem.Sockets = append(baseItem.Sockets, *socket.item)
 		}
 	}
 
