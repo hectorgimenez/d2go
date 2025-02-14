@@ -11,19 +11,14 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/utils"
 )
 
-type ItemData struct {
-	Item      *data.Item
-	ThisPtr   uintptr // Pointer to this item
-	ParentPtr uintptr // Parent pointer (only set for socketed items)
-}
-
 func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverData) data.Inventory {
 	mainPlayer := rawPlayerUnits.GetMainPlayer()
 	baseAddr := gd.Process.moduleBaseAddressPtr + gd.offset.UnitTable + (4 * 1024)
 	unitTableBuffer := gd.Process.ReadBytesFromMemory(baseAddr, 128*8)
 
+	// Process shared stash data
 	stashPlayerUnits := make(map[uint]RawPlayerUnit)
-	stashPlayerUnitOrder := make([]uint, 0)
+	stashPlayerUnitOrder := make([]uint, 0, 3) // Pre-allocate with expected size
 	for _, pu := range rawPlayerUnits {
 		if pu.States.HasState(state.Sharedstash) {
 			order := gd.ReadUInt(pu.Address+0xD8, Uint64)
@@ -36,14 +31,15 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 	// Gold
 	inventoryGold, _ := mainPlayer.BaseStats.FindStat(stat.Gold, 0)
 	mainPlayerStashedGold, _ := mainPlayer.BaseStats.FindStat(stat.StashGold, 0)
-	stashedGold := [4]int{}
-	stashedGold[0] = mainPlayerStashedGold.Value
+	stashedGold := [4]int{mainPlayerStashedGold.Value, 0, 0, 0}
+
 	for i, puKey := range stashPlayerUnitOrder {
 		if i > 2 {
 			break
 		}
-		stashGold, _ := stashPlayerUnits[puKey].BaseStats.FindStat(stat.StashGold, 0)
-		stashedGold[i+1] = stashGold.Value
+		if stashGold, found := stashPlayerUnits[puKey].BaseStats.FindStat(stat.StashGold, 0); found {
+			stashedGold[i+1] = stashGold.Value
+		}
 	}
 
 	inventory := data.Inventory{
@@ -52,29 +48,47 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 	}
 	belt := data.Belt{}
 
-	baseItems := make([]ItemData, 0)     // Items that can have sockets
-	socketedItems := make([]ItemData, 0) // Items that are in sockets
-	allItems := make([]*data.Item, 0)
+	socketedItemsMap := make(map[data.UnitID][]*data.Item, 32) // Maps parent unit ID to socketed items
+	baseItemsMap := make(map[data.UnitID]*data.Item, 16)       // Maps base item unit ID to item
+	allItems := make([]*data.Item, 0, 64)                      // Most inventories have <64 items
 
+	// Pre-allocate buffers for repeated use
+	var itemDataBuffer = make([]byte, 144)
+	var unitDataBuffer = make([]byte, 144)
+	var pathBuffer = make([]byte, 144)
+
+	// Process all items in a single pass
 	for i := 0; i < 128; i++ {
 		itemOffset := 8 * i
 		itemUnitPtr := uintptr(ReadUIntFromBuffer(unitTableBuffer, uint(itemOffset), Uint64))
+
 		for itemUnitPtr > 0 {
-			itemDataBuffer := gd.Process.ReadBytesFromMemory(itemUnitPtr, 144)
+			nextItemPtr := uintptr(gd.Process.ReadUInt(itemUnitPtr+0x158, Uint64))
+
+			// Read basic item data into pre-allocated buffer
+			if err := gd.Process.ReadIntoBuffer(itemUnitPtr, itemDataBuffer); err != nil {
+				itemUnitPtr = nextItemPtr
+				continue
+			}
 			itemType := ReadUIntFromBuffer(itemDataBuffer, 0x00, Uint32)
+
+			// Skip non-item entries early
+			if itemType != 4 {
+				itemUnitPtr = nextItemPtr
+				continue
+			}
+
 			txtFileNo := ReadUIntFromBuffer(itemDataBuffer, 0x04, Uint32)
 			unitID := ReadUIntFromBuffer(itemDataBuffer, 0x08, Uint32)
 
 			// itemLoc = 0 in inventory, 1 equipped, 2 in belt, 3 on ground, 4 cursor, 5 dropping, 6 socketed
 			itemLoc := ReadUIntFromBuffer(itemDataBuffer, 0x0C, Uint32)
 
-			if itemType != 4 {
-				itemUnitPtr = uintptr(gd.Process.ReadUInt(itemUnitPtr+0x158, Uint64))
+			unitDataPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x10, Uint64))
+			if err := gd.Process.ReadIntoBuffer(unitDataPtr, unitDataBuffer); err != nil {
+				itemUnitPtr = nextItemPtr
 				continue
 			}
-
-			unitDataPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x10, Uint64))
-			unitDataBuffer := gd.Process.ReadBytesFromMemory(unitDataPtr, 144)
 			flags := ReadUIntFromBuffer(unitDataBuffer, 0x18, Uint32)
 			invPage := ReadUIntFromBuffer(unitDataBuffer, 0x55, Uint8)
 			itemQuality := ReadUIntFromBuffer(unitDataBuffer, 0x00, Uint32)
@@ -82,108 +96,95 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 
 			// Path and position data
 			pathPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x38, Uint64))
-			pathBuffer := gd.Process.ReadBytesFromMemory(pathPtr, 144)
+			if err := gd.Process.ReadIntoBuffer(pathPtr, pathBuffer); err != nil {
+				itemUnitPtr = nextItemPtr
+				continue
+			}
 			// Item coordinates (X, Y)
 			itemX := ReadUIntFromBuffer(pathBuffer, 0x10, Uint16)
 			itemY := ReadUIntFromBuffer(pathBuffer, 0x14, Uint16)
 
-			name := item.GetNameByEnum(txtFileNo)
-			itemHovered := false
-			if hover.IsHovered && hover.UnitType == 4 && hover.UnitID == data.UnitID(unitID) {
-				itemHovered = true
+			// Create item structure
+			itm := &data.Item{
+				ID:      int(txtFileNo),
+				UnitID:  data.UnitID(unitID),
+				Name:    item.GetNameByEnum(txtFileNo),
+				Quality: item.Quality(itemQuality),
+				Position: data.Position{
+					X: int(itemX),
+					Y: int(itemY),
+				},
+				IsHovered: hover.IsHovered && hover.UnitType == 4 && hover.UnitID == data.UnitID(unitID),
+				Sockets:   make([]data.Item, 0),
 			}
 
-			// Read rare affixes (should make rare item name)
+			// Set item properties
+			setProperties(itm, uint32(flags))
+
+			// Read rare affixes
 			rarePrefix := int16(gd.Process.ReadUInt(unitDataPtr+0x42, Uint16))
 			rareSuffix := int16(gd.Process.ReadUInt(unitDataPtr+0x44, Uint16))
 
 			autoAffix := int16(gd.Process.ReadUInt(unitDataPtr+0x46, Uint16))
 
 			// Read magic affixes
-			// From prefix1  we can also tell Runeword name : Spirit 20635, cta 20519 , infinity 20566  getlocalestring.txt
 			var prefixes [3]int16
 			var suffixes [3]int16
-
 			for i := 0; i < 3; i++ {
 				prefixes[i] = int16(gd.Process.ReadUInt(unitDataPtr+0x48+uintptr(i*2), Uint16))
 				suffixes[i] = int16(gd.Process.ReadUInt(unitDataPtr+0x4E+uintptr(i*2), Uint16))
 			}
 
-			itm := &data.Item{
-				ID:      int(txtFileNo),
-				UnitID:  data.UnitID(unitID),
-				Name:    name,
-				Quality: item.Quality(itemQuality),
-				Position: data.Position{
-					X: int(itemX),
-					Y: int(itemY),
+			itm.Affixes = data.ItemAffixes{
+				Rare: struct {
+					Prefix int16
+					Suffix int16
+				}{
+					Prefix: rarePrefix,
+					Suffix: rareSuffix,
 				},
-				IsHovered: itemHovered,
-				Affixes: data.ItemAffixes{
-					Rare: struct {
-						Prefix int16
-						Suffix int16
-					}{
-						Prefix: rarePrefix,
-						Suffix: rareSuffix,
-					},
-					AutoAffix: autoAffix,
-					Magic: struct {
-						Prefixes [3]int16
-						Suffixes [3]int16
-					}{
-						Prefixes: prefixes,
-						Suffixes: suffixes,
-					},
+				AutoAffix: autoAffix,
+				Magic: struct {
+					Prefixes [3]int16
+					Suffixes [3]int16
+				}{
+					Prefixes: prefixes,
+					Suffixes: suffixes,
 				},
-				Sockets: make([]data.Item, 0),
 			}
 
-			setProperties(itm, uint32(flags))
-
-			// Set runeword name if the item is a runeword
+			// Set runeword name if applicable
 			if itm.IsRuneword && len(prefixes) > 0 {
 				if runeword, exists := item.RunewordIDMap[prefixes[0]]; exists {
 					itm.RunewordName = runeword
 				}
 			}
 
+			// Determine item location
 			location := item.LocationUnknown
 			switch itemLoc {
 			case 0:
 				if itemOwnerNPC == 2 || itemOwnerNPC == uint(stashPlayerUnits[stashPlayerUnitOrder[0]].UnitID) {
 					location = item.LocationSharedStash
 					invPage = 1
-					break
-				}
-				if itemOwnerNPC == 3 || itemOwnerNPC == uint(stashPlayerUnits[stashPlayerUnitOrder[1]].UnitID) {
+				} else if itemOwnerNPC == 3 || itemOwnerNPC == uint(stashPlayerUnits[stashPlayerUnitOrder[1]].UnitID) {
 					location = item.LocationSharedStash
 					invPage = 2
-					break
-				}
-				if itemOwnerNPC == 4 || itemOwnerNPC == uint(stashPlayerUnits[stashPlayerUnitOrder[2]].UnitID) {
+				} else if itemOwnerNPC == 4 || itemOwnerNPC == uint(stashPlayerUnits[stashPlayerUnitOrder[2]].UnitID) {
 					location = item.LocationSharedStash
 					invPage = 3
-					break
-				}
-
-				if 0x00002000&flags != 0 && itemOwnerNPC == 4294967295 {
+				} else if 0x00002000&flags != 0 && itemOwnerNPC == 4294967295 {
 					location = item.LocationVendor
-					break
-				}
-				if data.UnitID(itemOwnerNPC) == mainPlayer.UnitID || itemOwnerNPC == 1 {
+				} else if data.UnitID(itemOwnerNPC) == mainPlayer.UnitID || itemOwnerNPC == 1 {
 					if invPage == 0 {
 						location = item.LocationInventory
-						break
-					}
-					if invPage == 3 {
+					} else if invPage == 3 {
 						location = item.LocationCube
 						invPage = 0
-						break
+					} else {
+						location = item.LocationStash
+						invPage = 0
 					}
-					location = item.LocationStash
-					invPage = 0
-					break
 				}
 			case 1:
 				isMercItem := (flags & 0x800000) != 0
@@ -207,6 +208,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 				location = item.LocationCursor
 			}
 
+			// Set body location if equipped
 			bodyLoc := item.LocNone
 			equipSlotFlags := uint16(gd.Process.ReadUInt(unitDataPtr+uintptr(0x54), Uint16))
 			if equipSlotFlags&0xFF00 == 0xFF00 {
@@ -246,104 +248,103 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 			}
 
 			// We don't care about the inventory we don't know where they are, probably previous games or random crap
-			if location != item.LocationUnknown {
-				// Item Stats
-				statsListExPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x88, Uint64))
-				baseStats, stats := gd.getItemStats(statsListExPtr)
-				itm.Stats = stats
-				itm.BaseStats = baseStats
+			if location == item.LocationUnknown {
+				itemUnitPtr = nextItemPtr
+				continue
+			}
 
-				if location == item.LocationSocket {
-					// Get parent pointer for socketed items
-					itemExtraData := uintptr(gd.Process.ReadUInt(unitDataPtr+0xA0, Uint64))
-					parentItemPtr := uintptr(0)
-					if itemExtraData != 0 {
-						parentItemPtr = uintptr(gd.Process.ReadUInt(itemExtraData+0x08, Uint64))
-					}
+			// Read item stats
+			statsListExPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x88, Uint64))
+			itm.BaseStats, itm.Stats = gd.getItemStats(statsListExPtr)
 
-					socketedItems = append(socketedItems, ItemData{
-						Item:      itm,
-						ParentPtr: parentItemPtr,
-					})
-				} else {
-					// Store base item pointer if it has sockets
-					numSockets, _ := itm.Stats.FindStat(stat.NumSockets, 0)
-					if numSockets.Value > 0 {
-						baseItems = append(baseItems, ItemData{
-							Item:    itm,
-							ThisPtr: itemUnitPtr,
-						})
+			// Process socket information
+			if location == item.LocationSocket {
+				itemExtraData := uintptr(gd.Process.ReadUInt(unitDataPtr+0xA0, Uint64))
+				if itemExtraData != 0 {
+					parentInfoPtr := uintptr(gd.Process.ReadUInt(itemExtraData+0x08, Uint64))
+					if parentInfoPtr != 0 {
+						// Read parent unit ID directly from base item memory structure
+						if err := gd.Process.ReadIntoBuffer(parentInfoPtr, itemDataBuffer); err == nil {
+							parentUnitID := data.UnitID(ReadUIntFromBuffer(itemDataBuffer, 0x08, Uint32))
+							socketedItemsMap[parentUnitID] = append(socketedItemsMap[parentUnitID], itm)
+						}
 					}
 				}
-
-				allItems = append(allItems, itm)
-
-				if location == item.LocationBelt {
-					belt.Items = append(belt.Items, *itm)
+			} else {
+				// Check if item has sockets
+				if numSockets, _ := itm.Stats.FindStat(stat.NumSockets, 0); numSockets.Value > 0 {
+					baseItemsMap[itm.UnitID] = itm
 				}
 			}
 
-			itemUnitPtr = uintptr(gd.Process.ReadUInt(itemUnitPtr+0x158, Uint64))
+			// Add to appropriate collections
+			if location == item.LocationBelt {
+				belt.Items = append(belt.Items, *itm)
+			} else if location != item.LocationSocket {
+				allItems = append(allItems, itm)
+			}
+
+			itemUnitPtr = nextItemPtr
 		}
 	}
 
-	// Link sockets to their base items
-	for _, baseItem := range baseItems {
-		numSockets, _ := baseItem.Item.Stats.FindStat(stat.NumSockets, 0)
+	// Link sockets to base items
+	for baseUnitID, baseItem := range baseItemsMap {
+		numSockets, _ := baseItem.Stats.FindStat(stat.NumSockets, 0)
 		if numSockets.Value == 0 {
 			continue
 		}
 
-		var matchingSockets []ItemData
-		// Find all sockets that point to this base item
-		for _, socketItem := range socketedItems {
-			if socketItem.ParentPtr == baseItem.ThisPtr {
-				matchingSockets = append(matchingSockets, socketItem)
-			}
+		// Get socket list for this base item
+		socketItems := socketedItemsMap[baseUnitID]
+		if len(socketItems) != numSockets.Value {
+			continue
 		}
 
 		// Sort sockets by X position
-		sort.Slice(matchingSockets, func(i, j int) bool {
-			return matchingSockets[i].Item.Position.X < matchingSockets[j].Item.Position.X
-		})
+		if len(socketItems) > 1 {
+			sort.Slice(socketItems, func(i, j int) bool {
+				return socketItems[i].Position.X < socketItems[j].Position.X
+			})
+		}
 
-		// If number of sockets matches and positions are valid, assign them
-		if len(matchingSockets) == numSockets.Value {
-			// Verify positions are consecutive starting from 0
-			validPositions := true
-			for i, socket := range matchingSockets {
-				if socket.Item.Position.X != i {
-					validPositions = false
-					break
-				}
-			}
+		// Verify socket positions and build final list
+		validPositions := true
+		sockets := make([]data.Item, 0, numSockets.Value)
 
-			if validPositions {
-				finalSockets := make([]data.Item, len(matchingSockets))
-				for i, s := range matchingSockets {
-					finalSockets[i] = *s.Item
-				}
-				baseItem.Item.Sockets = finalSockets
+		for i, socket := range socketItems {
+			if socket.Position.X != i {
+				validPositions = false
+				break
 			}
+			sockets = append(sockets, *socket)
+		}
+
+		if validPositions {
+			baseItem.Sockets = sockets
 		}
 	}
 
 	// Build final inventory
-	inventory.AllItems = make([]data.Item, 0)
-	for _, itm := range allItems {
-		if itm.Location.LocationType != item.LocationSocket &&
-			itm.Location.LocationType != item.LocationBelt {
-			inventory.AllItems = append(inventory.AllItems, *itm)
+	inventory.AllItems = make([]data.Item, len(allItems))
+	for i, itm := range allItems {
+		inventory.AllItems[i] = *itm
+	}
+
+	// Sort items by distance if needed, using pre-calculated distances
+	if len(inventory.AllItems) > 0 {
+		// Pre-calculate distances to avoid recalculating in sort comparisons
+		distances := make([]int, len(inventory.AllItems))
+		for i, invItem := range inventory.AllItems {
+			distances[i] = utils.DistanceFromPoint(mainPlayer.Position, invItem.Position)
 		}
+
+		sort.SliceStable(inventory.AllItems, func(i, j int) bool {
+			return distances[i] < distances[j]
+		})
 	}
 
 	inventory.Belt = belt
-
-	sort.SliceStable(inventory.AllItems, func(i, j int) bool {
-		distanceI := utils.DistanceFromPoint(mainPlayer.Position, inventory.AllItems[i].Position)
-		distanceJ := utils.DistanceFromPoint(mainPlayer.Position, inventory.AllItems[j].Position)
-		return distanceI < distanceJ
-	})
 	return inventory
 }
 func (gd *GameReader) getItemStats(statsListExPtr uintptr) (stat.Stats, stat.Stats) {

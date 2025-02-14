@@ -257,6 +257,10 @@ func (p *Process) ReadPointer(address uintptr, size int) (uintptr, error) {
 	return uintptr(*(*uint64)(unsafe.Pointer(&buffer[0]))), nil
 }
 
+func (p Process) ReadIntoBuffer(address uintptr, buffer []byte) error {
+	return windows.ReadProcessMemory(p.handler, address, &buffer[0], uintptr(len(buffer)), nil)
+}
+
 // ReadWidgetContainer reads the WidgetContainer structure.
 func (p *Process) ReadWidgetContainer(address uintptr, full bool) (map[string]interface{}, error) {
 	widgetPtr, err := p.ReadPointer(address+0x8, 8)
