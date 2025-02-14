@@ -84,6 +84,8 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 
 			txtFileNo := ReadUIntFromBuffer(itemDataBuffer, 0x04, Uint32)
 			unitID := ReadUIntFromBuffer(itemDataBuffer, 0x08, Uint32)
+
+			// itemLoc = 0 in inventory, 1 equipped, 2 in belt, 3 on ground, 4 cursor, 5 dropping, 6 socketed
 			itemLoc := ReadUIntFromBuffer(itemDataBuffer, 0x0C, Uint32)
 
 			unitDataPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x10, Uint64))
@@ -306,7 +308,6 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 
 		// Sort by position if we have multiple sockets
 		if len(sockets) > 1 {
-			// In-place sort by position
 			sort.Slice(sockets, func(i, j int) bool {
 				return sockets[i].position < sockets[j].position
 			})
