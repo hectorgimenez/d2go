@@ -109,6 +109,7 @@ type Item struct {
 	HasSockets           bool
 	InTradeOrStoreScreen bool
 	IsInSocket           bool
+	UniqueSetID          int32
 }
 
 type Drop struct {

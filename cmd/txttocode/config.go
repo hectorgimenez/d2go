@@ -51,6 +51,16 @@ var textFiles = []TextFileDesc{
 		DestFile:   "pkg/data/item/magicsuffixes.go",
 		Template:   templateMagicSuffixes,
 	},
+	{
+		SourceFile: "cmd/txttocode/txt/uniqueitems.txt",
+		DestFile:   "pkg/data/item/uniqueitems.go",
+		Template:   templateUniqueItems,
+	},
+	{
+		SourceFile: "cmd/txttocode/txt/setitems.txt",
+		DestFile:   "pkg/data/item/setitems.go",
+		Template:   templateSetItems,
+	},
 }
 
 type TextFileDesc struct {

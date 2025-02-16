@@ -75,6 +75,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 				itemUnitPtr = nextItemPtr
 				continue
 			}
+
 			itemType := ReadUIntFromBuffer(itemDataBuffer, 0x00, Uint32)
 
 			// Skip non-item entries early
@@ -94,10 +95,14 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 				itemUnitPtr = nextItemPtr
 				continue
 			}
+
 			flags := ReadUIntFromBuffer(unitDataBuffer, 0x18, Uint32)
 			invPage := ReadUIntFromBuffer(unitDataBuffer, 0x55, Uint8)
 			itemQuality := ReadUIntFromBuffer(unitDataBuffer, 0x00, Uint32)
 			itemOwnerNPC := ReadUIntFromBuffer(unitDataBuffer, 0x0C, Uint32)
+
+			// Link to uniqueitems.txt, setitems.txt
+			txtUniqueSet := int32(gd.Process.ReadUInt(unitDataPtr+0x34, Uint32))
 
 			pathPtr := uintptr(ReadUIntFromBuffer(itemDataBuffer, 0x38, Uint64))
 			if err := gd.Process.ReadIntoBuffer(pathPtr, pathBuffer); err != nil {
@@ -118,8 +123,9 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 					X: int(itemX),
 					Y: int(itemY),
 				},
-				IsHovered: hover.IsHovered && hover.UnitType == 4 && hover.UnitID == data.UnitID(unitID),
-				Sockets:   make([]data.Item, 0),
+				IsHovered:   hover.IsHovered && hover.UnitType == 4 && hover.UnitID == data.UnitID(unitID),
+				Sockets:     make([]data.Item, 0),
+				UniqueSetID: txtUniqueSet,
 			}
 
 			// Set item properties
@@ -155,14 +161,29 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 				},
 			}
 
-			// Set quality-specific name and level requirement if identified
-			baseReq := item.Desc[itm.ID].RequiredLevel
 			maxAffixReq := 0
-
 			if itm.Identified {
 				switch itm.Quality {
+				case item.QualityUnique:
+					// find matching item (uniqueitems.txt)
+					for _, uniqueInfo := range item.UniqueItems {
+						if uniqueInfo.ID == int(txtUniqueSet) {
+							itm.IdentifiedName = uniqueInfo.Name
+							itm.LevelReq = uniqueInfo.LevelReq
+							break
+						}
+					}
+				case item.QualitySet:
+					// find matching item (setitems.txt)
+					for setItemName, setItemInfo := range item.SetItems {
+						if setItemInfo.ID == int(txtUniqueSet) {
+							itm.IdentifiedName = string(setItemName)
+							itm.LevelReq = setItemInfo.LevelReq
+							break
+						}
+					}
 				case item.QualityRare:
-					// Set name from rare affixes
+					// Set item name from rare affixes
 					if prefix, exists := item.RarePrefixDesc[int(rarePrefix)]; exists {
 						if suffix, exists := item.RareSuffixDesc[int(rareSuffix)]; exists {
 							itm.IdentifiedName = prefix.Name + " " + suffix.Name
@@ -183,12 +204,11 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 							}
 						}
 					}
-				//TODO Set and Unique items
 				case item.QualityMagic:
 					var prefixParts []string
 					var suffixParts []string
 
-					// Get all valid prefixes
+					// Get all prefixes
 					for _, prefixID := range prefixes {
 						if prefix, exists := item.MagicPrefixDesc[int(prefixID)]; exists && prefixID != 0 {
 							prefixParts = append(prefixParts, prefix.Name)
@@ -198,7 +218,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 						}
 					}
 
-					// Get all valid suffixes
+					// Get all suffixes
 					for _, suffixID := range suffixes {
 						if suffix, exists := item.MagicSuffixDesc[int(suffixID)]; exists && suffixID != 0 {
 							suffixParts = append(suffixParts, suffix.Name)
@@ -208,7 +228,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 						}
 					}
 
-					// Construct full name: prefixes + base name + suffixes
+					// Construct name: prefixes + base name + suffixes
 					var nameParts []string
 					if len(prefixParts) > 0 {
 						nameParts = append(nameParts, prefixParts...)
@@ -219,13 +239,6 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 					}
 					itm.IdentifiedName = strings.Join(nameParts, " ")
 				}
-			}
-
-			// Set level requirement to highest between base and affixes
-			if maxAffixReq > baseReq {
-				itm.LevelReq = maxAffixReq
-			} else {
-				itm.LevelReq = baseReq
 			}
 
 			// Set runeword name if applicable
@@ -333,6 +346,18 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 
 			// Process socket information
 			if location == item.LocationSocket {
+				// Set level requirement for socketed item
+				if itm.Quality == item.QualityUnique {
+					for _, uniqueInfo := range item.UniqueItems {
+						if uniqueInfo.Code == itm.Desc().Code {
+							itm.LevelReq = uniqueInfo.LevelReq
+							break
+						}
+					}
+				} else {
+					// Normal socketed items (like runes) just use base requirement
+					itm.LevelReq = item.Desc[itm.ID].RequiredLevel
+				}
 				itemExtraData := uintptr(gd.Process.ReadUInt(unitDataPtr+0xA0, Uint64))
 				if itemExtraData != 0 {
 					parentInfoPtr := uintptr(gd.Process.ReadUInt(itemExtraData+0x08, Uint64))
@@ -399,66 +424,49 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 	// Build final inventory
 	inventory.AllItems = make([]data.Item, len(allItems))
 	for i, itm := range allItems {
-		// Calculate level requirement
-		baseReq := item.Desc[itm.ID].RequiredLevel
-		maxAffixReq := 0
+		maxReq := item.Desc[itm.ID].RequiredLevel
 
-		// Now we can properly check socketed items because they're linked
+		// Check unique/set level requirements
+		if itm.Quality == item.QualityUnique {
+			for _, uniqueInfo := range item.UniqueItems {
+				if uniqueInfo.ID == int(itm.UniqueSetID) && itm.Identified {
+					if uniqueInfo.LevelReq > maxReq {
+						maxReq = uniqueInfo.LevelReq
+					}
+					itm.IdentifiedName = uniqueInfo.Name
+					break
+				}
+			}
+		} else if itm.Quality == item.QualitySet {
+			for setItemName, setItemInfo := range item.SetItems {
+				if setItemInfo.ID == int(itm.UniqueSetID) && itm.Identified {
+					if setItemInfo.LevelReq > maxReq {
+						maxReq = setItemInfo.LevelReq
+					}
+					itm.IdentifiedName = string(setItemName)
+					break
+				}
+			}
+		}
+
+		// Check socketed items
 		for _, socketItem := range itm.Sockets {
-			// Check socketed item's level requirement
-			if socketItem.LevelReq > maxAffixReq {
-				maxAffixReq = socketItem.LevelReq
+			if socketItem.LevelReq > maxReq {
+				maxReq = socketItem.LevelReq
 			}
 
-			// Check magic affixes of socketed item if it has any
+			// Check affixes on magic socketed items
 			if socketItem.Quality == item.QualityMagic {
-				for _, prefixID := range socketItem.Affixes.Magic.Prefixes {
-					if prefix, exists := item.MagicPrefixDesc[int(prefixID)]; exists && prefixID != 0 {
-						if prefix.LevelReq > maxAffixReq {
-							maxAffixReq = prefix.LevelReq
-						}
-					}
-				}
-				for _, suffixID := range socketItem.Affixes.Magic.Suffixes {
-					if suffix, exists := item.MagicSuffixDesc[int(suffixID)]; exists && suffixID != 0 {
-						if suffix.LevelReq > maxAffixReq {
-							maxAffixReq = suffix.LevelReq
-						}
-					}
-				}
+				maxReq = updateMaxReqFromAffixes(maxReq, socketItem.Affixes)
 			}
 		}
 
-		// For magic and rare items, check their affixes too
-		if itm.Identified {
-			switch itm.Quality {
-			case item.QualityRare, item.QualityMagic:
-				// Check prefixes
-				for _, prefixID := range itm.Affixes.Magic.Prefixes {
-					if prefix, exists := item.MagicPrefixDesc[int(prefixID)]; exists && prefixID != 0 {
-						if prefix.LevelReq > maxAffixReq {
-							maxAffixReq = prefix.LevelReq
-						}
-					}
-				}
-				// Check suffixes
-				for _, suffixID := range itm.Affixes.Magic.Suffixes {
-					if suffix, exists := item.MagicSuffixDesc[int(suffixID)]; exists && suffixID != 0 {
-						if suffix.LevelReq > maxAffixReq {
-							maxAffixReq = suffix.LevelReq
-						}
-					}
-				}
-			}
+		// Check item's own affixes for magic/rare items
+		if itm.Identified && (itm.Quality == item.QualityMagic || itm.Quality == item.QualityRare) {
+			maxReq = updateMaxReqFromAffixes(maxReq, itm.Affixes)
 		}
 
-		// Final level requirement is the highest between base item and affixes
-		if maxAffixReq > baseReq {
-			itm.LevelReq = maxAffixReq
-		} else {
-			itm.LevelReq = baseReq
-		}
-
+		itm.LevelReq = maxReq
 		inventory.AllItems[i] = *itm
 	}
 
@@ -478,6 +486,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 	inventory.Belt = belt
 	return inventory
 }
+
 func (gd *GameReader) getItemStats(statsListExPtr uintptr) (stat.Stats, stat.Stats) {
 	// Initial full and base stats extraction
 	fullStats := gd.getStatsList(statsListExPtr + 0xA8)
@@ -593,4 +602,23 @@ func setProperties(item *data.Item, flags uint32) {
 	if 0x1&flags != 0 {
 		item.HasBeenEquipped = true // Item was recently equipped (same game)
 	}
+}
+
+func updateMaxReqFromAffixes(currentMax int, affixes data.ItemAffixes) int {
+	maxReq := currentMax
+	for _, prefixID := range affixes.Magic.Prefixes {
+		if prefix, exists := item.MagicPrefixDesc[int(prefixID)]; exists && prefixID != 0 {
+			if prefix.LevelReq > maxReq {
+				maxReq = prefix.LevelReq
+			}
+		}
+	}
+	for _, suffixID := range affixes.Magic.Suffixes {
+		if suffix, exists := item.MagicSuffixDesc[int(suffixID)]; exists && suffixID != 0 {
+			if suffix.LevelReq > maxReq {
+				maxReq = suffix.LevelReq
+			}
+		}
+	}
+	return maxReq
 }

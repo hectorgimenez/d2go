@@ -97,6 +97,17 @@ func generateFile(sourcePath, destinationPath, tpl string) error {
 			}
 			return value
 		},
+		"contains": strings.Contains,
+		"dict": func() map[string][]string {
+			return make(map[string][]string)
+		},
+		"set": func(m map[string][]string, key string, value []string) map[string][]string {
+			m[key] = value
+			return m
+		},
+		"list": func() []string {
+			return make([]string, 0)
+		},
 	}
 
 	t := template.Must(template.New("tpl").Funcs(funcMap).Parse(tpl))
