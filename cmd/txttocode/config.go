@@ -31,6 +31,36 @@ var textFiles = []TextFileDesc{
 		DestFile:   "pkg/data/entrance/entrances.go",
 		Template:   templateEntrances,
 	},
+	{
+		SourceFile: "cmd/txttocode/txt/rareprefix.txt",
+		DestFile:   "pkg/data/item/rareprefixes.go",
+		Template:   templateRarePrefixes,
+	},
+	{
+		SourceFile: "cmd/txttocode/txt/raresuffix.txt",
+		DestFile:   "pkg/data/item/raresuffixes.go",
+		Template:   templateRareSuffixes,
+	},
+	{
+		SourceFile: "cmd/txttocode/txt/magicprefix.txt",
+		DestFile:   "pkg/data/item/magicprefixes.go",
+		Template:   templateMagicPrefixes,
+	},
+	{
+		SourceFile: "cmd/txttocode/txt/magicsuffix.txt",
+		DestFile:   "pkg/data/item/magicsuffixes.go",
+		Template:   templateMagicSuffixes,
+	},
+	{
+		SourceFile: "cmd/txttocode/txt/uniqueitems.txt",
+		DestFile:   "pkg/data/item/uniqueitems.go",
+		Template:   templateUniqueItems,
+	},
+	{
+		SourceFile: "cmd/txttocode/txt/setitems.txt",
+		DestFile:   "pkg/data/item/setitems.go",
+		Template:   templateSetItems,
+	},
 }
 
 type TextFileDesc struct {
