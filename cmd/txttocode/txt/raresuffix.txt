@@ -1,0 +1,156 @@
+name	version	itype1	itype2	itype3	itype4	itype5	itype6	itype7	etype1	etype2	etype3	etype4
+Bite	0	swor	knif	spea	pole	axe	h2h
+Scratch	0	swor	knif	spea	pole	h2h
+Scalpel	0	swor	knif
+Fang	0	swor	knif	spea	pole
+Gutter	0	swor	knif	spea	pole
+Thirst	0	swor	knif	spea	pole	axe	h2h
+Razor	0	swor	knif	axe	h2h
+Scythe	0	swor	axe	pole
+Edge	0	swor	knif	axe
+Saw	0	swor
+Splitter	0	axe	mace	club	hamm
+Cleaver	0	swor	axe
+Sever	0	swor	axe
+Sunder	0	axe
+Rend	0	axe
+Mangler	0	axe	mace	club	hamm
+Slayer	0	axe
+Reaver	0	axe
+Spawn	0	axe	hamm
+Gnash	0	axe	club	hamm
+Star	0	mace	hamm	scep	wand
+Blow	0	mace	club	hamm	scep
+Smasher	0	mace	club	hamm	scep
+Bane	0	mace	scep	wand
+Crusher	0	mace	club	hamm	scep
+Breaker	0	mace	club	hamm	scep
+Grinder	0	mace	club	hamm	scep
+Crack	0	mace	club	hamm	scep	wand
+Mallet	0	hamm	club
+Knell	0	mace	club	scep	wand
+Lance	0	spea	pole
+Spike	0	swor	knif	spea	pole
+Impaler	0	swor	knif	spea	pole
+Skewer	0	swor	knif	spea
+Prod	0	spea	pole
+Scourge	0	spea	pole
+Wand	0	wand
+Wrack	0	spea	pole
+Barb	0	swor	knif	axe	spea	pole	h2h
+Needle	0	swor	knif	spea	miss
+Dart	0	spea	miss
+Bolt	0	miss	jave
+Quarrel	0	miss
+Fletch	0	miss
+Flight	0	miss	jave
+Nock	0	miss
+Horn	0	helm	miss	knif
+Stinger	0	swor	knif	spea	miss
+Quill	0	knif	miss
+Goad	0	spea	pole	staf
+Branch	0	spea	staf	bow
+Spire	0	staf
+Song	0	weap
+Call	0	rod
+Cry	0	rod
+Spell	0	rod
+Chant	0	rod
+Weaver	0	rod
+Gnarl	0	club	wand	staf
+Visage	0	helm
+Crest	0	helm
+Circlet	0	helm
+Veil	0	helm
+Hood	0	helm
+Mask	0	helm
+Brow	0	helm
+Casque	0	helm
+Visor	0	helm
+Cowl	0	helm
+Hide	0	tors
+Pelt	0	tors
+Carapace	0	tors
+Coat	0	tors
+Wrap	0	tors
+Suit	0	tors
+Cloak	0	tors
+Shroud	0	tors
+Jack	0	tors
+Mantle	0	tors
+Guard	0	shld
+Badge	0	shld
+Rock	0	shld
+Aegis	0	shld
+Ward	0	shld
+Tower	0	shld
+Shield	0	shld
+Wing	0	shld	amul
+Mark	0	shld	amul
+Emblem	0	shld	amul
+Hand	0	glov
+Fist	0	glov	h2h
+Claw	0	glov	h2h
+Clutches	0	glov
+Grip	0	glov	ring
+Grasp	0	glov	ring
+Hold	0	glov	ring
+Touch	0	glov	ring
+Finger	0	glov	ring
+Knuckle	0	glov
+Shank	0	boot
+Spur	0	boot
+Tread	0	boot
+Stalker	0	boot
+Greave	0	boot
+Blazer	0	boot
+Nails	0	boot	spea	pole
+Trample	0	boot
+Brogues	0	boot
+Track	0	boot
+Slippers	0	boot
+Clasp	0	belt	amul
+Buckle	0	belt
+Harness	0	belt
+Lock	0	belt
+Fringe	0	belt
+Winding	0	belt
+Chain	0	belt
+Strap	0	belt
+Lash	0	belt
+Cord	0	belt
+Knot	0	ring
+Circle	0	ring
+Loop	0	ring
+Eye	0	misc
+Turn	0	ring
+Spiral	0	ring
+Coil	0	ring
+Gyre	0	ring	orb	jewl
+Band	0	ring
+Whorl	0	ring	orb	jewl
+Talisman	0	amul	jewl
+Heart	0	amul	orb	jewl
+Noose	0	amul
+Necklace	0	amul
+Collar	0	amul
+Beads	0	amul
+Torc	0	amul
+Gorget	0	amul
+Scarab	0	amul	jewl
+Wood	0	spea	pole	wand	staf
+Brand	0	blun
+Bludgeon	0	blun
+Cudgel	0	club	wand
+Loom	0	miss
+Harp	0	miss
+Master	0	ring
+Bar	0	blun	spea	pole
+Hew	0	swor	knif	axe
+Crook	0	staf
+Mar	0	swor	knif	mace	club	hamm	spea
+Shell	0	tors	helm	shld
+Stake	0	spea	pole
+Picket	0	spea	pole
+Pale	0	spea	pole
+Flange	0	tors	mace	hamm	scep

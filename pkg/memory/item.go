@@ -3,6 +3,7 @@ package memory
 import (
 	"slices"
 	"sort"
+	"strings"
 
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/item"
@@ -127,7 +128,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 			// Read rare affixes
 			rarePrefix := int16(gd.Process.ReadUInt(unitDataPtr+0x42, Uint16))
 			rareSuffix := int16(gd.Process.ReadUInt(unitDataPtr+0x44, Uint16))
-			autoAffix := int16(gd.Process.ReadUInt(unitDataPtr+0x46, Uint16))
+			//autoAffix := int16(gd.Process.ReadUInt(unitDataPtr+0x46, Uint16))
 
 			// Read magic affixes
 			var prefixes [3]int16
@@ -145,7 +146,6 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 					Prefix: rarePrefix,
 					Suffix: rareSuffix,
 				},
-				AutoAffix: autoAffix,
 				Magic: struct {
 					Prefixes [3]int16
 					Suffixes [3]int16
@@ -155,13 +155,85 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 				},
 			}
 
+			// Set quality-specific name and level requirement if identified
+			baseReq := item.Desc[itm.ID].RequiredLevel
+			maxAffixReq := 0
+
+			if itm.Identified {
+				switch itm.Quality {
+				case item.QualityRare:
+					// Set name from rare affixes
+					if prefix, exists := item.RarePrefixDesc[int(rarePrefix)]; exists {
+						if suffix, exists := item.RareSuffixDesc[int(rareSuffix)]; exists {
+							itm.IdentifiedName = prefix.Name + " " + suffix.Name
+						}
+					}
+					// Get level requirements from magic affixes
+					for _, prefixID := range prefixes {
+						if prefix, exists := item.MagicPrefixDesc[int(prefixID)]; exists && prefixID != 0 {
+							if prefix.LevelReq > maxAffixReq {
+								maxAffixReq = prefix.LevelReq
+							}
+						}
+					}
+					for _, suffixID := range suffixes {
+						if suffix, exists := item.MagicSuffixDesc[int(suffixID)]; exists && suffixID != 0 {
+							if suffix.LevelReq > maxAffixReq {
+								maxAffixReq = suffix.LevelReq
+							}
+						}
+					}
+				//TODO Set and Unique items
+				case item.QualityMagic:
+					var prefixParts []string
+					var suffixParts []string
+
+					// Get all valid prefixes
+					for _, prefixID := range prefixes {
+						if prefix, exists := item.MagicPrefixDesc[int(prefixID)]; exists && prefixID != 0 {
+							prefixParts = append(prefixParts, prefix.Name)
+							if prefix.LevelReq > maxAffixReq {
+								maxAffixReq = prefix.LevelReq
+							}
+						}
+					}
+
+					// Get all valid suffixes
+					for _, suffixID := range suffixes {
+						if suffix, exists := item.MagicSuffixDesc[int(suffixID)]; exists && suffixID != 0 {
+							suffixParts = append(suffixParts, suffix.Name)
+							if suffix.LevelReq > maxAffixReq {
+								maxAffixReq = suffix.LevelReq
+							}
+						}
+					}
+
+					// Construct full name: prefixes + base name + suffixes
+					var nameParts []string
+					if len(prefixParts) > 0 {
+						nameParts = append(nameParts, prefixParts...)
+					}
+					nameParts = append(nameParts, string(itm.Name))
+					if len(suffixParts) > 0 {
+						nameParts = append(nameParts, suffixParts...)
+					}
+					itm.IdentifiedName = strings.Join(nameParts, " ")
+				}
+			}
+
+			// Set level requirement to highest between base and affixes
+			if maxAffixReq > baseReq {
+				itm.LevelReq = maxAffixReq
+			} else {
+				itm.LevelReq = baseReq
+			}
+
 			// Set runeword name if applicable
 			if itm.IsRuneword {
 				if runeword, exists := item.RunewordIDMap[prefixes[0]]; exists {
 					itm.RunewordName = runeword
 				}
 			}
-
 			// Determine item location
 			location := item.LocationUnknown
 			switch itemLoc {
@@ -327,6 +399,66 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 	// Build final inventory
 	inventory.AllItems = make([]data.Item, len(allItems))
 	for i, itm := range allItems {
+		// Calculate level requirement
+		baseReq := item.Desc[itm.ID].RequiredLevel
+		maxAffixReq := 0
+
+		// Now we can properly check socketed items because they're linked
+		for _, socketItem := range itm.Sockets {
+			// Check socketed item's level requirement
+			if socketItem.LevelReq > maxAffixReq {
+				maxAffixReq = socketItem.LevelReq
+			}
+
+			// Check magic affixes of socketed item if it has any
+			if socketItem.Quality == item.QualityMagic {
+				for _, prefixID := range socketItem.Affixes.Magic.Prefixes {
+					if prefix, exists := item.MagicPrefixDesc[int(prefixID)]; exists && prefixID != 0 {
+						if prefix.LevelReq > maxAffixReq {
+							maxAffixReq = prefix.LevelReq
+						}
+					}
+				}
+				for _, suffixID := range socketItem.Affixes.Magic.Suffixes {
+					if suffix, exists := item.MagicSuffixDesc[int(suffixID)]; exists && suffixID != 0 {
+						if suffix.LevelReq > maxAffixReq {
+							maxAffixReq = suffix.LevelReq
+						}
+					}
+				}
+			}
+		}
+
+		// For magic and rare items, check their affixes too
+		if itm.Identified {
+			switch itm.Quality {
+			case item.QualityRare, item.QualityMagic:
+				// Check prefixes
+				for _, prefixID := range itm.Affixes.Magic.Prefixes {
+					if prefix, exists := item.MagicPrefixDesc[int(prefixID)]; exists && prefixID != 0 {
+						if prefix.LevelReq > maxAffixReq {
+							maxAffixReq = prefix.LevelReq
+						}
+					}
+				}
+				// Check suffixes
+				for _, suffixID := range itm.Affixes.Magic.Suffixes {
+					if suffix, exists := item.MagicSuffixDesc[int(suffixID)]; exists && suffixID != 0 {
+						if suffix.LevelReq > maxAffixReq {
+							maxAffixReq = suffix.LevelReq
+						}
+					}
+				}
+			}
+		}
+
+		// Final level requirement is the highest between base item and affixes
+		if maxAffixReq > baseReq {
+			itm.LevelReq = maxAffixReq
+		} else {
+			itm.LevelReq = baseReq
+		}
+
 		inventory.AllItems[i] = *itm
 	}
 

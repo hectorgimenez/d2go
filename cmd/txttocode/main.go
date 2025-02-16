@@ -33,7 +33,15 @@ func generateFile(sourcePath, destinationPath, tpl string) error {
 	fileScanner.Split(bufio.ScanLines)
 
 	headers := make([]string, 0)
-	fileContent := make([]map[string]string, 0)
+	fileContent := make(map[int]map[string]string)
+	currentID := 0
+
+	// Determine if this is an affix file that should include empty rows
+	isAffixFile := strings.Contains(sourcePath, "rareprefix") ||
+		strings.Contains(sourcePath, "raresuffix") ||
+		strings.Contains(sourcePath, "magicprefix") ||
+		strings.Contains(sourcePath, "magicsuffix")
+
 	for fileScanner.Scan() {
 		fields := strings.Split(fileScanner.Text(), "\t")
 		if len(headers) == 0 {
@@ -41,24 +49,57 @@ func generateFile(sourcePath, destinationPath, tpl string) error {
 			continue
 		}
 
-		// Ignore if Code is empty
-		if fields[1] == "" {
-			continue
-		}
+		// Create line map
 		lineMap := make(map[string]string)
 		for i, header := range headers {
-			lineMap[header] = fields[i]
+			if i < len(fields) {
+				lineMap[header] = fields[i]
+			} else {
+				lineMap[header] = ""
+			}
 		}
-		fileContent = append(fileContent, lineMap)
+
+		// Skip empty entries for non-affix files
+		if !isAffixFile && fields[1] == "" {
+			continue
+		}
+
+		// Store in map with current ID
+		fileContent[currentID] = lineMap
+		currentID++
 	}
 
 	if len(fileContent) == 0 {
 		return fmt.Errorf("error: no content found for file %s", sourcePath)
 	}
 
-	t := template.Must(template.New("tpl").Funcs(template.FuncMap{
+	funcMap := template.FuncMap{
 		"replace": strings.ReplaceAll,
-	}).Parse(tpl))
+		"iterate": func(count int) []int {
+			var items []int
+			for i := 0; i < count; i++ {
+				items = append(items, i)
+			}
+			return items
+		},
+		"add": func(a, b int) int {
+			return a + b
+		},
+		"slice": func() []string {
+			return make([]string, 0)
+		},
+		"append": func(slice []string, items ...string) []string {
+			return append(slice, items...)
+		},
+		"default": func(value, defaultValue string) string {
+			if value == "" {
+				return defaultValue
+			}
+			return value
+		},
+	}
+
+	t := template.Must(template.New("tpl").Funcs(funcMap).Parse(tpl))
 
 	file, err := os.Create(destinationPath)
 	if err != nil {

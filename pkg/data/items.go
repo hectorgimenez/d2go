@@ -77,8 +77,7 @@ type ItemAffixes struct {
 		Prefix int16
 		Suffix int16
 	}
-	AutoAffix int16
-	Magic     struct {
+	Magic struct {
 		Prefixes [3]int16 // Prefix1, Prefix2, Prefix3
 		Suffixes [3]int16 // Suffix1, Suffix2, Suffix3
 	}
@@ -89,7 +88,9 @@ type Item struct {
 	UnitID
 	Name                 item.Name
 	Quality              item.Quality
+	IdentifiedName       string
 	RunewordName         item.RunewordName
+	LevelReq             int
 	Position             Position
 	Location             item.Location
 	Ethereal             bool
@@ -184,11 +185,39 @@ func (i Item) HasSuffix(id int16) bool {
 	return false
 }
 
-func (i Item) HasAutoAffix(id int16) bool {
-	return i.Affixes.AutoAffix == id
+func (a ItemAffixes) GetRarePrefix() (item.RarePrefix, bool) {
+	prefix, exists := item.RarePrefixDesc[int(a.Rare.Prefix)]
+	return prefix, exists
 }
 
-// GetSocketedItems Returns all items socketed in item
+func (a ItemAffixes) GetRareSuffix() (item.RareSuffix, bool) {
+	suffix, exists := item.RareSuffixDesc[int(a.Rare.Suffix)]
+	return suffix, exists
+}
+
+func (a ItemAffixes) GetMagicPrefixes() []item.MagicPrefix {
+	prefixes := make([]item.MagicPrefix, 0, 3)
+	for _, id := range a.Magic.Prefixes {
+		if prefix, exists := item.MagicPrefixDesc[int(id)]; exists && id != 0 {
+			prefixes = append(prefixes, prefix)
+		}
+	}
+	return prefixes
+}
+
+func (a ItemAffixes) GetMagicSuffixes() []item.MagicSuffix {
+	suffixes := make([]item.MagicSuffix, 0, 3)
+	for _, id := range a.Magic.Suffixes {
+		if suffix, exists := item.MagicSuffixDesc[int(id)]; exists && id != 0 {
+			suffixes = append(suffixes, suffix)
+		}
+	}
+	return suffixes
+}
+
 func (i Item) GetSocketedItems() []Item {
 	return i.Sockets
+}
+func (i Item) HasSocketedItems() bool {
+	return len(i.Sockets) > 0
 }
