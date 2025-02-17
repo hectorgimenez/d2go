@@ -12,7 +12,7 @@ const (
 
 var ItemTypes = map[string]Type{
 {{- range $key, $value := . }}
-    Type{{ replace $value.ItemType " " "" }}: {ID: {{ $key }}, Name: "{{ $value.ItemType }}", Code: "{{ $value.Code }}", Throwable: {{ if eq $value.Throwable "1" }}true{{ else }}false{{ end }}, Beltable: {{ if eq $value.Beltable "1" }}true{{ else }}false{{ end }}},
+    Type{{ replace $value.ItemType " " "" }}: {ID: {{ $key }}, Name: "{{ $value.ItemType }}", Code: "{{ $value.Code }}", Throwable: {{ if eq $value.Throwable "1" }}true{{ else }}false{{ end }}, Beltable: {{ if eq $value.Beltable "1" }}true{{ else }}false{{ end }}, BodyLocs: []string{{ if $value.BodyLoc1 }}{"{{ $value.BodyLoc1 }}"{{ if and $value.BodyLoc2 (ne $value.BodyLoc2 $value.BodyLoc1) }}, "{{ $value.BodyLoc2 }}"{{ end }}}{{ else }}{}{{ end }}},
 {{- end }}
 }`
 
