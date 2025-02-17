@@ -141,14 +141,16 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 	}
 
 	var stats = make([]stat.Data, 0)
+
 	statBuffer := gd.Process.ReadBytesFromMemory(uintptr(statList), statCount*10)
 	for i := 0; i < int(statCount); i++ {
 		offset := uint(i * 8)
+
 		statLayer := ReadUIntFromBuffer(statBuffer, offset, Uint16)
 		statEnum := ReadUIntFromBuffer(statBuffer, offset+0x2, Uint16)
-		statValue := ReadUIntFromBuffer(statBuffer, offset+0x4, Uint32)
+		statValue := ReadIntFromBuffer(statBuffer, offset+0x4, Uint32)
 
-		value := int(statValue)
+		value := statValue
 		switch stat.ID(statEnum) {
 		case stat.Life,
 			stat.MaxLife,
@@ -156,16 +158,16 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 			stat.MaxMana,
 			stat.Stamina,
 			stat.MaxStamina:
-			value = int(statValue >> 8)
+			value = statValue >> 8
 		case stat.ColdLength,
 			stat.PoisonLength:
-			value = int(statValue / 25)
+			value = statValue / 25
 		case stat.DeadlyStrikePerLevel:
 			value = int(float64(statValue) / .8)
 		case stat.HitCausesMonsterToFlee:
 			value = int(float64(statValue) / 1.28)
 		case stat.AttackRatingUndeadPerLevel:
-			value = int(statValue / 2)
+			value = statValue / 2
 		case stat.MagicFindPerLevel,
 			stat.ExtraGoldPerLevel,
 			stat.DamageDemonPerLevel,

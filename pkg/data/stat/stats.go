@@ -48,7 +48,7 @@ const (
 	StashGold
 	EnhancedDefense
 	EnhancedDamageMax
-	EnhancedDamage
+	EnhancedDamageMin
 	AttackRating
 	ChanceToBlock
 	MinDamage
@@ -412,7 +412,7 @@ var StringStats = []string{
 	"stashgold",
 	"enhanceddefense",
 	"enhanceddamagemax",
-	"enhanceddamage",
+	"enhanceddamagemin",
 	"attackrating",
 	"chancetoblock",
 	"mindamage",
@@ -779,11 +779,11 @@ var StatStringMap = map[int]map[int]string{
 	13: {0: "Experience: #"},
 	14: {0: "Gold: #"},
 	15: {0: "Gold in Bank: #"},
-	16: {0: "+#% Enhanced Defense"},                                   // enhanceddefense
-	17: {0: "+#% Enhanced Maximum Damage (Based on Character Level)"}, // itemmaxdamagepercent
-	18: {0: "+#% Enhanced Damage"},                                    // enhanceddamage
-	19: {0: "+# to Attack Rating"},                                    // tohit
-	20: {0: "#% Increased Chance of Blocking"},                        // toblock
+	16: {0: "+#% Enhanced Defense"},            // enhanceddefense
+	17: {0: "+#% Enhanced Damage (Max)"},       // enhanceddamagemax
+	18: {0: "+#% Enhanced Damage (Min)"},       // enhanceddamagemin
+	19: {0: "+# to Attack Rating"},             // tohit
+	20: {0: "#% Increased Chance of Blocking"}, // toblock
 	21: {
 		0: "#-# Damage",           // mindamage
 		1: "+# to Minimum Damage", // plusmindamage
@@ -845,7 +845,7 @@ var StatStringMap = map[int]map[int]string{
 	70: {0: "Quantity: #"},
 	71: {0: "Value: #"},
 	72: {0: "Durability: # of #"},                      // durability
-	73: {0: "#"},                                       // maxdurability
+	73: {0: "Max Durability"},                          // maxdurability
 	74: {0: "Replenish Life +#"},                       // hpregen
 	75: {0: "Increase Maximum Durability #%"},          //itemmaxdurabilitypercent
 	76: {0: "Increase Maximum Life #%"},                //itemmaxmanapercent
@@ -1178,8 +1178,8 @@ var StatStringMap = map[int]map[int]string{
 	156: {0: "Piercing Attack"},                 // itempierce
 	157: {0: "Fires Magic Arrows"},              // itemmagicarrow
 	158: {0: "Fires Explosive Arrows or Bolts"}, // itemexplosivearrow
-	159: {0: "itemthrowmindamage ????"},
-	160: {0: "itemthrowmaxdamage ????"},
+	159: {0: "To Minimum Damage"},
+	160: {0: "Throw Damage"},
 	161: {0: "itemskillhandofathena ????"},
 	162: {0: "itemskillstaminapercent ????"},
 	163: {0: "itemskillpassivestaminapercent ????"},
@@ -1237,8 +1237,9 @@ var StatStringMap = map[int]map[int]string{
 	193: {0: "Monster Magic Immunity is Sundered"},     // itempiercemagicimmunity
 	194: {0: "Socketed (#)"},
 	195: {
-		1: "#% Chance to cast level # [Skill] on attack", //itemskillonattack
-		2: "itemskillonattacklevel ????",
+		1:    "#% Chance to cast level # [Skill] on attack", //itemskillonattack
+		2:    "itemskillonattacklevel ????",
+		3395: "#% Chance to cast level 3 Chain Lightning on attack",
 	},
 	196: {
 		1: "#% Chance to cast level # [Skill] when you Kill an Enemy", //itemskillonkill
@@ -1259,15 +1260,18 @@ var StatStringMap = map[int]map[int]string{
 	},
 	200: {0: "unused200 ????"},
 	201: {
-		1: "#% Chance to cast level # [Skill] when struck", //itemskillongethit
-		2: "itemskillongethitlevel ????",
+		1:    "#% Chance to cast level # [Skill] when struck", //itemskillongethit
+		2:    "itemskillongethitlevel ????",
+		5903: "#% Chance to cast level 15 Poison Nova when struck",
+		7751: "#% Chance to cast level 7 Fist of Heavens when struck",
 	},
 	202: {0: "unused202 ????"},
 	203: {0: "unused203 ????"},
 	204: {
-		1:    "itemchargedskill ????",
-		2:    "itemchargedskilllevel ????",
-		3461: "Teleport (charged)",
+		1:     "itemchargedskill ????",
+		2:     "itemchargedskilllevel ????",
+		3461:  "Teleport (charged)",
+		17795: "Venom level 3 (charged)",
 	},
 	205: {0: "unused204 ????"},
 	206: {0: "unused205 ????"},
