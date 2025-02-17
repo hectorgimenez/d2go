@@ -839,7 +839,7 @@ var StatStringMap = map[int]map[int]string{
 	64: {0: "stamdrainmindam ????"},
 	65: {0: "stamdrainmaxdam ????"},
 	66: {0: "stunlength ????"},
-	67: {0: "+#% Faster Run/Walk"},
+	67: {0: "#% Velocity"},
 	68: {0: "#"}, // attackrate
 	69: {0: "otheranimrate ????"},
 	70: {0: "Quantity: #"},
@@ -1214,7 +1214,7 @@ var StatStringMap = map[int]map[int]string{
 		8:  "+# to Fire Skills (Sorceress only)",              // fireskilltab
 		9:  "+# to Lightning Skills (Sorceress only)",         // lightningskilltab
 		10: "+# to Cold Skills (Sorceress only)",              // coldskilltab
-		16: "+# to Curses Skills (Sorceress only)",            // cursesskilltab
+		16: "+# to Curses Skills (Necromancer only)",          // cursesskilltab
 		17: "+# to Poison and Bone Skills (Necromancer only)", // poisonandboneskilltab
 		18: "+# to Summoning Skills (Necromancer only)",       // necromancersummoningskilltab
 		24: "+# to Paladin Combat Skills (Paladin only)",      // palicombatskilltab
