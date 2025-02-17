@@ -48,7 +48,7 @@ const (
 	StashGold
 	EnhancedDefense
 	EnhancedDamageMin
-	EEnhancedDamage
+	EnhancedDamage
 	AttackRating
 	ChanceToBlock
 	MinDamage
