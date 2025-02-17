@@ -6,6 +6,7 @@ type Type struct {
 	Code      string
 	Throwable bool
 	Beltable  bool
+	BodyLocs  []string
 }
 
 // TODO: Refactor to support parent types
