@@ -47,8 +47,8 @@ const (
 	Gold
 	StashGold
 	EnhancedDefense
-	EnhancedDamageMax
 	EnhancedDamageMin
+	EEnhancedDamage
 	AttackRating
 	ChanceToBlock
 	MinDamage
@@ -411,8 +411,8 @@ var StringStats = []string{
 	"gold",
 	"stashgold",
 	"enhanceddefense",
-	"enhanceddamagemax",
 	"enhanceddamagemin",
+	"enhanceddamage",
 	"attackrating",
 	"chancetoblock",
 	"mindamage",
@@ -845,7 +845,7 @@ var StatStringMap = map[int]map[int]string{
 	70: {0: "Quantity: #"},
 	71: {0: "Value: #"},
 	72: {0: "Durability: # of #"},                      // durability
-	73: {0: "Max Durability"},                          // maxdurability
+	73: {0: "# Max Durability"},                        // maxdurability
 	74: {0: "Replenish Life +#"},                       // hpregen
 	75: {0: "Increase Maximum Durability #%"},          //itemmaxdurabilitypercent
 	76: {0: "Increase Maximum Life #%"},                //itemmaxmanapercent
@@ -1178,8 +1178,8 @@ var StatStringMap = map[int]map[int]string{
 	156: {0: "Piercing Attack"},                 // itempierce
 	157: {0: "Fires Magic Arrows"},              // itemmagicarrow
 	158: {0: "Fires Explosive Arrows or Bolts"}, // itemexplosivearrow
-	159: {0: "To Minimum Damage"},
-	160: {0: "Throw Damage"},
+	159: {0: "# To Minimum Damage"},
+	160: {0: "# Throw Damage"},
 	161: {0: "itemskillhandofathena ????"},
 	162: {0: "itemskillstaminapercent ????"},
 	163: {0: "itemskillpassivestaminapercent ????"},
