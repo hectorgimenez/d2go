@@ -467,7 +467,15 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 		}
 
 		itm.LevelReq = maxReq
+		// Update stat 92 (LevelRequire)
+		for it, s := range itm.Stats {
+			if s.ID == stat.LevelRequire {
+				itm.Stats[it].Value = maxReq
+				break
+			}
+		}
 		inventory.AllItems[i] = *itm
+
 	}
 
 	// Sort items by distance if needed, using pre-calculated distances
@@ -491,6 +499,15 @@ func (gd *GameReader) getItemStats(statsListExPtr uintptr) (stat.Stats, stat.Sta
 	// Initial full and base stats extraction
 	fullStats := gd.getStatsList(statsListExPtr + 0xA8)
 	baseStats := gd.getStatsList(statsListExPtr + 0x30)
+
+	// Create empty LevelRequire stat .We will update it from inventory
+	if _, found := fullStats.FindStat(stat.LevelRequire, 0); !found {
+		fullStats = append(fullStats, stat.Data{
+			ID:    stat.LevelRequire,
+			Value: 0,
+			Layer: 0,
+		})
+	}
 
 	// Flags and last stat list pointers
 	flags := gd.Process.ReadUInt(statsListExPtr+0x1C, Uint64)
