@@ -198,8 +198,30 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 			if len(statData) > 1 {
 				layer = statData[1]
 			}
-			itemStat, _ := it.FindStat(stat.ID(statData[0]), layer)
-			stage2Props[statName] = itemStat.Value
+
+			// If item is unidentified and we have stat requirements, require identification
+			if !it.Identified {
+				return RuleResultPartial, nil
+			}
+
+			// Check if the stat exists on the item
+			itemStat, statFound := it.FindStat(stat.ID(statData[0]), layer)
+
+			// For compound expressions (containing + or -), treat missing stats as 0
+			// Otherwise for single stat checks, require the stat to exist
+			parts := strings.Split(r.RawLine, "#")
+			if len(parts) > 1 && (strings.Contains(parts[1], "+") || strings.Contains(parts[1], "-")) {
+				if !statFound {
+					stage2Props[statName] = 0
+				} else {
+					stage2Props[statName] = itemStat.Value
+				}
+			} else {
+				if !statFound {
+					return RuleResultNoMatch, nil
+				}
+				stage2Props[statName] = itemStat.Value
+			}
 		}
 
 		res, err := expr.Run(r.stage2, stage2Props)
