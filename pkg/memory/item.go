@@ -182,7 +182,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 							break
 						}
 					}
-				case item.QualityRare:
+				case item.QualityRare, item.QualityCrafted:
 					// Set item name from rare affixes
 					if prefix, exists := item.RarePrefixDesc[int(rarePrefix)]; exists {
 						if suffix, exists := item.RareSuffixDesc[int(rareSuffix)]; exists {
@@ -436,7 +436,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 		maxReq := calculateItemLevelReq(itm, baseDesc)
 
 		// Check magic/rare affixes
-		if itm.Identified && (itm.Quality == item.QualityMagic || itm.Quality == item.QualityRare) {
+		if itm.Identified && (itm.Quality == item.QualityMagic || itm.Quality == item.QualityRare || itm.Quality == item.QualityCrafted) {
 			maxReq = updateMaxReqFromAffixes(maxReq, itm.Affixes)
 		}
 
@@ -631,6 +631,43 @@ func calculateItemLevelReq(itm *data.Item, baseDesc item.Description) int {
 	// Start with base item's requirement
 	maxReq := baseDesc.RequiredLevel
 
+	// Handle Crafted items first as they have special calculation rules
+	if itm.Quality == item.QualityCrafted {
+		// Count number of affixes and find highest level requirement
+		affixCount := 0
+		maxAffixReq := 0
+
+		for _, prefixID := range itm.Affixes.Magic.Prefixes {
+			if prefix, exists := item.MagicPrefixDesc[int(prefixID)]; exists && prefixID != 0 {
+				affixCount++
+				if prefix.LevelReq > maxAffixReq {
+					maxAffixReq = prefix.LevelReq
+				}
+			}
+		}
+		for _, suffixID := range itm.Affixes.Magic.Suffixes {
+			if suffix, exists := item.MagicSuffixDesc[int(suffixID)]; exists && suffixID != 0 {
+				affixCount++
+				if suffix.LevelReq > maxAffixReq {
+					maxAffixReq = suffix.LevelReq
+				}
+			}
+		}
+
+		// Base calculation
+		levelReq := maxAffixReq + (3 * affixCount)
+		// Add 10 to final level req
+		levelReq += 10
+
+		// Cap at 98 if needed (Maximum possible)
+		if levelReq > 99 {
+			levelReq = 98
+		}
+
+		return levelReq
+	}
+
+	// Handle Unique/Set items and their special upgrade cases
 	if itm.Quality == item.QualityUnique || itm.Quality == item.QualitySet {
 		itemCode := baseDesc.Code
 		normalCode := baseDesc.NormalCode
@@ -655,6 +692,7 @@ func calculateItemLevelReq(itm *data.Item, baseDesc item.Description) int {
 			}
 		}
 
+		// Apply upgrade requirements
 		if itemCode == eliteCode {
 			if originalCode == normalCode {
 				// Double upgraded: Normal -> Exceptional -> Elite
@@ -679,7 +717,7 @@ func calculateItemLevelReq(itm *data.Item, baseDesc item.Description) int {
 						break
 					}
 				}
-			} else { // Set item
+			} else if itm.Quality == item.QualitySet {
 				for _, setItemInfo := range item.SetItems {
 					if setItemInfo.ID == int(itm.UniqueSetID) {
 						if setItemInfo.LevelReq > maxReq {
@@ -691,6 +729,5 @@ func calculateItemLevelReq(itm *data.Item, baseDesc item.Description) int {
 			}
 		}
 	}
-
 	return maxReq
 }
