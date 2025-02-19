@@ -136,6 +136,7 @@ func NewRule(rawRule string, filename string, lineNumber int) (Rule, error) {
 }
 
 func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
+	// Stage 1: Basic properties evaluation
 	stage1Props := make(map[string]int)
 	for prop := range fixedPropsList {
 		switch prop {
@@ -173,7 +174,6 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 			// TODO: Not supported yet
 		}
 	}
-
 	// Let's evaluate first stage
 	stage1Result, err := expr.Run(r.stage1, stage1Props)
 	if err != nil {
@@ -185,9 +185,34 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 		return RuleResultNoMatch, nil
 	}
 
-	stage2Result := true
+	// For stats evaluation
 	if r.stage2 != nil {
 		stage2Props := make(map[string]int)
+
+		// We only want to default to 0 if we find at least one of the required resists
+		hasAnyResist := false
+		stage2 := strings.ToLower(strings.Split(r.RawLine, "#")[1])
+		isResistSum := strings.Contains(stage2, "resist") && (strings.Contains(stage2, "+") || strings.Contains(stage2, "-"))
+
+		// First pass - check if we have any of the required resists
+		if isResistSum {
+			for _, statName := range r.requiredStats {
+				statData, found := statAliases[statName]
+				if !found {
+					continue
+				}
+				layer := 0
+				if len(statData) > 1 {
+					layer = statData[1]
+				}
+				if _, found := it.FindStat(stat.ID(statData[0]), layer); found {
+					hasAnyResist = true
+					break
+				}
+			}
+		}
+
+		// Second pass - evaluate stats
 		for _, statName := range r.requiredStats {
 			statData, found := statAliases[statName]
 			if !found {
@@ -199,48 +224,28 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 				layer = statData[1]
 			}
 
-			// If item is unidentified and we have stat requirements, require identification
-			if !it.Identified {
-				return RuleResultPartial, nil
-			}
-
-			// Check if the stat exists on the item
-			itemStat, statFound := it.FindStat(stat.ID(statData[0]), layer)
-
-			// For compound expressions (containing + or -), treat missing stats as 0
-			// Otherwise for single stat checks, require the stat to exist
-			parts := strings.Split(r.RawLine, "#")
-			if len(parts) > 1 && (strings.Contains(parts[1], "+") || strings.Contains(parts[1], "-")) {
-				if !statFound {
-					stage2Props[statName] = 0
-				} else {
-					stage2Props[statName] = itemStat.Value
-				}
-			} else {
-				if !statFound {
-					return RuleResultNoMatch, nil
-				}
+			itemStat, found := it.FindStat(stat.ID(statData[0]), layer)
+			if found {
 				stage2Props[statName] = itemStat.Value
+			} else if isResistSum && hasAnyResist {
+				// Only default to 0 for resist sums if we found at least one resist
+				stage2Props[statName] = 0
+			} else {
+				return RuleResultNoMatch, nil
 			}
 		}
 
-		res, err := expr.Run(r.stage2, stage2Props)
+		stage2Result, err := expr.Run(r.stage2, stage2Props)
 		if err != nil {
 			return RuleResultNoMatch, fmt.Errorf("error evaluating rule: %w", err)
 		}
-		stage2Result = res.(bool)
-	}
 
+		if !stage2Result.(bool) {
+			return RuleResultNoMatch, nil
+		}
+	}
 	// 100% rule match, we can return here
-	if stage1Result.(bool) && stage2Result {
-		return RuleResultFullMatch, nil
-	}
-
-	// If Stage 1 matches and the item is NOT identified, let's return a partial match, we can not be 100% sure if all the stats are matching
-	if stage1Result.(bool) && !it.Identified {
-		return RuleResultPartial, nil
-	}
-	return RuleResultNoMatch, nil
+	return RuleResultFullMatch, nil
 }
 
 func replaceStringPropertiesInStage1(stage1 string) (string, error) {
