@@ -20,6 +20,13 @@ type Process struct {
 	moduleBaseSize       uint32
 }
 
+const (
+	Int8  = 1 // signed 8-bit integer
+	Int16 = 2 // signed 16-bit integer
+	Int32 = 4 // signed 32-bit integer
+	Int64 = 8 // signed 64-bit integer
+)
+
 func NewProcess() (Process, error) {
 	module, err := getGameModule()
 	if err != nil {
@@ -142,6 +149,22 @@ func bytesToUint(bytes []byte, size IntType) uint {
 		return uint(binary.LittleEndian.Uint64(bytes))
 	}
 
+	return 0
+}
+func ReadIntFromBuffer(bytes []byte, offset uint, size IntType) int {
+	return bytesToInt(bytes[offset:offset+uint(size)], size)
+}
+func bytesToInt(bytes []byte, size IntType) int {
+	switch size {
+	case Int8:
+		return int(int8(bytes[0]))
+	case Int16:
+		return int(int16(binary.LittleEndian.Uint16(bytes)))
+	case Int32:
+		return int(int32(binary.LittleEndian.Uint32(bytes)))
+	case Int64:
+		return int(int64(binary.LittleEndian.Uint64(bytes)))
+	}
 	return 0
 }
 
