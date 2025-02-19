@@ -1179,7 +1179,7 @@ var StatStringMap = map[int]map[int]string{
 	157: {0: "Fires Magic Arrows"},              // itemmagicarrow
 	158: {0: "Fires Explosive Arrows or Bolts"}, // itemexplosivearrow
 	159: {0: "# To Minimum Damage"},
-	160: {0: "# Throw Damage"},
+	160: {0: "+# Maximum Damage"},
 	161: {0: "itemskillhandofathena ????"},
 	162: {0: "itemskillstaminapercent ????"},
 	163: {0: "itemskillpassivestaminapercent ????"},

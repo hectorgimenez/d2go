@@ -233,7 +233,7 @@ func (gd *GameReader) Inventory(rawPlayerUnits RawPlayerUnits, hover data.HoverD
 					if len(prefixParts) > 0 {
 						nameParts = append(nameParts, prefixParts...)
 					}
-					nameParts = append(nameParts, string(itm.Name))
+					nameParts = append(nameParts, itm.Desc().Name)
 					if len(suffixParts) > 0 {
 						nameParts = append(nameParts, suffixParts...)
 					}
