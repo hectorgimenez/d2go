@@ -226,6 +226,13 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 
 			itemStat, found := it.FindStat(stat.ID(statData[0]), layer)
 			if found {
+				// Special handling for ItemLevelReq
+				if statData[0] == int(stat.LevelRequire) {
+					// If the rule is looking for ItemLevelReq and the value is 0, reject the item
+					if itemStat.Value == 0 {
+						return RuleResultNoMatch, nil
+					}
+				}
 				stage2Props[statName] = itemStat.Value
 			} else if isResistSum && hasAnyResist {
 				// Only default to 0 for resist sums if we found at least one resist
