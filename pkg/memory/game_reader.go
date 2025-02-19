@@ -12,6 +12,10 @@ type GameReader struct {
 	Process
 }
 
+var WidgetStateFlags = map[string]uint64{
+	"WeaponSwap": 0xF2D7CF8E9CC08212,
+}
+
 func NewGameReader(process Process) *GameReader {
 	return &GameReader{
 		offset:  calculateOffsets(process),
@@ -72,6 +76,7 @@ func (gd *GameReader) GetData() data.Data {
 		IsInLobby:               gd.IsInLobby(),
 		IsInCharSelectionScreen: gd.IsInCharacterSelectionScreen(),
 		HasMerc:                 gd.HasMerc(),
+		ActiveWeaponSlot:        gd.GetActiveWeaponSlot(),
 	}
 
 	return d
@@ -308,4 +313,48 @@ func (gd *GameReader) IsWidgetVisible(widgetName string) (bool, error) {
 	}
 
 	return widget["WidgetActive"].(bool) && widget["WidgetVisible"].(bool), nil
+}
+
+// GetWidgetState reference : https://github.com/ResurrectedTrader/ResurrectedTrade/blob/f121ec02dd3fbe1c574f713e5a0c2db92ccca821/ResurrectedTrade.AgentBase/Capture.cs#L618
+func (gd *GameReader) GetWidgetState(stateFlag uint64) (int, error) {
+	// Get widget states pointer
+	stateFlags := uint64(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+gd.offset.WidgetStatesOffset, Uint64))
+	if stateFlags == 0 {
+		return 0, nil
+	}
+
+	v2 := uint64(gd.Process.ReadUInt(uintptr(stateFlags)+8, Uint64))
+	if v2 == 0 {
+		return 0, nil
+	}
+
+	flag := stateFlag
+	v4 := uint64(0xC4CEB9FE1A85EC53) * ((uint64(0xFF51AFD7ED558CCD) * (flag ^ (flag >> 33))) ^ ((uint64(0xFF51AFD7ED558CCD) * (flag ^ (flag >> 33))) >> 33))
+	v5 := (uint64(gd.Process.ReadUInt(uintptr(stateFlags), Uint64)) - 1) & (v4 ^ (v4 >> 33))
+	v6 := uint64(gd.Process.ReadUInt(uintptr(v2)+uintptr(8*v5), Uint64))
+
+	i := uintptr(v2) + uintptr(8*v5)
+
+	for ; v6 != 0; v6 = uint64(gd.Process.ReadUInt(uintptr(v6), Uint64)) {
+		if flag == uint64(gd.Process.ReadUInt(uintptr(v6)+8, Uint64)) {
+			break
+		}
+		i = uintptr(v6)
+	}
+
+	ir := uint64(gd.Process.ReadUInt(i, Uint64))
+	if ir != 0 {
+		ptr1 := uint64(gd.Process.ReadUInt(uintptr(ir)+16, Uint64))
+		ptr2 := uint64(gd.Process.ReadUInt(uintptr(ptr1)+16, Uint64))
+		return int(gd.Process.ReadUInt(uintptr(ptr2), Uint8)), nil
+	}
+
+	return 0, nil
+}
+func (gd *GameReader) GetActiveWeaponSlot() int {
+	state, err := gd.GetWidgetState(WidgetStateFlags["WeaponSwap"])
+	if err != nil {
+		return 0 // Default to primary weapons on error
+	}
+	return state
 }
