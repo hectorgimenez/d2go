@@ -313,6 +313,7 @@ func (gd *GameReader) IsWidgetVisible(widgetName string) (bool, error) {
 	return widget["WidgetActive"].(bool) && widget["WidgetVisible"].(bool), nil
 }
 
+// GetWidgetState reference : https://github.com/ResurrectedTrader/ResurrectedTrade/blob/f121ec02dd3fbe1c574f713e5a0c2db92ccca821/ResurrectedTrade.AgentBase/Capture.cs#L618
 func (gd *GameReader) GetWidgetState(stateFlag uint64) (int, error) {
 	// Get widget states pointer
 	stateFlags := uint64(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+gd.offset.WidgetStatesOffset, Uint64))
