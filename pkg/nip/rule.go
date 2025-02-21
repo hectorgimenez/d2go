@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	fixedPropsRegexp = regexp.MustCompile(`(\[(type|quality|class|name|flag|color|prefix|suffix|levelreq)]\s*(<=|<|>|>=|!=|==)\s*([a-zA-Z0-9]+))`)
+	fixedPropsRegexp = regexp.MustCompile(`(\[(type|quality|class|name|flag|color|prefix|suffix)]\s*(<=|<|>|>=|!=|==)\s*([a-zA-Z0-9]+))`)
 	statsRegexp      = regexp.MustCompile(`\[(.*?)]`)
 	maxQtyRegexp     = regexp.MustCompile(`(\[maxquantity]\s*(<=|<|>|>=|!=|==)\s*([0-9]+))`)
 )
@@ -169,8 +169,6 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 					break
 				}
 			}
-		case "levelreq":
-			stage1Props["levelreq"] = it.LevelReq
 		case "color":
 			// TODO: Not supported yet
 		}
@@ -238,7 +236,7 @@ func replaceStringPropertiesInStage1(stage1 string) (string, error) {
 			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", item.GetIDByName(prop[4])))
 		case "flag":
 			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", 1))
-		case "prefix", "suffix", "levelreq":
+		case "prefix", "suffix":
 			// Handle prefix/suffix IDs and levelreq
 			replaceWith = strings.ReplaceAll(prop[0], prop[4], prop[4])
 		case "color":
