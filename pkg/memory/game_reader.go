@@ -373,7 +373,7 @@ func (gd *GameReader) GetNPCDialog() *data.NPCDialog {
 		Options: make([]string, 0),
 	}
 
-	scanSize := uintptr(0x200)
+	scanSize := uintptr(0x700) // minimum to get all options possible
 	scanStart := basePtr - (scanSize / 2)
 	memory := gd.Process.ReadBytesFromMemory(scanStart, uint(scanSize))
 
