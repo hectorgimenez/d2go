@@ -44,6 +44,7 @@ type Data struct {
 	HoverData               HoverData
 	TerrorZones             []area.ID
 	Quests                  quest.Quests
+	NPCDialog               *NPCDialog
 	KeyBindings             KeyBindings
 	LegacyGraphics          bool
 	IsOnline                bool
@@ -71,6 +72,10 @@ type OnlineGame struct {
 	LastGameName     string
 	LastGamePassword string
 	FPS              int
+}
+type NPCDialog struct {
+	Name    string
+	Options []string
 }
 
 func (r Room) GetCenter() Position {

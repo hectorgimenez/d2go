@@ -2,9 +2,11 @@ package memory
 
 import (
 	"math"
+	"strings"
 
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
+	"github.com/hectorgimenez/d2go/pkg/utils"
 )
 
 type GameReader struct {
@@ -42,6 +44,7 @@ func (gd *GameReader) GetData() data.Data {
 	gameQuestsBytes := gd.Process.ReadBytesFromMemory(gd.moduleBaseAddressPtr+0x22F1E79, 85)
 
 	// gameQuestsBytes = gameQuestsBytes[3:]
+	npcDialog := gd.GetNPCDialog()
 
 	corpseUnit := rawPlayerUnits.GetCorpse()
 	d := data.Data{
@@ -51,6 +54,7 @@ func (gd *GameReader) GetData() data.Data {
 			Position:  corpseUnit.Position,
 			States:    corpseUnit.States,
 		},
+
 		Game: data.OnlineGame{
 			LastGameName:     gd.LastGameName(),
 			LastGamePassword: gd.LastGamePass(),
@@ -68,6 +72,7 @@ func (gd *GameReader) GetData() data.Data {
 		HoverData:               hover,
 		TerrorZones:             gd.TerrorZones(),
 		Quests:                  gd.getQuests(gameQuestsBytes),
+		NPCDialog:               npcDialog,
 		KeyBindings:             gd.GetKeyBindings(),
 		LegacyGraphics:          gd.LegacyGraphics(),
 		IsOnline:                gd.IsOnline(),
@@ -78,7 +83,6 @@ func (gd *GameReader) GetData() data.Data {
 		HasMerc:                 gd.HasMerc(),
 		ActiveWeaponSlot:        gd.GetActiveWeaponSlot(),
 	}
-
 	return d
 }
 
@@ -351,10 +355,155 @@ func (gd *GameReader) GetWidgetState(stateFlag uint64) (int, error) {
 
 	return 0, nil
 }
+
 func (gd *GameReader) GetActiveWeaponSlot() int {
 	state, err := gd.GetWidgetState(WidgetStateFlags["WeaponSwap"])
 	if err != nil {
 		return 0 // Default to primary weapons on error
 	}
 	return state
+}
+
+func (gd *GameReader) GetNPCDialog() *data.NPCDialog {
+	basePtr := uintptr(gd.Process.ReadUInt(gd.Process.moduleBaseAddressPtr+gd.offset.TransactionDialog, Uint64))
+	if basePtr == 0 {
+		return nil
+	}
+	dialog := &data.NPCDialog{
+		Options: make([]string, 0),
+	}
+
+	scanSize := uintptr(0x700) // minimum to get all options possible
+	scanStart := basePtr - (scanSize / 2)
+	memory := gd.Process.ReadBytesFromMemory(scanStart, uint(scanSize))
+
+	type textSegment struct {
+		text   string
+		offset uintptr
+		raw    uint32
+	}
+	var segments []textSegment
+
+	for offset := uintptr(0); offset < scanSize-4; offset += 4 {
+		value := uint32(ReadUIntFromBuffer(memory, uint(offset), Uint32))
+		if text := utils.DecodeText(value); text != "" {
+			text = strings.TrimSpace(text)
+			if text != "" {
+				segments = append(segments, textSegment{
+					text:   text,
+					offset: offset,
+					raw:    value,
+				})
+			}
+		}
+	}
+
+	var nameParts []string
+	var foundMenuOption bool
+	var lastOffset uintptr
+	seenOptions := make(map[string]bool)
+
+	isValidName := func(text string) bool {
+		if len(text) == 0 {
+			return false
+		}
+
+		// Must contain at least one letter
+		hasLetter := false
+		for _, r := range text {
+			if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') {
+				hasLetter = true
+			}
+		}
+
+		return hasLetter
+	}
+
+	for i := 0; i < len(segments); i++ {
+		seg := segments[i]
+		text := seg.text
+		menuOption := ""
+		var hasRepair bool
+		for _, seg := range segments {
+			if strings.ToLower(seg.text) == "pair" {
+				hasRepair = true
+				break
+			}
+		}
+
+		switch strings.ToLower(text) {
+		case "talk":
+			menuOption = "talk"
+		case "pair":
+			menuOption = "trade/repair"
+		case "trad":
+			if !hasRepair {
+				menuOption = "trade"
+			}
+		case "iden":
+			menuOption = "identify items"
+		case "canc":
+			menuOption = "cancel"
+		case "hire":
+			menuOption = "hire"
+		case "gamb":
+			menuOption = "gamble"
+		case "trav":
+			menuOption = "travel to harrogath"
+		case "resu":
+			menuOption = "resurrect"
+		case "pers":
+			menuOption = "personalize"
+		case "add":
+			if i+1 < len(segments) && strings.Contains(strings.ToLower(segments[i+1].text), "sock") {
+				menuOption = "add sockets"
+				i++ // Skip next segment
+			}
+		case "sail":
+			if i+1 < len(segments) && strings.Contains(strings.ToLower(segments[i+1].text), "eas") {
+				menuOption = "sail east"
+				i++
+			}
+			if i+1 < len(segments) && strings.Contains(strings.ToLower(segments[i+1].text), "wes") {
+				menuOption = "sail west"
+				i++
+			}
+		case "go e":
+			menuOption = "go east"
+		case "go w":
+			menuOption = "go west"
+		case "imbu":
+			menuOption = "imbue"
+		case "rese":
+			menuOption = "reset stat/skill points"
+		}
+
+		if menuOption != "" && !seenOptions[menuOption] {
+			foundMenuOption = true
+			seenOptions[menuOption] = true
+			dialog.Options = append(dialog.Options, menuOption)
+			continue
+		}
+
+		if !foundMenuOption && isValidName(text) {
+			// Check for consecutive segments
+			if lastOffset == 0 || seg.offset == lastOffset+4 {
+				nameParts = append(nameParts, text)
+			} else {
+				// Non-consecutive segment, start new name part
+				nameParts = []string{text}
+			}
+			lastOffset = seg.offset
+		}
+	}
+
+	// Assemble name from parts
+	if len(nameParts) > 0 {
+		dialog.Name = strings.Join(nameParts, "")
+		// Clean up common name artifacts and null characters
+		dialog.Name = strings.TrimSpace(dialog.Name)
+		dialog.Name = strings.TrimRight(dialog.Name, "0123456789")
+		dialog.Name = strings.ReplaceAll(dialog.Name, "\u0000", "")
+	}
+	return dialog
 }
