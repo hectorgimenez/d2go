@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"fmt"
 	"math"
 	"strings"
 
@@ -394,6 +395,7 @@ func (gd *GameReader) GetNPCDialog() *data.NPCDialog {
 					offset: offset,
 					raw:    value,
 				})
+				fmt.Printf(text, offset, value)
 			}
 		}
 	}
@@ -449,7 +451,7 @@ func (gd *GameReader) GetNPCDialog() *data.NPCDialog {
 		case "gamb":
 			menuOption = "gamble"
 		case "trav":
-			menuOption = "travel"
+			menuOption = "travel to harrogath"
 		case "resu":
 			menuOption = "resurrect"
 		case "pers":
@@ -459,6 +461,19 @@ func (gd *GameReader) GetNPCDialog() *data.NPCDialog {
 				menuOption = "add sockets"
 				i++ // Skip next segment
 			}
+		case "sail":
+			if i+1 < len(segments) && strings.Contains(strings.ToLower(segments[i+1].text), "eas") {
+				menuOption = "sail east"
+				i++
+			}
+			if i+1 < len(segments) && strings.Contains(strings.ToLower(segments[i+1].text), "wes") {
+				menuOption = "sail west"
+				i++
+			}
+		case "go e":
+			menuOption = "go east"
+		case "go w":
+			menuOption = "go west"
 		case "imbu":
 			menuOption = "imbue"
 		case "rese":
