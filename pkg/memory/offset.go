@@ -13,6 +13,7 @@ type Offset struct {
 	RosterOffset                uintptr
 	PanelManagerContainerOffset uintptr
 	WidgetStatesOffset          uintptr
+	TransactionDialog           uintptr
 }
 
 func calculateOffsets(process Process) Offset {
@@ -59,6 +60,12 @@ func calculateOffsets(process Process) Offset {
 	WidgetStatesPtr := process.ReadUInt(pattern+3, Uint32)
 	WidgetStatesOffset := pattern - process.moduleBaseAddressPtr + 7 + uintptr(WidgetStatesPtr)
 
+	// TransactionDialog
+	pattern = process.FindPattern(memory, "\x48\x83\x3D\x00\x00\x00\x00\x00\x0F\x85\x28\x02\x00\x00", "xxx?????xxxxxx")
+
+	offsetPtr = uintptr(process.ReadUInt(pattern+3, Uint32))
+	transactionDialogOffset := pattern - process.moduleBaseAddressPtr + 8 + offsetPtr
+
 	return Offset{
 		GameData:                    gameDataOffset,
 		UnitTable:                   unitTableOffset,
@@ -68,5 +75,6 @@ func calculateOffsets(process Process) Offset {
 		RosterOffset:                rosterOffset,
 		PanelManagerContainerOffset: panelManagerContainerOffset,
 		WidgetStatesOffset:          WidgetStatesOffset,
+		TransactionDialog:           transactionDialogOffset,
 	}
 }
