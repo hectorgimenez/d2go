@@ -1,7 +1,6 @@
 package memory
 
 import (
-	"fmt"
 	"math"
 	"strings"
 
@@ -395,7 +394,6 @@ func (gd *GameReader) GetNPCDialog() *data.NPCDialog {
 					offset: offset,
 					raw:    value,
 				})
-				fmt.Printf(text, offset, value)
 			}
 		}
 	}
