@@ -14,6 +14,7 @@ type Offset struct {
 	PanelManagerContainerOffset uintptr
 	WidgetStatesOffset          uintptr
 	WaypointsOffset             uintptr
+	FPS                         uintptr
 }
 
 func calculateOffsets(process Process) Offset {
@@ -65,6 +66,12 @@ func calculateOffsets(process Process) Offset {
 	offsetBuffer := process.ReadUInt(pattern+3, Uint32)
 	WaypointsOffset := pattern - process.moduleBaseAddressPtr + 23 + uintptr(offsetBuffer)
 
+	// FPS
+	pattern = process.FindPattern(memory, "\x8B\x1D\x00\x00\x00\x00\x48\x8D\x05\x00\x00\x00\x00\x48\x8D\x4C\x24\x40", "xx????xxx????xxxxx")
+	fpsOffsetPtr := uintptr(process.ReadUInt(pattern+2, Uint32))
+	fpsOffset := pattern - process.moduleBaseAddressPtr + 6 + fpsOffsetPtr
+
+
 	return Offset{
 		GameData:                    gameDataOffset,
 		UnitTable:                   unitTableOffset,
@@ -75,5 +82,6 @@ func calculateOffsets(process Process) Offset {
 		PanelManagerContainerOffset: panelManagerContainerOffset,
 		WidgetStatesOffset:          WidgetStatesOffset,
 		WaypointsOffset:             WaypointsOffset,
+		FPS:                         fpsOffset,
 	}
 }
