@@ -270,7 +270,7 @@ func (gd *GameReader) LastGamePass() string {
 }
 
 func (gd *GameReader) FPS() int {
-	return int(gd.ReadUInt(gd.moduleBaseAddressPtr+0x2140DF4, 4))
+	return int(gd.ReadUInt(gd.moduleBaseAddressPtr+gd.offset.FPS, Uint32))
 }
 
 func (gd *GameReader) HasMerc() bool {
