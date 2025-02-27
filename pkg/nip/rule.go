@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	fixedPropsRegexp = regexp.MustCompile(`(\[(type|quality|class|name|flag|color|prefix|suffix|levelreq)]\s*(<=|<|>|>=|!=|==)\s*([a-zA-Z0-9]+))`)
+	fixedPropsRegexp = regexp.MustCompile(`(\[(type|quality|class|name|flag|color|prefix|suffix)]\s*(<=|<|>|>=|!=|==)\s*([a-zA-Z0-9]+))`)
 	statsRegexp      = regexp.MustCompile(`\[(.*?)]`)
 	maxQtyRegexp     = regexp.MustCompile(`(\[maxquantity]\s*(<=|<|>|>=|!=|==)\s*([0-9]+))`)
 )
@@ -136,6 +136,7 @@ func NewRule(rawRule string, filename string, lineNumber int) (Rule, error) {
 }
 
 func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
+	// Stage 1: Basic properties evaluation
 	stage1Props := make(map[string]int)
 	for prop := range fixedPropsList {
 		switch prop {
@@ -169,8 +170,6 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 					break
 				}
 			}
-		case "levelreq":
-			stage1Props["levelreq"] = it.LevelReq
 		case "color":
 			// TODO: Not supported yet
 		}
@@ -187,39 +186,74 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 		return RuleResultNoMatch, nil
 	}
 
-	stage2Result := true
-	if r.stage2 != nil {
-		stage2Props := make(map[string]int)
+	// If we have no stage2 (no stat requirements), allow full match even for unidentified items
+	if r.stage2 == nil {
+		return RuleResultFullMatch, nil
+	}
+
+	// From here on we have stat requirements - return partial match for unidentified items
+	if !it.Identified {
+		return RuleResultPartial, nil
+	}
+
+	stage2Props := make(map[string]int)
+
+	// We only want to default to 0 if we find at least one of the required resists
+	hasAnyResist := false
+	stage2 := strings.ToLower(strings.Split(r.RawLine, "#")[1])
+	isResistSum := strings.Contains(stage2, "resist") && (strings.Contains(stage2, "+") || strings.Contains(stage2, "-"))
+
+	// First pass - check if we have any of the required resists
+	if isResistSum {
 		for _, statName := range r.requiredStats {
 			statData, found := statAliases[statName]
 			if !found {
-				return RuleResultNoMatch, fmt.Errorf("property %s is not valid or not supported", statName)
+				continue
 			}
-
 			layer := 0
 			if len(statData) > 1 {
 				layer = statData[1]
 			}
-			itemStat, _ := it.FindStat(stat.ID(statData[0]), layer)
-			stage2Props[statName] = itemStat.Value
+			if _, found := it.FindStat(stat.ID(statData[0]), layer); found {
+				hasAnyResist = true
+				break
+			}
+		}
+	}
+
+	// Second pass - evaluate stats
+	for _, statName := range r.requiredStats {
+		statData, found := statAliases[statName]
+		if !found {
+			return RuleResultNoMatch, fmt.Errorf("property %s is not valid or not supported", statName)
 		}
 
-		res, err := expr.Run(r.stage2, stage2Props)
-		if err != nil {
-			return RuleResultNoMatch, fmt.Errorf("error evaluating rule: %w", err)
+		layer := 0
+		if len(statData) > 1 {
+			layer = statData[1]
 		}
-		stage2Result = res.(bool)
+
+		itemStat, found := it.FindStat(stat.ID(statData[0]), layer)
+		if found {
+			stage2Props[statName] = itemStat.Value
+		} else if isResistSum && hasAnyResist {
+			// Only default to 0 for resist sums if we found at least one resist
+			stage2Props[statName] = 0
+		} else {
+			return RuleResultNoMatch, nil
+		}
+	}
+
+	res, err := expr.Run(r.stage2, stage2Props)
+	if err != nil {
+		return RuleResultNoMatch, fmt.Errorf("error evaluating rule: %w", err)
 	}
 
 	// 100% rule match, we can return here
-	if stage1Result.(bool) && stage2Result {
+	if res.(bool) {
 		return RuleResultFullMatch, nil
 	}
 
-	// If Stage 1 matches and the item is NOT identified, let's return a partial match, we can not be 100% sure if all the stats are matching
-	if stage1Result.(bool) && !it.Identified {
-		return RuleResultPartial, nil
-	}
 	return RuleResultNoMatch, nil
 }
 
@@ -238,7 +272,7 @@ func replaceStringPropertiesInStage1(stage1 string) (string, error) {
 			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", item.GetIDByName(prop[4])))
 		case "flag":
 			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", 1))
-		case "prefix", "suffix", "levelreq":
+		case "prefix", "suffix":
 			// Handle prefix/suffix IDs and levelreq
 			replaceWith = strings.ReplaceAll(prop[0], prop[4], prop[4])
 		case "color":

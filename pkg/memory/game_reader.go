@@ -2,6 +2,7 @@ package memory
 
 import (
 	"math"
+	"time"
 
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
@@ -10,12 +11,27 @@ import (
 type GameReader struct {
 	offset Offset
 	Process
+
+	monstersLastUpdate  time.Time
+	inventoryLastUpdate time.Time
+	objectsLastUpdate   time.Time
+
+	cachedMonsters  data.Monsters
+	cachedInventory data.Inventory
+	cachedObjects   []data.Object
+}
+
+var WidgetStateFlags = map[string]uint64{
+	"WeaponSwap": 0xF2D7CF8E9CC08212,
 }
 
 func NewGameReader(process Process) *GameReader {
 	return &GameReader{
-		offset:  calculateOffsets(process),
-		Process: process,
+		offset:              calculateOffsets(process),
+		Process:             process,
+		monstersLastUpdate:  time.Time{},
+		inventoryLastUpdate: time.Time{},
+		objectsLastUpdate:   time.Time{},
 	}
 }
 
@@ -24,22 +40,52 @@ func (gd *GameReader) GetData() data.Data {
 		gd.offset = calculateOffsets(gd.Process)
 	}
 
+	// Always refresh core player data
 	rawPlayerUnits := gd.GetRawPlayerUnits()
-	roster := gd.getRoster(rawPlayerUnits)
 	mainPlayerUnit := rawPlayerUnits.GetMainPlayer()
-
 	pu := gd.GetPlayerUnit(mainPlayerUnit)
 	hover := gd.hoveredData()
+
+	now := time.Now()
+
+	// Conditionally update monsters
+	monsters := gd.cachedMonsters
+	if now.Sub(gd.monstersLastUpdate) > 200*time.Millisecond {
+		monsters = gd.Monsters(pu.Position, hover)
+		gd.cachedMonsters = monsters
+		gd.monstersLastUpdate = now
+	}
+
+	// Conditionally update inventory 500ms
+	// Except when hovering over an item
+	inventory := gd.cachedInventory
+	if now.Sub(gd.inventoryLastUpdate) > 500*time.Millisecond ||
+		(hover.IsHovered && hover.UnitType == 4) { // 4 = Item type
+		inventory = gd.Inventory(rawPlayerUnits, hover)
+		gd.cachedInventory = inventory
+		gd.inventoryLastUpdate = now
+	}
+
+	// Conditionally update objects
+	objects := gd.cachedObjects
+	if now.Sub(gd.objectsLastUpdate) > 200*time.Millisecond {
+		objects = gd.Objects(pu.Position, hover)
+		gd.cachedObjects = objects
+		gd.objectsLastUpdate = now
+	}
+
+	// Always update other critical data
+	corpseUnit := rawPlayerUnits.GetCorpse()
+	roster := gd.getRoster(rawPlayerUnits)
+	openMenus := gd.openMenus()
 
 	// Quests
 	// q1 := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x22E2978, Uint64))
 	// q2 := uintptr(gd.Process.ReadUInt(q1, Uint64))
 	// q2 := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x22F1E79, Uint64))
 	gameQuestsBytes := gd.Process.ReadBytesFromMemory(gd.moduleBaseAddressPtr+0x22F1E79, 85)
-
 	// gameQuestsBytes = gameQuestsBytes[3:]
 
-	corpseUnit := rawPlayerUnits.GetCorpse()
 	d := data.Data{
 		Corpse: data.Corpse{
 			Found:     corpseUnit.Address != 0,
@@ -52,13 +98,13 @@ func (gd *GameReader) GetData() data.Data {
 			LastGamePassword: gd.LastGamePass(),
 			FPS:              gd.FPS(),
 		},
-		Monsters:                gd.Monsters(pu.Position, hover),
+		Monsters:                monsters,
 		Corpses:                 gd.Corpses(pu.Position, hover),
 		PlayerUnit:              pu,
-		Inventory:               gd.Inventory(rawPlayerUnits, hover),
-		Objects:                 gd.Objects(pu.Position, hover),
+		Inventory:               inventory,
+		Objects:                 objects,
 		Entrances:               gd.Entrances(pu.Position, hover),
-		OpenMenus:               gd.openMenus(),
+		OpenMenus:               openMenus,
 		Widgets:                 gd.UpdateWidgets(),
 		Roster:                  roster,
 		HoverData:               hover,
@@ -72,6 +118,7 @@ func (gd *GameReader) GetData() data.Data {
 		IsInLobby:               gd.IsInLobby(),
 		IsInCharSelectionScreen: gd.IsInCharacterSelectionScreen(),
 		HasMerc:                 gd.HasMerc(),
+		ActiveWeaponSlot:        gd.GetActiveWeaponSlot(),
 	}
 
 	return d
@@ -141,14 +188,16 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 	}
 
 	var stats = make([]stat.Data, 0)
+
 	statBuffer := gd.Process.ReadBytesFromMemory(uintptr(statList), statCount*10)
 	for i := 0; i < int(statCount); i++ {
 		offset := uint(i * 8)
+
 		statLayer := ReadUIntFromBuffer(statBuffer, offset, Uint16)
 		statEnum := ReadUIntFromBuffer(statBuffer, offset+0x2, Uint16)
-		statValue := ReadUIntFromBuffer(statBuffer, offset+0x4, Uint32)
+		statValue := ReadIntFromBuffer(statBuffer, offset+0x4, Uint32)
 
-		value := int(statValue)
+		value := statValue
 		switch stat.ID(statEnum) {
 		case stat.Life,
 			stat.MaxLife,
@@ -156,16 +205,16 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 			stat.MaxMana,
 			stat.Stamina,
 			stat.MaxStamina:
-			value = int(statValue >> 8)
+			value = statValue >> 8
 		case stat.ColdLength,
 			stat.PoisonLength:
-			value = int(statValue / 25)
+			value = statValue / 25
 		case stat.DeadlyStrikePerLevel:
 			value = int(float64(statValue) / .8)
 		case stat.HitCausesMonsterToFlee:
 			value = int(float64(statValue) / 1.28)
 		case stat.AttackRatingUndeadPerLevel:
-			value = int(statValue / 2)
+			value = statValue / 2
 		case stat.MagicFindPerLevel,
 			stat.ExtraGoldPerLevel,
 			stat.DamageDemonPerLevel,
@@ -263,7 +312,7 @@ func (gd *GameReader) LastGamePass() string {
 }
 
 func (gd *GameReader) FPS() int {
-	return int(gd.ReadUInt(gd.moduleBaseAddressPtr+0x2140DF4, 4))
+	return int(gd.ReadUInt(gd.moduleBaseAddressPtr+gd.offset.FPS, Uint32))
 }
 
 func (gd *GameReader) HasMerc() bool {
@@ -306,4 +355,48 @@ func (gd *GameReader) IsWidgetVisible(widgetName string) (bool, error) {
 	}
 
 	return widget["WidgetActive"].(bool) && widget["WidgetVisible"].(bool), nil
+}
+
+// GetWidgetState reference : https://github.com/ResurrectedTrader/ResurrectedTrade/blob/f121ec02dd3fbe1c574f713e5a0c2db92ccca821/ResurrectedTrade.AgentBase/Capture.cs#L618
+func (gd *GameReader) GetWidgetState(stateFlag uint64) (int, error) {
+	// Get widget states pointer
+	stateFlags := uint64(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+gd.offset.WidgetStatesOffset, Uint64))
+	if stateFlags == 0 {
+		return 0, nil
+	}
+
+	v2 := uint64(gd.Process.ReadUInt(uintptr(stateFlags)+8, Uint64))
+	if v2 == 0 {
+		return 0, nil
+	}
+
+	flag := stateFlag
+	v4 := uint64(0xC4CEB9FE1A85EC53) * ((uint64(0xFF51AFD7ED558CCD) * (flag ^ (flag >> 33))) ^ ((uint64(0xFF51AFD7ED558CCD) * (flag ^ (flag >> 33))) >> 33))
+	v5 := (uint64(gd.Process.ReadUInt(uintptr(stateFlags), Uint64)) - 1) & (v4 ^ (v4 >> 33))
+	v6 := uint64(gd.Process.ReadUInt(uintptr(v2)+uintptr(8*v5), Uint64))
+
+	i := uintptr(v2) + uintptr(8*v5)
+
+	for ; v6 != 0; v6 = uint64(gd.Process.ReadUInt(uintptr(v6), Uint64)) {
+		if flag == uint64(gd.Process.ReadUInt(uintptr(v6)+8, Uint64)) {
+			break
+		}
+		i = uintptr(v6)
+	}
+
+	ir := uint64(gd.Process.ReadUInt(i, Uint64))
+	if ir != 0 {
+		ptr1 := uint64(gd.Process.ReadUInt(uintptr(ir)+16, Uint64))
+		ptr2 := uint64(gd.Process.ReadUInt(uintptr(ptr1)+16, Uint64))
+		return int(gd.Process.ReadUInt(uintptr(ptr2), Uint8)), nil
+	}
+
+	return 0, nil
+}
+func (gd *GameReader) GetActiveWeaponSlot() int {
+	state, err := gd.GetWidgetState(WidgetStateFlags["WeaponSwap"])
+	if err != nil {
+		return 0 // Default to primary weapons on error
+	}
+	return state
 }

@@ -12,6 +12,9 @@ type Offset struct {
 	Expansion                   uintptr
 	RosterOffset                uintptr
 	PanelManagerContainerOffset uintptr
+	WidgetStatesOffset          uintptr
+	WaypointsOffset             uintptr
+	FPS                         uintptr
 }
 
 func calculateOffsets(process Process) Offset {
@@ -53,6 +56,22 @@ func calculateOffsets(process Process) Offset {
 	bytes = process.ReadBytesFromMemory(pattern, 8)
 	panelManagerContainerOffset := (pattern - process.moduleBaseAddressPtr) // uintptr(binary.LittleEndian.Uint64(bytes))
 
+	// WidgetStates
+	pattern = process.FindPattern(memory, "\x48\x8B\x0D\x00\x00\x00\x00\x4C\x8D\x44\x24\x00\x48\x03\xC2", "xxx????xxxx?xxx")
+	WidgetStatesPtr := process.ReadUInt(pattern+3, Uint32)
+	WidgetStatesOffset := pattern - process.moduleBaseAddressPtr + 7 + uintptr(WidgetStatesPtr)
+
+	// Waypoints
+	pattern = process.FindPattern(memory, "\x48\x89\x05\x00\x00\x00\x00\x0F\x11\x00", "xxx????xxx")
+	offsetBuffer := process.ReadUInt(pattern+3, Uint32)
+	WaypointsOffset := pattern - process.moduleBaseAddressPtr + 23 + uintptr(offsetBuffer)
+
+	// FPS
+	pattern = process.FindPattern(memory, "\x8B\x1D\x00\x00\x00\x00\x48\x8D\x05\x00\x00\x00\x00\x48\x8D\x4C\x24\x40", "xx????xxx????xxxxx")
+	fpsOffsetPtr := uintptr(process.ReadUInt(pattern+2, Uint32))
+	fpsOffset := pattern - process.moduleBaseAddressPtr + 6 + fpsOffsetPtr
+
+
 	return Offset{
 		GameData:                    gameDataOffset,
 		UnitTable:                   unitTableOffset,
@@ -61,5 +80,8 @@ func calculateOffsets(process Process) Offset {
 		Expansion:                   expOffset,
 		RosterOffset:                rosterOffset,
 		PanelManagerContainerOffset: panelManagerContainerOffset,
+		WidgetStatesOffset:          WidgetStatesOffset,
+		WaypointsOffset:             WaypointsOffset,
+		FPS:                         fpsOffset,
 	}
 }
