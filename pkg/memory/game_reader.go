@@ -50,7 +50,7 @@ func (gd *GameReader) GetData() data.Data {
 
 	// Conditionally update monsters
 	monsters := gd.cachedMonsters
-	if now.Sub(gd.monstersLastUpdate) > 250*time.Millisecond {
+	if now.Sub(gd.monstersLastUpdate) > 200*time.Millisecond {
 		monsters = gd.Monsters(pu.Position, hover)
 		gd.cachedMonsters = monsters
 		gd.monstersLastUpdate = now
