@@ -2,6 +2,7 @@ package memory
 
 import (
 	"math"
+	"time"
 
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
@@ -10,6 +11,14 @@ import (
 type GameReader struct {
 	offset Offset
 	Process
+
+	monstersLastUpdate  time.Time
+	inventoryLastUpdate time.Time
+	objectsLastUpdate   time.Time
+
+	cachedMonsters  data.Monsters
+	cachedInventory data.Inventory
+	cachedObjects   []data.Object
 }
 
 var WidgetStateFlags = map[string]uint64{
@@ -18,8 +27,11 @@ var WidgetStateFlags = map[string]uint64{
 
 func NewGameReader(process Process) *GameReader {
 	return &GameReader{
-		offset:  calculateOffsets(process),
-		Process: process,
+		offset:              calculateOffsets(process),
+		Process:             process,
+		monstersLastUpdate:  time.Time{},
+		inventoryLastUpdate: time.Time{},
+		objectsLastUpdate:   time.Time{},
 	}
 }
 
@@ -28,22 +40,52 @@ func (gd *GameReader) GetData() data.Data {
 		gd.offset = calculateOffsets(gd.Process)
 	}
 
+	// Always refresh core player data
 	rawPlayerUnits := gd.GetRawPlayerUnits()
-	roster := gd.getRoster(rawPlayerUnits)
 	mainPlayerUnit := rawPlayerUnits.GetMainPlayer()
-
 	pu := gd.GetPlayerUnit(mainPlayerUnit)
 	hover := gd.hoveredData()
+
+	now := time.Now()
+
+	// Conditionally update monsters
+	monsters := gd.cachedMonsters
+	if now.Sub(gd.monstersLastUpdate) > 200*time.Millisecond {
+		monsters = gd.Monsters(pu.Position, hover)
+		gd.cachedMonsters = monsters
+		gd.monstersLastUpdate = now
+	}
+
+	// Conditionally update inventory 500ms
+	// Except when hovering over an item
+	inventory := gd.cachedInventory
+	if now.Sub(gd.inventoryLastUpdate) > 500*time.Millisecond ||
+		(hover.IsHovered && hover.UnitType == 4) { // 4 = Item type
+		inventory = gd.Inventory(rawPlayerUnits, hover)
+		gd.cachedInventory = inventory
+		gd.inventoryLastUpdate = now
+	}
+
+	// Conditionally update objects
+	objects := gd.cachedObjects
+	if now.Sub(gd.objectsLastUpdate) > 200*time.Millisecond {
+		objects = gd.Objects(pu.Position, hover)
+		gd.cachedObjects = objects
+		gd.objectsLastUpdate = now
+	}
+
+	// Always update other critical data
+	corpseUnit := rawPlayerUnits.GetCorpse()
+	roster := gd.getRoster(rawPlayerUnits)
+	openMenus := gd.openMenus()
 
 	// Quests
 	// q1 := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x22E2978, Uint64))
 	// q2 := uintptr(gd.Process.ReadUInt(q1, Uint64))
 	// q2 := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x22F1E79, Uint64))
 	gameQuestsBytes := gd.Process.ReadBytesFromMemory(gd.moduleBaseAddressPtr+0x22F1E79, 85)
-
 	// gameQuestsBytes = gameQuestsBytes[3:]
 
-	corpseUnit := rawPlayerUnits.GetCorpse()
 	d := data.Data{
 		Corpse: data.Corpse{
 			Found:     corpseUnit.Address != 0,
@@ -56,13 +98,13 @@ func (gd *GameReader) GetData() data.Data {
 			LastGamePassword: gd.LastGamePass(),
 			FPS:              gd.FPS(),
 		},
-		Monsters:                gd.Monsters(pu.Position, hover),
+		Monsters:                monsters,
 		Corpses:                 gd.Corpses(pu.Position, hover),
 		PlayerUnit:              pu,
-		Inventory:               gd.Inventory(rawPlayerUnits, hover),
-		Objects:                 gd.Objects(pu.Position, hover),
+		Inventory:               inventory,
+		Objects:                 objects,
 		Entrances:               gd.Entrances(pu.Position, hover),
-		OpenMenus:               gd.openMenus(),
+		OpenMenus:               openMenus,
 		Widgets:                 gd.UpdateWidgets(),
 		Roster:                  roster,
 		HoverData:               hover,
