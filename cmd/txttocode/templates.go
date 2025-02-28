@@ -6,13 +6,13 @@ package item
 
 const (
 {{- range $key, $value := . }}
-	Type{{ replace $value.ItemType " " "" }} = "{{ $value.Code }}"
+    Type{{ replace $value.ItemType " " "" }} = "{{ $value.Code }}"
 {{- end }}
 )
 
 var ItemTypes = map[string]Type{
 {{- range $key, $value := . }}
-    Type{{ replace $value.ItemType " " "" }}: {ID: {{ $key }}, Name: "{{ $value.ItemType }}", Code: "{{ $value.Code }}", Throwable: {{ if eq $value.Throwable "1" }}true{{ else }}false{{ end }}, Beltable: {{ if eq $value.Beltable "1" }}true{{ else }}false{{ end }}},
+    Type{{ replace $value.ItemType " " "" }}: {ID: {{ $key }}, Name: "{{ $value.ItemType }}", Code: "{{ $value.Code }}", Throwable: {{ if eq $value.Throwable "1" }}true{{ else }}false{{ end }}, Beltable: {{ if eq $value.Beltable "1" }}true{{ else }}false{{ end }}, BodyLocs: []LocationType{{ if $value.BodyLoc1 }}{ {{- $loc1 := $value.BodyLoc1 }}{{- $loc1 = replace $loc1 "tors" "Torso" }}{{- $loc1 = replace $loc1 "larm" "LeftArm" }}{{- $loc1 = replace $loc1 "rarm" "RightArm" }}{{- $loc1 = replace $loc1 "lrin" "LeftRing" }}{{- $loc1 = replace $loc1 "rrin" "RightRing" }}{{- $loc1 = replace $loc1 "glov" "Gloves" }}{{- $loc1 = replace $loc1 "feet" "Feet" }}{{- $loc1 = replace $loc1 "neck" "Neck" }}{{- $loc1 = replace $loc1 "head" "Head" }}{{- $loc1 = replace $loc1 "belt" "Belt" }}Loc{{ $loc1 }}{{ if and $value.BodyLoc2 (ne $value.BodyLoc2 $value.BodyLoc1) }}{{- $loc2 := $value.BodyLoc2 }}{{- $loc2 = replace $loc2 "tors" "Torso" }}{{- $loc2 = replace $loc2 "larm" "LeftArm" }}{{- $loc2 = replace $loc2 "rarm" "RightArm" }}{{- $loc2 = replace $loc2 "lrin" "LeftRing" }}{{- $loc2 = replace $loc2 "rrin" "RightRing" }}{{- $loc2 = replace $loc2 "glov" "Gloves" }}{{- $loc2 = replace $loc2 "feet" "Feet" }}{{- $loc2 = replace $loc2 "neck" "Neck" }}{{- $loc2 = replace $loc2 "head" "Head" }}{{- $loc2 = replace $loc2 "belt" "Belt" }}, Loc{{ $loc2 }}{{ end }}}{{ else }}{}{{ end }}},
 {{- end }}
 }`
 
