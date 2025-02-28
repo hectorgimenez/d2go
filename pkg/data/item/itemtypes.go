@@ -106,6 +106,7 @@ package item
 		TypeSpearsandPolearms = "sppl"
 	)
 
+var ItemTypes = map[string]Type{
 	TypeNone:              {ID: 0, Name: "None", Code: "none", Throwable: false, Beltable: false, BodyLocs: []LocationType{}},
 	TypeShield:            {ID: 1, Name: "Shield", Code: "shie", Throwable: false, Beltable: false, BodyLocs: []LocationType{LocRightArm, LocLeftArm}},
 	TypeArmor:             {ID: 2, Name: "Armor", Code: "tors", Throwable: false, Beltable: false, BodyLocs: []LocationType{LocTorso}},
