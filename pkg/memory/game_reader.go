@@ -106,6 +106,7 @@ func (gd *GameReader) GetData() data.Data {
 		Entrances:               gd.Entrances(pu.Position, hover),
 		OpenMenus:               openMenus,
 		Widgets:                 gd.UpdateWidgets(),
+		Panels:                  gd.ReadAllPanels(),
 		Roster:                  roster,
 		HoverData:               hover,
 		TerrorZones:             gd.TerrorZones(),
