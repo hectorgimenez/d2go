@@ -40,6 +40,7 @@ type Data struct {
 	Rooms                   []Room
 	OpenMenus               OpenMenus
 	Widgets                 map[string]map[string]interface{}
+	Panels                  []Panel
 	Roster                  Roster
 	HoverData               HoverData
 	TerrorZones             []area.ID
@@ -71,6 +72,21 @@ type OnlineGame struct {
 	LastGameName     string
 	LastGamePassword string
 	FPS              int
+}
+
+type Panel struct {
+	PanelPtr      uintptr
+	PanelName     string
+	PanelEnabled  bool
+	PanelVisible  bool
+	PtrChild      uintptr
+	NumChildren   int
+	ExtraText     string
+	ExtraText2    string
+	ExtraText3    string
+	PanelParent   string
+	PanelChildren []Panel
+	Depth         int
 }
 
 func (r Room) GetCenter() Position {
