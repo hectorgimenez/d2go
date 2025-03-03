@@ -338,6 +338,11 @@ func (gd *GameReader) GetCharacterList() []string {
 // IsDismissableModalPresent checks if there's a error popup present
 func (gd *GameReader) IsDismissableModalPresent() (bool, string) {
 	panel := gd.GetPanel("DismissableModal")
+
+	if panel.PanelName == "" {
+		return false, ""
+	}
+
 	modalText := panel.PanelChildren["Frame"].PanelChildren["Prompt"].ExtraText3
 	return (panel.PanelName != "" && panel.PanelEnabled && panel.PanelVisible), modalText
 }
