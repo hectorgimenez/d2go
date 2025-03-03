@@ -310,10 +310,9 @@ func (gd *GameReader) IsInLobby() bool {
 	return panel.PanelName != "" && panel.PanelEnabled && panel.PanelVisible
 }
 
-func (gd *GameReader) IsInCharacterSelectionScreen() (bool, string) {
+func (gd *GameReader) IsInCharacterSelectionScreen() bool {
 	panel := gd.GetPanel("CharacterSelectPanel")
-	modalText := panel.PanelChildren["Frame"].PanelChildren["Prompt"].ExtraText3
-	return (panel.PanelName != "" && panel.PanelEnabled && panel.PanelVisible), modalText
+	return panel.PanelName != "" && panel.PanelEnabled && panel.PanelVisible
 }
 
 func (gd *GameReader) IsInCharacterCreationScreen() bool {
@@ -337,9 +336,10 @@ func (gd *GameReader) GetCharacterList() []string {
 }
 
 // IsDismissableModalPresent checks if there's a error popup present
-func (gd *GameReader) IsDismissableModalPresent() bool {
+func (gd *GameReader) IsDismissableModalPresent() (bool, string) {
 	panel := gd.GetPanel("DismissableModal")
-	return panel.PanelName != "" && panel.PanelEnabled && panel.PanelVisible
+	modalText := panel.PanelChildren["Frame"].PanelChildren["Prompt"].ExtraText3
+	return (panel.PanelName != "" && panel.PanelEnabled && panel.PanelVisible), modalText
 }
 
 func (gd *GameReader) LastGameName() string {
