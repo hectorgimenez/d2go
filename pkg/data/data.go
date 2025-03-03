@@ -39,8 +39,6 @@ type Data struct {
 	AdjacentLevels          []Level
 	Rooms                   []Room
 	OpenMenus               OpenMenus
-	Widgets                 map[string]map[string]interface{}
-	Panels                  []Panel
 	Roster                  Roster
 	HoverData               HoverData
 	TerrorZones             []area.ID
@@ -85,7 +83,7 @@ type Panel struct {
 	ExtraText2    string
 	ExtraText3    string
 	PanelParent   string
-	PanelChildren []Panel
+	PanelChildren map[string]Panel
 	Depth         int
 }
 
