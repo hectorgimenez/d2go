@@ -26,32 +26,28 @@ const (
 )
 
 type Data struct {
-	AreaOrigin              Position
-	Corpse                  Corpse
-	Monsters                Monsters
-	Corpses                 Monsters
-	Game                    OnlineGame
-	PlayerUnit              PlayerUnit
-	NPCs                    NPCs
-	Inventory               Inventory
-	Objects                 Objects
-	Entrances               Entrances
-	AdjacentLevels          []Level
-	Rooms                   []Room
-	OpenMenus               OpenMenus
-	Roster                  Roster
-	HoverData               HoverData
-	TerrorZones             []area.ID
-	Quests                  quest.Quests
-	KeyBindings             KeyBindings
-	LegacyGraphics          bool
-	IsOnline                bool
-	IsIngame                bool
-	IsInCharCreationScreen  bool
-	IsInCharSelectionScreen bool
-	IsInLobby               bool
-	HasMerc                 bool
-	ActiveWeaponSlot        int
+	AreaOrigin       Position
+	Corpse           Corpse
+	Monsters         Monsters
+	Corpses          Monsters
+	Game             OnlineGame
+	PlayerUnit       PlayerUnit
+	NPCs             NPCs
+	Inventory        Inventory
+	Objects          Objects
+	Entrances        Entrances
+	AdjacentLevels   []Level
+	Rooms            []Room
+	OpenMenus        OpenMenus
+	Roster           Roster
+	HoverData        HoverData
+	TerrorZones      []area.ID
+	Quests           quest.Quests
+	KeyBindings      KeyBindings
+	LegacyGraphics   bool
+	IsIngame         bool
+	HasMerc          bool
+	ActiveWeaponSlot int
 }
 
 type Room struct {
