@@ -16,7 +16,7 @@ func NewPanel(panelPtr uintptr, panelParent string, depth int, gd *GameReader) *
 		ExtraText2:    gd.Process.ReadStringFromMemory(uintptr(gd.Process.ReadUInt(panelPtr+0x290, Uint64)), 0),
 		ExtraText3:    gd.Process.ReadStringFromMemory(uintptr(gd.Process.ReadUInt(panelPtr+0x88, Uint64)), 0),
 		PanelParent:   panelParent,
-		PanelChildren: make([]data.Panel, 0),
+		PanelChildren: make(map[string]data.Panel),
 		Depth:         depth,
 	}
 	if panel.NumChildren > 0 && panel.NumChildren < 50 {
@@ -55,23 +55,24 @@ func isASCII(s string) bool {
 	return true
 }
 
-func (gd *GameReader) ReadAllPanels() []data.Panel {
+// ReadAllPanels reads all panels from the game memory
+func (gd *GameReader) ReadAllPanels() map[string]data.Panel {
 	base := gd.Process.moduleBaseAddressPtr + gd.offset.PanelManagerContainerOffset
 	panelStructPtr := uintptr(gd.Process.ReadUInt(base, Uint64))
 	panelPtr := uintptr(gd.Process.ReadUInt(panelStructPtr+0x58, Uint64))
 	numChildren := int(gd.Process.ReadUInt(panelStructPtr+0x60, Uint8))
 
-	panels := make([]data.Panel, 0)
+	panels := make(map[string]data.Panel)
 	depth := 0
 	// recursively read all panels, starting with the Root panel
 	readPanel(panelPtr, numChildren, &panels, "Root", depth, gd)
 	return panels
 }
 
-func readPanel(panelPtr uintptr, numChildren int, panels *[]data.Panel, panelParent string, depth int, gd *GameReader) {
+func readPanel(panelPtr uintptr, numChildren int, panels *map[string]data.Panel, panelParent string, depth int, gd *GameReader) {
 	for i := 0; i < numChildren; i++ {
 		panelStructPtr := uintptr(gd.Process.ReadUInt(uintptr(uint64(panelPtr)+uint64(i*8)), Uint64))
 		thisPanel := NewPanel(panelStructPtr, panelParent, depth, gd)
-		*panels = append(*panels, *thisPanel)
+		(*panels)[thisPanel.PanelName] = *thisPanel
 	}
 }

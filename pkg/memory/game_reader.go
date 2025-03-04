@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"fmt"
 	"math"
 	"time"
 
@@ -98,28 +99,28 @@ func (gd *GameReader) GetData() data.Data {
 			LastGamePassword: gd.LastGamePass(),
 			FPS:              gd.FPS(),
 		},
-		Monsters:                monsters,
-		Corpses:                 gd.Corpses(pu.Position, hover),
-		PlayerUnit:              pu,
-		Inventory:               inventory,
-		Objects:                 objects,
-		Entrances:               gd.Entrances(pu.Position, hover),
-		OpenMenus:               openMenus,
-		Widgets:                 gd.UpdateWidgets(),
-		Panels:                  gd.ReadAllPanels(),
-		Roster:                  roster,
-		HoverData:               hover,
-		TerrorZones:             gd.TerrorZones(),
-		Quests:                  gd.getQuests(gameQuestsBytes),
-		KeyBindings:             gd.GetKeyBindings(),
-		LegacyGraphics:          gd.LegacyGraphics(),
-		IsOnline:                gd.IsOnline(),
-		IsIngame:                gd.IsIngame(),
-		IsInCharCreationScreen:  gd.IsInCharacterCreationScreen(),
-		IsInLobby:               gd.IsInLobby(),
-		IsInCharSelectionScreen: gd.IsInCharacterSelectionScreen(),
-		HasMerc:                 gd.HasMerc(),
-		ActiveWeaponSlot:        gd.GetActiveWeaponSlot(),
+		Monsters:       monsters,
+		Corpses:        gd.Corpses(pu.Position, hover),
+		PlayerUnit:     pu,
+		Inventory:      inventory,
+		Objects:        objects,
+		Entrances:      gd.Entrances(pu.Position, hover),
+		OpenMenus:      openMenus,
+		Roster:         roster,
+		HoverData:      hover,
+		TerrorZones:    gd.TerrorZones(),
+		Quests:         gd.getQuests(gameQuestsBytes),
+		KeyBindings:    gd.GetKeyBindings(),
+		LegacyGraphics: gd.LegacyGraphics(),
+		IsIngame:       gd.IsIngame(),
+
+		// These use the Panel Manager which is heavy to read. Use the functions below instead.
+		//IsOnline:       		   gd.IsOnline(),
+		//IsInCharCreationScreen:  gd.IsInCharacterCreationScreen(),
+		//IsInLobby:               gd.IsInLobby(),
+		//IsInCharSelectionScreen: gd.IsInCharacterSelectionScreen(),
+		HasMerc:          gd.HasMerc(),
+		ActiveWeaponSlot: gd.GetActiveWeaponSlot(),
 	}
 
 	return d
@@ -252,12 +253,39 @@ func (gd *GameReader) getStatsList(statListPtr uintptr) stat.Stats {
 	return stats
 }
 
-// TODO: Take a look to better ways to get this data, now it's very flakky, is just a random memory position + not in game
-func (gd *GameReader) InCharacterSelectionScreen() bool {
-	cs_visible, err := gd.IsWidgetVisible("CharacterSelectPanel")
-	if err != nil {
+// GetPanel returns a Panel object from the specified path (starting from the root panel)
+func (gd *GameReader) GetPanel(panelPath ...string) data.Panel {
+	if len(panelPath) == 0 {
+		return data.Panel{}
 	}
-	return cs_visible
+
+	// Get all panels
+	allPanels := gd.ReadAllPanels()
+
+	// Start with the first panel in the path
+	firstPanelName := panelPath[0]
+	currentPanel, exists := allPanels[firstPanelName]
+	if !exists {
+		// Panel not found at top level
+		return data.Panel{}
+	}
+
+	// Traverse the path from left to right
+	for i := 1; i < len(panelPath); i++ {
+		childName := panelPath[i]
+		nextPanel, exists := currentPanel.PanelChildren[childName]
+		if !exists {
+			return data.Panel{}
+		}
+		currentPanel = nextPanel
+	}
+
+	return currentPanel
+}
+
+func (gd *GameReader) InCharacterSelectionScreen() bool {
+	panel := gd.GetPanel("CharacterSelectPanel")
+	return panel.PanelName != "" && panel.PanelEnabled && panel.PanelVisible
 }
 
 func (gd *GameReader) GetSelectedCharacterName() string {
@@ -269,8 +297,8 @@ func (gd *GameReader) LegacyGraphics() bool {
 }
 
 func (gd *GameReader) IsOnline() bool {
-	// This represents which tab (Online/Offline) we're on in the Character Selection Screen
-	return gd.ReadUInt(gd.moduleBaseAddressPtr+0x21864D0, 1) == 1
+	panel := gd.GetPanel("MainMenuPanel", "SecondaryContextButton")
+	return panel.PanelName != "" && panel.PanelEnabled && panel.PanelVisible
 }
 
 func (gd *GameReader) IsIngame() bool {
@@ -278,30 +306,45 @@ func (gd *GameReader) IsIngame() bool {
 }
 
 func (gd *GameReader) IsInLobby() bool {
-	widgets := gd.UpdateWidgets()
-	if lobbyWidget, found := widgets["LobbyBackgroundPanel"]; found {
-		return lobbyWidget["WidgetActive"].(bool) && lobbyWidget["WidgetVisible"].(bool)
-	}
-
-	return false
+	panel := gd.GetPanel("LobbyBackgroundPanel")
+	return panel.PanelName != "" && panel.PanelEnabled && panel.PanelVisible
 }
 
 func (gd *GameReader) IsInCharacterSelectionScreen() bool {
-	widgets := gd.UpdateWidgets()
-	if csWidget, found := widgets["CharacterSelectPanel"]; found {
-		return csWidget["WidgetActive"].(bool) && csWidget["WidgetVisible"].(bool)
-	}
-
-	return false
+	panel := gd.GetPanel("CharacterSelectPanel")
+	return panel.PanelName != "" && panel.PanelEnabled && panel.PanelVisible
 }
 
 func (gd *GameReader) IsInCharacterCreationScreen() bool {
-	widgets := gd.UpdateWidgets()
-	if ccWidget, found := widgets["CharacterCreatePanel"]; found {
-		return ccWidget["WidgetActive"].(bool) && ccWidget["WidgetVisible"].(bool)
+	panel := gd.GetPanel("CharacterCreatePanel")
+	return panel.PanelName != "" && panel.PanelEnabled && panel.PanelVisible
+}
+
+func (gd *GameReader) GetCharacterList() []string {
+	containerPanel := gd.GetPanel("CharacterSelectPanel", "Background", "CharacterList", "View", "Container")
+	if containerPanel.PanelName == "" || containerPanel.NumChildren == 0 {
+		return []string{}
 	}
 
-	return false
+	// Get the character names that are in the container children [ListView 0,1,2 (0 indexed)] -> children -> Name -> Extra Text 3
+	characterNames := make([]string, containerPanel.NumChildren)
+	for i := 0; i < containerPanel.NumChildren; i++ {
+		characterNames[i] = containerPanel.PanelChildren[fmt.Sprintf("ListItem%d", i)].PanelChildren["Name"].ExtraText3
+	}
+
+	return characterNames
+}
+
+// IsDismissableModalPresent checks if there's a error popup present
+func (gd *GameReader) IsDismissableModalPresent() (bool, string) {
+	panel := gd.GetPanel("DismissableModal")
+
+	if panel.PanelName == "" {
+		return false, ""
+	}
+
+	modalText := panel.PanelChildren["Frame"].PanelChildren["Prompt"].ExtraText3
+	return (panel.PanelName != "" && panel.PanelEnabled && panel.PanelVisible), modalText
 }
 
 func (gd *GameReader) LastGameName() string {
@@ -395,6 +438,7 @@ func (gd *GameReader) GetWidgetState(stateFlag uint64) (int, error) {
 
 	return 0, nil
 }
+
 func (gd *GameReader) GetActiveWeaponSlot() int {
 	state, err := gd.GetWidgetState(WidgetStateFlags["WeaponSwap"])
 	if err != nil {
