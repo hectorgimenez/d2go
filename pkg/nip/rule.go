@@ -293,28 +293,6 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 			statValue = itemStat.Value
 			statFound = true
 		}
-
-		// If stat not found with FindStat, check directly in Stats and BaseStats arrays
-		if !statFound {
-			for _, s := range it.Stats {
-				if s.ID == stat.ID(statData[0]) && s.Layer == layer {
-					statValue = s.Value
-					statFound = true
-					break
-				}
-			}
-		}
-
-		if !statFound {
-			for _, s := range it.BaseStats {
-				if s.ID == stat.ID(statData[0]) && s.Layer == layer {
-					statValue = s.Value
-					statFound = true
-					break
-				}
-			}
-		}
-
 		// Special handling for stats not found
 		if !statFound {
 			// Check if this is a resist stat
