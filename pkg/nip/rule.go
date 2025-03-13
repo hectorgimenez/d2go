@@ -61,7 +61,7 @@ func (r Rules) EvaluateAll(it data.Item) (Rule, RuleResult) {
 	return bestMatchingRule, bestMatch
 }
 
-var fixedPropsList = map[string]int{"type": 0, "quality": 0, "class": 0, "name": 0, "flag": 0, "color": 0, "prefix": 0, "suffix": 0, "levelreq": 0}
+var fixedPropsList = map[string]int{"type": 0, "quality": 0, "class": 0, "name": 0, "flag": 0, "color": 0, "prefix": 0, "suffix": 0}
 
 func NewRule(rawRule string, filename string, lineNumber int) (Rule, error) {
 	rule := sanitizeLine(rawRule)
@@ -91,14 +91,12 @@ func NewRule(rawRule string, filename string, lineNumber int) (Rule, error) {
 		maxQuantity: maxQuantity,
 	}
 
-	for i, stg := range strings.Split(rule, "#") {
-		line := strings.TrimSpace(stg)
-		if line == "" {
-			break
-		}
+	parts := strings.Split(rule, "#")
 
-		if i == 0 {
-			line, err := replaceStringPropertiesInStage1(line)
+	if len(parts) > 0 {
+		stage1 := strings.TrimSpace(parts[0])
+		if stage1 != "" {
+			line, err := replaceStringPropertiesInStage1(stage1)
 			if err != nil {
 				return Rule{}, err
 			}
@@ -107,32 +105,58 @@ func NewRule(rawRule string, filename string, lineNumber int) (Rule, error) {
 			line = strings.ReplaceAll(line, "]", "")
 			program, err := expr.Compile(line, expr.Env(fixedPropsList))
 			if err != nil {
-				return Rule{}, fmt.Errorf("error compiling rule: %w", err)
+				return Rule{}, fmt.Errorf("error compiling rule stage1: %w", err)
 			}
 			r.stage1 = program
 		}
+	}
 
-		if i == 1 {
-			r.requiredStats = getRequiredStatsForRule(line)
+	if len(parts) > 1 {
+		stage2 := strings.TrimSpace(parts[1])
+		if stage2 != "" {
+			// Extract stats before removing brackets for compilation
+			r.requiredStats = getRequiredStatsForRule(stage2)
 
 			statsMap := make(map[string]int)
 			for _, prop := range r.requiredStats {
 				statsMap[prop] = 0
 			}
 
-			line = strings.ReplaceAll(line, "[", "")
-			line = strings.ReplaceAll(line, "]", "")
-			program, err := expr.Compile(line, expr.Env(statsMap))
+			// Normalize whitespace around operators in parenthesized expressions
+			stage2 = normalizeParenthesizedExpressions(stage2)
+
+			// Remove brackets for compilation
+			compileReady := strings.ReplaceAll(stage2, "[", "")
+			compileReady = strings.ReplaceAll(compileReady, "]", "")
+
+			program, err := expr.Compile(compileReady, expr.Env(statsMap))
 			if err != nil {
-				return Rule{}, fmt.Errorf("error compiling rule: %w", err)
+				return Rule{}, fmt.Errorf("error compiling rule stage2: %w, expression: %s", err, compileReady)
 			}
 			r.stage2 = program
-			// We only care about first and second part, third one is maxquantity and was already parsed
-			break
 		}
 	}
 
 	return r, nil
+}
+
+func normalizeParenthesizedExpressions(expr string) string {
+	// Normalize common operators
+	expr = strings.ReplaceAll(expr, "||", " || ")
+	expr = strings.ReplaceAll(expr, "&&", " && ")
+	expr = strings.ReplaceAll(expr, "==", " == ")
+	expr = strings.ReplaceAll(expr, "!=", " != ")
+	expr = strings.ReplaceAll(expr, ">=", " >= ")
+	expr = strings.ReplaceAll(expr, "<=", " <= ")
+
+	// Fix extra spaces
+	expr = regexp.MustCompile(`\s+`).ReplaceAllString(expr, " ")
+
+	// Normalize parentheses spacing
+	expr = strings.ReplaceAll(expr, "( ", "(")
+	expr = strings.ReplaceAll(expr, " )", ")")
+
+	return expr
 }
 
 func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
@@ -175,10 +199,15 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 		}
 	}
 
+	// Check if stage1 exists before evaluating
+	if r.stage1 == nil {
+		return RuleResultNoMatch, fmt.Errorf("stage1 program is nil")
+	}
+
 	// Let's evaluate first stage
 	stage1Result, err := expr.Run(r.stage1, stage1Props)
 	if err != nil {
-		return RuleResultNoMatch, fmt.Errorf("error evaluating rule: %w", err)
+		return RuleResultNoMatch, fmt.Errorf("error evaluating rule stage1: %w", err)
 	}
 
 	// If stage1 does not match, we can stop here, nothing else to match
@@ -197,15 +226,37 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 	}
 
 	stage2Props := make(map[string]int)
+	stage2 := ""
+	if len(strings.Split(r.RawLine, "#")) > 1 {
+		stage2 = strings.ToLower(strings.Split(r.RawLine, "#")[1])
+	}
 
-	// We only want to default to 0 if we find at least one of the required resists
+	// Preprocess stage2 to see if certain stats are being compared to zero
+	zeroCheckStats := make(map[string]bool)
+	for _, statName := range r.requiredStats {
+		if strings.Contains(stage2, "["+statName+"] == 0") ||
+			strings.Contains(stage2, "["+statName+"]==0") {
+			zeroCheckStats[statName] = true
+		}
+	}
+
+	// Handle resist sums
 	hasAnyResist := false
-	stage2 := strings.ToLower(strings.Split(r.RawLine, "#")[1])
-	isResistSum := strings.Contains(stage2, "resist") && (strings.Contains(stage2, "+") || strings.Contains(stage2, "-"))
 
-	// First pass - check if we have any of the required resists
+	// Detect if this is a rule with a resist sum expression
+	// We need to check both for direct addition/subtraction and parenthesized expressions
+	isResistSum := false
+	if strings.Contains(stage2, "resist") {
+		isResistSum = strings.Contains(stage2, "+") || strings.Contains(stage2, "-") ||
+			(strings.Contains(stage2, "(") && strings.Contains(stage2, ")"))
+	}
+
 	if isResistSum {
+		// Check if the item has any resist stats at all
 		for _, statName := range r.requiredStats {
+			if !strings.Contains(statName, "resist") {
+				continue
+			}
 			statData, found := statAliases[statName]
 			if !found {
 				continue
@@ -214,14 +265,15 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 			if len(statData) > 1 {
 				layer = statData[1]
 			}
-			if _, found := it.FindStat(stat.ID(statData[0]), layer); found {
+
+			if itemStat, found := it.FindStat(stat.ID(statData[0]), layer); found && itemStat.Value != 0 {
 				hasAnyResist = true
 				break
 			}
 		}
 	}
 
-	// Second pass - evaluate stats
+	// Evaluate each required stat
 	for _, statName := range r.requiredStats {
 		statData, found := statAliases[statName]
 		if !found {
@@ -233,20 +285,35 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 			layer = statData[1]
 		}
 
-		itemStat, found := it.FindStat(stat.ID(statData[0]), layer)
-		if found {
-			stage2Props[statName] = itemStat.Value
-		} else if isResistSum && hasAnyResist {
-			// Only default to 0 for resist sums if we found at least one resist
+		// Use the FindStat method which handles both Stats and BaseStats
+		statFound := false
+		var statValue int
+
+		if itemStat, found := it.FindStat(stat.ID(statData[0]), layer); found {
+			statValue = itemStat.Value
+			statFound = true
+		}
+		// Special handling for stats not found
+		if !statFound {
+			// Check if this is a resist stat
+			isResistStat := strings.Contains(statName, "resist")
+
+			// For resist stats in a sum expression when no resists are present, don't match
+			if isResistStat && isResistSum && !hasAnyResist {
+				return RuleResultNoMatch, nil
+			}
+
+			// For all other stats, default to 0 to allow proper evaluation of OR conditions
 			stage2Props[statName] = 0
 		} else {
-			return RuleResultNoMatch, nil
+			// Stat was found, use its value
+			stage2Props[statName] = statValue
 		}
 	}
 
 	res, err := expr.Run(r.stage2, stage2Props)
 	if err != nil {
-		return RuleResultNoMatch, fmt.Errorf("error evaluating rule: %w", err)
+		return RuleResultNoMatch, fmt.Errorf("error evaluating rule stage2: %w", err)
 	}
 
 	// 100% rule match, we can return here
@@ -273,7 +340,7 @@ func replaceStringPropertiesInStage1(stage1 string) (string, error) {
 		case "flag":
 			replaceWith = strings.ReplaceAll(prop[0], prop[4], fmt.Sprintf("%d", 1))
 		case "prefix", "suffix":
-			// Handle prefix/suffix IDs and levelreq
+			// Handle prefix/suffix IDs
 			replaceWith = strings.ReplaceAll(prop[0], prop[4], prop[4])
 		case "color":
 			// TODO: Not supported yet
@@ -290,8 +357,13 @@ func replaceStringPropertiesInStage1(stage1 string) (string, error) {
 
 func getRequiredStatsForRule(line string) []string {
 	statsList := make([]string, 0)
+	statsFound := make(map[string]bool)
+
 	for _, statName := range statsRegexp.FindAllStringSubmatch(line, -1) {
-		statsList = append(statsList, statName[1])
+		if !statsFound[statName[1]] {
+			statsList = append(statsList, statName[1])
+			statsFound[statName[1]] = true
+		}
 	}
 	return statsList
 }
