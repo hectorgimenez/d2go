@@ -335,6 +335,15 @@ func (gd *GameReader) GetCharacterList() []string {
 	return characterNames
 }
 
+// IsBlocking checks if there's a blocking popup or loading screen present
+func (gd *GameReader) IsBlocking() bool {
+	panel := gd.GetPanel("BlockingPanel")
+	panel2 := gd.GetPanel("DismissableModal")
+
+	return (panel.PanelName != "" && panel.PanelEnabled && panel.PanelVisible) ||
+		(panel2.PanelName != "" && panel2.PanelEnabled && panel2.PanelVisible)
+}
+
 // IsDismissableModalPresent checks if there's a error popup present
 func (gd *GameReader) IsDismissableModalPresent() (bool, string) {
 	panel := gd.GetPanel("DismissableModal")
