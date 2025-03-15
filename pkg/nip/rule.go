@@ -231,6 +231,16 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 		stage2 = strings.ToLower(strings.Split(r.RawLine, "#")[1])
 	}
 
+	// Special handling for skill tabs
+	if strings.Contains(stage2, "[itemaddskilltab]") {
+		stage2Props["itemaddskilltab"] = evaluateSkillTabSum(it)
+	}
+
+	// Special handling for class skills
+	if strings.Contains(stage2, "[itemaddclassskills]") {
+		stage2Props["itemaddclassskills"] = evaluateClassSkillsSum(it)
+	}
+
 	// Preprocess stage2 to see if certain stats are being compared to zero
 	zeroCheckStats := make(map[string]bool)
 	for _, statName := range r.requiredStats {
@@ -275,6 +285,11 @@ func (r Rule) Evaluate(it data.Item) (RuleResult, error) {
 
 	// Evaluate each required stat
 	for _, statName := range r.requiredStats {
+		// Skip stats we've already handled
+		if statName == "itemaddskilltab" || statName == "itemaddclassskills" {
+			continue
+		}
+
 		statData, found := statAliases[statName]
 		if !found {
 			return RuleResultNoMatch, fmt.Errorf("property %s is not valid or not supported", statName)
@@ -366,6 +381,31 @@ func getRequiredStatsForRule(line string) []string {
 		}
 	}
 	return statsList
+}
+
+func evaluateClassSkillsSum(it data.Item) int {
+	// Check all class skills stats (all have base ID 83 with different layers)
+	totalClassSkills := 0
+
+	for layer := 0; layer <= 6; layer++ {
+		if itemStat, found := it.FindStat(stat.ID(83), layer); found && itemStat.Value > 0 {
+			totalClassSkills += itemStat.Value
+		}
+	}
+
+	return totalClassSkills
+}
+func evaluateSkillTabSum(it data.Item) int {
+	// Check all skill tab stats (all have base ID 188 with different layers)
+	totalSkillTabs := 0
+
+	for layer := 0; layer <= 50; layer++ {
+		if itemStat, found := it.FindStat(stat.ID(188), layer); found && itemStat.Value > 0 {
+			totalSkillTabs += itemStat.Value
+		}
+	}
+
+	return totalSkillTabs
 }
 
 // MaxQuantity returns the maximum quantity of items that character can have, 0 means no limit
