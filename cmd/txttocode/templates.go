@@ -32,7 +32,11 @@ package skill
 
 var Desc = map[ID]Description{
 {{- range $key, $value := . }}
-    {{ $key }}: {Page: {{ $value.SkillPage }}, Row: {{ $value.SkillRow }}, Column: {{ $value.SkillColumn }}, ListRow: {{ $value.ListRow }}, IconCel: {{ $value.IconCel }}},
+    {{- if and (contains (index $value "str name") "kill") (extractInt (index $value "str name")) }}
+    {{- if ne (index $value "skilldesc") "townportal" }}
+    {{ extractInt (index $value "str name") }}: {Page: {{ $value.SkillPage }}, Row: {{ $value.SkillRow }}, Column: {{ $value.SkillColumn }}, ListRow: {{ $value.ListRow }}, IconCel: {{ $value.IconCel }}},
+    {{- end }}
+    {{- end }}
 {{- end }}
 }`
 

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"text/template"
 )
@@ -107,6 +108,10 @@ func generateFile(sourcePath, destinationPath, tpl string) error {
 		},
 		"list": func() []string {
 			return make([]string, 0)
+		},
+		"extractInt": func(s string) string {
+			reg := regexp.MustCompile("[^0-9]")
+			return reg.ReplaceAllString(s, "")
 		},
 	}
 
