@@ -13,7 +13,7 @@ import (
 
 func (gd *GameReader) GetRawPlayerUnits() RawPlayerUnits {
 	rawPlayerUnits := make(RawPlayerUnits, 0)
-	hover := gd.hoveredData()
+	hover := gd.HoveredData()
 	for i := 0; i < 128; i++ {
 		unitOffset := gd.offset.UnitTable + uintptr(i*8)
 		playerUnitAddr := gd.Process.moduleBaseAddressPtr + unitOffset

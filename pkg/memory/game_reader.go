@@ -45,7 +45,7 @@ func (gd *GameReader) GetData() data.Data {
 	rawPlayerUnits := gd.GetRawPlayerUnits()
 	mainPlayerUnit := rawPlayerUnits.GetMainPlayer()
 	pu := gd.GetPlayerUnit(mainPlayerUnit)
-	hover := gd.hoveredData()
+	hover := gd.HoveredData()
 
 	now := time.Now()
 
@@ -78,7 +78,7 @@ func (gd *GameReader) GetData() data.Data {
 	// Always update other critical data
 	corpseUnit := rawPlayerUnits.GetCorpse()
 	roster := gd.getRoster(rawPlayerUnits)
-	openMenus := gd.openMenus()
+	openMenus := gd.OpenMenus()
 
 	// Quests
 	// q1 := uintptr(gd.Process.ReadUInt(gd.moduleBaseAddressPtr+0x22E2978, Uint64))
@@ -132,7 +132,7 @@ func (gd *GameReader) InGame() bool {
 	return player.UnitID > 0 && player.Position.X > 0 && player.Position.Y > 0 && player.Area > 0
 }
 
-func (gd *GameReader) openMenus() data.OpenMenus {
+func (gd *GameReader) OpenMenus() data.OpenMenus {
 	uiBase := gd.Process.moduleBaseAddressPtr + gd.offset.UI - 0xA
 
 	buffer := gd.Process.ReadBytesFromMemory(uiBase, 0x16D)
@@ -163,7 +163,7 @@ func (gd *GameReader) openMenus() data.OpenMenus {
 	}
 }
 
-func (gd *GameReader) hoveredData() data.HoverData {
+func (gd *GameReader) HoveredData() data.HoverData {
 	hoverAddressPtr := gd.Process.moduleBaseAddressPtr + gd.offset.Hover
 	hoverBuffer := gd.Process.ReadBytesFromMemory(hoverAddressPtr, 12)
 	isUnitHovered := ReadUIntFromBuffer(hoverBuffer, 0, Uint16)
