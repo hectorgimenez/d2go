@@ -5,18 +5,22 @@ import (
 )
 
 func (gd *GameReader) TerrorZones() []area.ID {
+	if gd == nil || gd.moduleBaseAddressPtr == 0 {
+		return []area.ID{} // Return empty slice, not nil
+	}
+
 	tz := gd.moduleBaseAddressPtr + tzOnline
 
-	// Initialize an empty slice to hold only current terror zones -- Flush it to not keep previous when it changes
-	areas := make([]area.ID, 0, 8)
+	// Use a temporary slice to collect current zones
+	var currentZones []area.ID
 
 	for i := 0; i < 8; i++ {
 		tzArea := gd.ReadUInt(tz+uintptr(i*Uint32), Uint32)
 		if tzArea != 0 {
-			areas = append(areas, area.ID(tzArea))
+			currentZones = append(currentZones, area.ID(tzArea))
 		}
 	}
 
-	return areas
+	return currentZones
 }
 
